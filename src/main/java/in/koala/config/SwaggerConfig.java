@@ -39,7 +39,7 @@ public class SwaggerConfig {
 				.groupName(version)
 				.select()
 				.apis(RequestHandlerSelectors.
-						basePackage("org.tikim.boot.controller"))
+						basePackage("in.koala.controller"))
 				.paths(Predicates.or(PathSelectors.regex("^(?!/v2).+"))).build().
 						securitySchemes(apiKey());
 	}
@@ -53,7 +53,7 @@ public class SwaggerConfig {
 				.groupName(version)
 				.select()
 				.apis(RequestHandlerSelectors.
-						basePackage("org.tikim.boot.controller"))
+						basePackage("in.koala.controller"))
 				.paths(Predicates.or(PathSelectors.regex("^(?!/v1).+"))).build().
 						securitySchemes(apiKey());
 	}
