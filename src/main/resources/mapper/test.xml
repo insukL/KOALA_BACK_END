@@ -21,11 +21,11 @@
     </resultMap>
 
     <sql id="column-list">
-			${alias}ID AS ${prefix}ID
+            ${alias}ID AS ${prefix}ID
 			,${alias}TEXT AS ${prefix}TEXT
 			,${alias}NUM AS ${prefix}NUM
 			,${alias}IS_DELETED AS ${prefix}IS_DELETED
 			,${alias}CREATED_AT AS ${prefix}CREATED_AT
 			,${alias}UPDATED_AT AS ${prefix}UPDATED_AT
-	</sql>
+    </sql>
 </mapper>
