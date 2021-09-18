@@ -1,5 +1,6 @@
 package in.koala.controller;
 
+<<<<<<< HEAD
 import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -20,16 +21,15 @@ public class UserController {
     private UserService userService;
 
     @GetMapping(value = "/test")
-    public String test(){
+    public String test() {
         return userService.test();
     }
 
-    @GetMapping(value =  "/login/naver")
+    @GetMapping(value = "/login/naver")
     public ResponseEntity<Map<String, String>> naverLogin(NaverCallBack callBack) throws IOException {
-        if(callBack.getError() != null){
+        if (callBack.getError() != null) {
             throw new IOException(callBack.getError());
-        }
-        else{
+        } else {
             return new ResponseEntity<>(userService.naverLogin(callBack), HttpStatus.OK);
         }
     }
