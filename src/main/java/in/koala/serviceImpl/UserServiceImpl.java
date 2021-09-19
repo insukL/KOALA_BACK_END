@@ -3,6 +3,7 @@ package in.koala.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import in.koala.domain.User;
 import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.domain.naverLogin.NaverToken;
 import in.koala.domain.naverLogin.NaverUser;
@@ -11,6 +12,8 @@ import in.koala.service.UserService;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,14 +31,18 @@ import java.util.Map;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final UserMapper userMapper;
+
+    @Autowired
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     @Value("${naver.client_id}")
     private String clientId;
 
     @Value("${naver.client_secret}")
     private String clientSecret;
-
-    @Resource
-    private UserMapper userMapper;
 
     @Override
     public String test() {
@@ -79,35 +86,16 @@ public class UserServiceImpl implements UserService {
                 String.class
         );
 
+        NaverUser naverUser = null;
+
         try{
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(profile.getBody());
             ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            NaverUser naverUser = objectMapper.readValue(jsonObject.get("response").toString(), NaverUser.class);
+            naverUser = objectMapper.readValue(jsonObject.get("response").toString(), NaverUser.class);
             JSONObject response_obj = (JSONObject) jsonObject.get("response");
             String url = (String) response_obj.get("profile_image");
-            //System.out.println(url);
             naverUser.setProfileImage(url);
-            //System.out.println(naverUser.getId());
-            //System.out.println(naverUser.getNickname());
-            //System.out.println(naverUser.getProfileImage());
-            //System.out.println(naverUser.getEmail());
-            String findId = userMapper.findId(naverUser.getId());
-            //System.out.println(findId);
-            if(findId != null){
-                System.out.println("회원가입 완료");
-                Map<String, String > token = new HashMap<String,String>();
-                token.put("access_token",  "Need to make access_token");
-                token.put("refresh_token", "Need to make refresh_token");
-                return token;
-            }
-            else{
-                userMapper.signUp(naverUser);
-                Map<String, String > token = new HashMap<String,String>();
-                token.put("access_token",  "Need to make access_token");
-                token.put("refresh_token", "Need to make refresh_token");
-                return token;
-            }
         }
         catch (ParseException e){
             e.printStackTrace();
@@ -117,5 +105,46 @@ public class UserServiceImpl implements UserService {
             e.printStackTrace();
             return null;
         }
+
+        Long id = userMapper.getIdBySnsEmail(naverUser.getEmail());
+
+        if(id == null) {
+            User user = new User();
+            user.setSns_email(naverUser.getEmail());
+            user.setProfile(naverUser.getProfileImage());
+            user.setIs_auth((short) 1);
+            user.setNickname(naverUser.getEmail() + "_" + naverUser.getId());
+            userMapper.snsSingUp(user);
+        }
+
+        return generateToken(id);
+    }
+
+    @Override
+    public Map<String, String> signUp(User user) {
+        User selectUser = userMapper.getUserByAccount(user.getAccount());
+
+        if(selectUser != null);
+
+        if(userMapper.checkNickname(user.getNickname()) >= 1);
+
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+        userMapper.signUp(user);
+
+        return generateToken(user.getId());
+    }
+
+    @Override
+    public Map<String, String> login(User user) {
+        return null;
+    }
+
+    private Map generateToken(Long id){
+        Map<String, String> token = new HashMap<>();
+
+        token.put("access_token",  "Need to make access_token");
+        token.put("refresh_token", "Need to make refresh_token");
+
+        return token;
     }
 }

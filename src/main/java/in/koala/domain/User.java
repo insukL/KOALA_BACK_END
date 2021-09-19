@@ -5,20 +5,17 @@ import java.sql.Timestamp;
 
 public class User {
     Long id;
-
     String account;
-
     String password;
-
     String find_email;
-
     String sns_email;
     String nickname;
     String profile;
     Long user_type;
-    Boolean is_auth;
+    Short is_auth;
     Timestamp created_at;
     Timestamp updated_at;
+
 
     public Long getId() {
         return id;
@@ -84,11 +81,11 @@ public class User {
         this.user_type = user_type;
     }
 
-    public Boolean getIs_auth() {
+    public Short getIs_auth() {
         return is_auth;
     }
 
-    public void setIs_auth(Boolean is_auth) {
+    public void setIs_auth(Short is_auth) {
         this.is_auth = is_auth;
     }
 
@@ -107,4 +104,5 @@ public class User {
     public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
+
 }
