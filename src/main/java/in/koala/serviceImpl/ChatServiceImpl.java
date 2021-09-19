@@ -1,43 +1,28 @@
 package in.koala.serviceImpl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.ChatMessage;
 import in.koala.service.ChatService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 @Service
 public class ChatServiceImpl implements ChatService {
-    private Set<WebSocketSession> sessionList = new HashSet<>();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    SimpMessagingTemplate template;
 
-    public void join(WebSocketSession session){
-        sessionList.add(session);
+    public void enter(ChatMessage message){
+        message.setMessage(message.getSender() + "님이 입장하셨습니다.");
+        template.convertAndSend("/sub/chat/room", message);
     }
 
-    public void exit(WebSocketSession session){
-        sessionList.remove(session);
+    public void exit(ChatMessage message){
+        message.setMessage(message.getSender() + "님이 나가셨습니다.");
+        template.convertAndSend("/sub/chat/room", message);
     }
 
-    public void send(ChatMessage chatMessage){
-        try {
-            TextMessage message = new TextMessage(objectMapper.writeValueAsString(chatMessage));
-            sessionList.parallelStream().forEach(session -> {
-                try {
-                    session.sendMessage(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void send(ChatMessage message){
+        template.convertAndSend("/sub/chat/room", message);
     }
 
 }
