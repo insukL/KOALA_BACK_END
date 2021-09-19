@@ -3,6 +3,7 @@ package in.koala.controller;
 import in.koala.domain.User;
 import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,12 @@ import java.util.Map;
 @RequestMapping(value = "/user")
 public class UserController {
 
-    @Resource(name = "userServiceImpl")
-    private UserService userService;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping(value = "/test")
     public String test() {
@@ -24,7 +29,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/login/naver")
-    public ResponseEntity<Map<String, String>> naverLogin(NaverCallBack callBack) throws IOException {
+    public ResponseEntity naverLogin(NaverCallBack callBack) throws IOException {
         if (callBack.getError() != null) {
             throw new IOException(callBack.getError());
         } else {
@@ -32,7 +37,10 @@ public class UserController {
         }
     }
 
-    @PostMapping(value="/")
+    @PostMapping(value="/sing-up")
+    public ResponseEntity signUp(@RequestBody User user){
+        return new ResponseEntity(userService.signUp(user), HttpStatus.CREATED);
+    }
 
     @PostMapping(value="/login")
     public ResponseEntity login(@RequestBody User user){

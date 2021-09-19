@@ -122,7 +122,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> signUp(User user) {
+        System.out.println(user.getAccount());
         User selectUser = userMapper.getUserByAccount(user.getAccount());
+        System.out.println(user.getAccount());
 
         if(selectUser != null);
 
