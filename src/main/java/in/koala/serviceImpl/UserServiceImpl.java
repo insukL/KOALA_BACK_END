@@ -121,10 +121,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> signUp(User user) {
-        System.out.println(user.getAccount());
+    public User signUp(User user) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
-        System.out.println(user.getAccount());
 
         if(selectUser != null);
 
@@ -133,7 +131,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         userMapper.signUp(user);
 
-        return generateToken(user.getId());
+        return userMapper.getUserById(user.getId());
     }
 
     @Override

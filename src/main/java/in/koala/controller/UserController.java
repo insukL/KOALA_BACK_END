@@ -28,7 +28,7 @@ public class UserController {
         return userService.test();
     }
 
-    @GetMapping(value = "/login/naver")
+    @GetMapping(value = "/oauth2/authorization/naver")
     public ResponseEntity naverLogin(NaverCallBack callBack) throws IOException {
         if (callBack.getError() != null) {
             throw new IOException(callBack.getError());

@@ -12,5 +12,6 @@ public interface UserMapper {
     void snsSingUp(User user);
     Long getIdBySnsEmail(String email);
     User getUserByAccount(String account);
+    User getUserById(Long id);
     Integer checkNickname(String nickname);
 }

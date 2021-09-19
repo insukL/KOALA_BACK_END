@@ -30,6 +30,15 @@
         WHERE account=#{account}
     </select>
 
+    <select id="getUserById" parameterType="Long" resultType="in.koala.domain.User">
+        SELECT
+        <include refid="userInfo">
+            <property name="alias" value=""/>
+        </include>
+        FROM user
+        WHERE id=#{id};
+    </select>
+
     <select id="checkNickname" parameterType="String" resultType="Integer">
         SELECT count(*) FROM user WHERE nickname=#{nickname};
     </select>

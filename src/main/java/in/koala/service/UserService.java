@@ -9,5 +9,5 @@ public interface UserService {
     String test();
     Map<String, String> naverLogin(NaverCallBack callBack);
     Map<String, String> login(User user);
-    Map<String, String> signUp(User user);
+    User signUp(User user);
 }
