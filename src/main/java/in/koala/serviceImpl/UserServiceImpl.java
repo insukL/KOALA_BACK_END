@@ -49,24 +49,76 @@ public class UserServiceImpl implements UserService {
         return userMapper.test();
     }
 
+    public Map snsLogin(String code, String snsType){
+        String accessToken;
+
+        HttpHeaders headers = new HttpHeaders();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        if(snsType == "Naver"){
+            headers.add("Content-type", "application/x-www-form-urlencoded");
+
+            params.add("grant_type", "authorization_code");
+            params.add("client_id", clientId);
+            params.add("client_secret", clientSecret);
+            params.add("code", code);
+
+            accessToken = getAccessToken(new HttpEntity<>(params, headers), "https://nid.naver.com/oauth2.0/token");
+        }
+        else if(snsType == "Kakao"){
+            headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            params.add("grant_type", "authorization_code");
+            params.add("client_id", kakaoRestApiKey);
+            params.add("redirect_uri", kakaoRedirectUri);
+            params.add("code", code);
+
+            accessToken = getAccessToken(new HttpEntity<>(params, headers), "https://kauth.kakao.com/oauth/token");
+        }
+    }
+
+    private String getAccessToken(HttpEntity<MultiValueMap<String, String>> request, String url){
+        RestTemplate rt = new RestTemplate();
+
+        ResponseEntity<String> token = rt.exchange(
+                url,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        String access_token = null;
+
+        try{
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
+
+            access_token = jsonObject.get("access_token").toString();
+
+        } catch(ParseException e){
+            e.printStackTrace();
+        }
+
+        return access_token;
+    }
+
     @Override
     public Map<String, String> naverLogin(NaverCallBack callBack) {
         String code = callBack.getCode();
-        String state = callBack.getState();
 
         RestTemplate rt = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
         headers.add("Content-type", "application/x-www-form-urlencoded");
+
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
         params.add("code", code);
-        params.add("state", state);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
+        NaverToken naverToke = new NaverToken();
         ResponseEntity<NaverToken> naverToken = rt.exchange(
                 "https://nid.naver.com/oauth2.0/token",
                 HttpMethod.POST,
@@ -138,6 +190,8 @@ public class UserServiceImpl implements UserService {
     public Map<String, String> login(User user) {
         return null;
     }
+
+
 
     private Map generateToken(Long id){
         Map<String, String> token = new HashMap<>();
