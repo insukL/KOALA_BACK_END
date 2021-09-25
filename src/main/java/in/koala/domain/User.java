@@ -11,7 +11,7 @@ public class User {
     private String sns_email;
     private String nickname;
     private String profile;
-    private Long user_type;
+    private Short user_type;
     private Short is_auth;
     private Timestamp created_at;
     private Timestamp updated_at;
@@ -73,11 +73,11 @@ public class User {
         this.profile = profile;
     }
 
-    public Long getUser_type() {
+    public Short getUser_type() {
         return user_type;
     }
 
-    public void setUser_type(Long user_type) {
+    public void setUser_type(Short user_type) {
         this.user_type = user_type;
     }
 
