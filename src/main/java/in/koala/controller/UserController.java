@@ -1,6 +1,8 @@
 package in.koala.controller;
 
 import in.koala.domain.User;
+import in.koala.domain.kakaoLogin.KakaoCallBack;
+import in.koala.domain.kakaoLogin.KakaoProfile;
 import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +31,20 @@ public class UserController {
     }
 
     @GetMapping(value = "/oauth2/authorization/naver")
-    public ResponseEntity naverLogin(NaverCallBack callBack) throws IOException {
+    public ResponseEntity naverLogin(NaverCallBack callBack) throws Exception {
         if (callBack.getError() != null) {
             throw new IOException(callBack.getError());
         } else {
-            return new ResponseEntity<>(userService.naverLogin(callBack), HttpStatus.OK);
+            return new ResponseEntity<>(userService.snsLogin(callBack.getCode(), "Naver"), HttpStatus.OK);
+        }
+    }
+
+    @GetMapping(value="/oauth2/authorization/kakao")
+    public ResponseEntity<Map<String, String>> kakaoLogin(KakaoCallBack callBack) throws Exception{
+        if(callBack.getError() != null){
+            throw new IOException(callBack.getError());
+        } else{
+            return new ResponseEntity<>(userService.snsLogin(callBack.getCode(), "Kakao"), HttpStatus.OK);
         }
     }
 

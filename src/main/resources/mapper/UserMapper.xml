@@ -17,8 +17,8 @@
         </selectKey>
     </insert>
 
-    <select id="getIdBySnsEmail" parameterType="String" resultType="Long">
-        SELECT id FROM user WHERE sns_email=#{sns_email};
+    <select id="getIdByAccount" parameterType="String" resultType="Long">
+        SELECT id FROM user WHERE account=#{account};
     </select>
     
     <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.User">
