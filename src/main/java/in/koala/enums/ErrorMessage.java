@@ -23,7 +23,8 @@ public enum ErrorMessage {
 	 * USER
 	 */
 	ACCOUNT_ALREADY_EXIST(123, "이미 존재하는 아이디입니다"),
-	NICKNAME_ALREADY_EXIST(124, "이미 존재하는 닉네임입니다")
+	NICKNAME_ALREADY_EXIST(124, "이미 존재하는 닉네임입니다"),
+	NAVER_LOGIN_ERROR(125, "네이버 로그인 오류")
 	;
 
 	Integer code;
