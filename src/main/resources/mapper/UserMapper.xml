@@ -1,14 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.UserMapper">
-    <select id="test" resultType="string">
-        SELECT id from user limit 1;
-    </select>
-    <select id="findId" resultType="string">
-        SELECT account FROM user WHERE account = #{account};
-    </select>
-    <insert id="signUp" parameterType="in.koala.domain.naverLogin.NaverUser">
-        INSERT INTO user (account, nickname, profile, sns_email)
-        VALUES(#{id}, #{nickname}, #{profile_image}, #{email})
+    <insert id="signUp" parameterType="in.koala.domain.User">
+        INSERT INTO user(nickname, account, password, find_email, user_type, is_auth, created_at, updated_at)
+        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+        <selectKey keyProperty="id" resultType="Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
     </insert>
+
+    <insert id="snsSingUp" parameterType="in.koala.domain.User">
+        INSERT INTO user(nickname, sns_email, profile, user_type, is_auth, created_at, updated_at)
+        VALUES(#{nickname}, #{sns_email}, #{profile}, DEFAULT, #{is_auth}, DEFAULT, DEFAULT)
+        <selectKey keyProperty="id" resultType="Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <select id="getIdByAccount" parameterType="String" resultType="Long">
+        SELECT id FROM user WHERE account=#{account};
+    </select>
+    
+    <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.User">
+        SELECT
+        <include refid="userInfo">
+            <property name="alias" value=""/>
+        </include>
+        FROM user
+        WHERE account=#{account}
+    </select>
+
+    <select id="getUserById" parameterType="Long" resultType="in.koala.domain.User">
+        SELECT
+        <include refid="userInfo">
+            <property name="alias" value=""/>
+        </include>
+        FROM user
+        WHERE id=#{id};
+    </select>
+
+    <select id="checkNickname" parameterType="String" resultType="Integer">
+        SELECT count(*) FROM user WHERE nickname=#{nickname};
+    </select>
+
+    <select id="test" resultType="String">
+        SELECT nickname from user where id=1;
+    </select>
+
+
+    <sql id="userInfo">
+        ${alias}id, 
+        ${alias}account,
+        ${alias}password,
+        ${alias}find_email, 
+        ${alias}sns_email,
+        ${alias}nickname,
+        ${alias}profile,
+        ${alias}user_type,
+        ${alias}is_auth,
+        ${alias}created_at,
+        ${alias}updated_at
+    </sql>
 </mapper>

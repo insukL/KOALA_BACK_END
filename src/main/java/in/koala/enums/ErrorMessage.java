@@ -19,9 +19,14 @@ public enum ErrorMessage {
 	PAGENATION_INVALID(1120,"pagenation의 범위를 확인해주세요. 0 < page , 0 < per_count"),
 	
 
+	/*
+	 * USER
+	 */
+	ACCOUNT_ALREADY_EXIST(123, "이미 존재하는 아이디입니다"),
+	NICKNAME_ALREADY_EXIST(124, "이미 존재하는 닉네임입니다"),
+	NAVER_LOGIN_ERROR(125, "네이버 로그인 오류")
 	;
-	
-	
+
 	Integer code;
 	String errorMessage;
 	ErrorMessage(int code, String errorMessage) {

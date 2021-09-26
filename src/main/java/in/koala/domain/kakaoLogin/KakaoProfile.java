@@ -1,10 +1,11 @@
-package in.koala.domain.naverLogin;
+package in.koala.domain.kakaoLogin;
 
-public class NaverUser {
+
+public class KakaoProfile {
     private String id;
+    private String email;
     private String nickname;
     private String profile_image;
-    private String email;
 
     public String getId() {
         return id;
@@ -12,22 +13,6 @@ public class NaverUser {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public String getProfileImage() {
-        return profile_image;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profile_image = profileImage;
     }
 
     public String getEmail() {
@@ -38,4 +23,19 @@ public class NaverUser {
         this.email = email;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getProfile_image() {
+        return profile_image;
+    }
+
+    public void setProfile_image(String profile_image) {
+        this.profile_image = profile_image;
+    }
 }
