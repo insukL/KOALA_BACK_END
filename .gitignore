@@ -34,4 +34,7 @@ build/
 
 ### ###
 src/main/resources/application.properties
+src/main/resources/application-oauth2.properties
+src/main/resources*/*.properties
+.properties
 /.mvn/

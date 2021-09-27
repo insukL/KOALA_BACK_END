@@ -2,10 +2,11 @@ package in.koala.mapper;
 
 import in.koala.domain.test.Test;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Mapper
+@Repository
 public interface TestMapper {
     @Select("SELECT * FROM tb_test_info ORDER BY created_at LIMIT #{cursor}, #{limit}")
     List<Test> getTestListAnnotation(@Param("cursor") Long cursor, @Param("limit") Long limit);

@@ -1,4 +1,4 @@
-# Spring-Boot-Starter-Setting
+# KOALA_BACK_END (spring-boot-starter)
 
 Spring-Boot-Starter-Setting은 많이 스프링 부트에서 많이 사용하는 라이브러리 및 기능을 적용한 예제 프로젝트입니다.
 
