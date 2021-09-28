@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.ScrapMapper">
+
+    <!--
+    <insert id="scrapBoard" parameterType="in.koala.domain.Scrap">
+        INSERT INTO scrap(user_id, board_id) VALUES (#{user_id}, #{board_id});
+    </insert>
+
+    
+    <select id="스크랩 조회"
+    
+    -->
+    
+    <update id="deleteScrap" parameterType="in.koala.domain.Scrap">
+        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{board_id}
+    </update>
+
+    <update id="deleteAllScrap" parameterType="in.koala.domain.Scrap">
+        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{user_id}
+    </update>
+
+
+
+
+</mapper>
