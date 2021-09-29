@@ -1,4 +1,4 @@
-package in.koala.domain.kakaoLogin;
+package in.koala.domain.googleLogin;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,14 +6,14 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class KakaoProfile {
+public class GoogleProfile {
     private String id;
     private String email;
     private String nickname;
     private String profile_image;
 
     @Builder
-    public KakaoProfile(String id, String email, String nickname, String profile_image) {
+    public GoogleProfile(String id, String email, String nickname, String profile_image) {
         this.id = id;
         this.email = email;
         this.nickname = nickname;

@@ -1,0 +1,1 @@
+DROP INDEX sns_email ON USER;

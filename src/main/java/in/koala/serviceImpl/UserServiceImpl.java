@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.User;
+import in.koala.domain.googleLogin.GoogleProfile;
 import in.koala.domain.kakaoLogin.KakaoProfile;
 import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.domain.naverLogin.NaverToken;
 import in.koala.domain.naverLogin.NaverUser;
 import in.koala.mapper.UserMapper;
 import in.koala.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,14 +29,18 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final HttpServletResponse response;
 
     @Value("${naver.client_id}")
     private String naverClientId;
@@ -48,6 +54,12 @@ public class UserServiceImpl implements UserService {
     @Value("${naver.profile-uri}")
     private String naverProfileUri;
 
+    @Value("${naver.redirect-uri}")
+    private String naverRedirectUri;
+
+    @Value("${naver.login-request-uri}")
+    private String naverLoginRequestUri;
+
     @Value("${kakao.restkey}")
     private String kakaoRestApiKey;
 
@@ -60,16 +72,35 @@ public class UserServiceImpl implements UserService {
     @Value("${kakao.profile-uri}")
     private String kakaoProfileUri;
 
-    @Autowired
-    public UserServiceImpl(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
+    @Value("${kakao.login-request-uri}")
+    private String kakaoLoginRequestUri;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
+
+    @Value("${google.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${google.access-token-uri}")
+    private String googleAccessTokenUri;
+
+    @Value("${google.profile-uri}")
+    private String googleProfileUri;
+
+    @Value("${google.redirect-uri}")
+    private String googleRedirectUri;
+
+    @Value("${google.login-request-uri}")
+    private String googleLoginRequestUri;
 
     @Override
     public String test() {
         return userMapper.test();
     }
 
+    // snstype을 열거형으로 바꾸기
+    // snstype에 따라 달라지는 코드들은 따로 sns 별로 인터페이스 생성 후 구현하는 클래스 만들기
+    // oauth를 user와 분리하여 따로 controller와 service 만드는 것도 고려
     @Override
     public Map<String, String> snsLogin(String code, String snsType) throws Exception {
 
@@ -78,7 +109,7 @@ public class UserServiceImpl implements UserService {
         String accessTokenUri = null;
         String profileUri = null;
 
-        if(snsType == "Naver"){
+        if(snsType.equals("naver")){
             headers.add("Content-type", "application/x-www-form-urlencoded");
 
             params.add("grant_type", "authorization_code");
@@ -89,7 +120,7 @@ public class UserServiceImpl implements UserService {
             accessTokenUri = naverAccessTokenUri;
             profileUri = naverProfileUri;
 
-        } else if(snsType == "Kakao"){
+        } else if(snsType.equals("kakao")){
             headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
             params.add("grant_type", "authorization_code");
@@ -99,6 +130,16 @@ public class UserServiceImpl implements UserService {
 
             accessTokenUri = kakaoAccessTokenUri;
             profileUri = kakaoProfileUri;
+
+        } else if(snsType.equals("google")){
+            params.add("code", code);
+            params.add("client_id", googleClientId);
+            params.add("client_secret", googleClientSecret);
+            params.add("redirect_uri", googleRedirectUri);
+            params.add("grant_type", "authorization_code");
+
+            accessTokenUri = googleAccessTokenUri;
+            profileUri = googleProfileUri;
         }
 
         String accessToken = getAccessToken(new HttpEntity<>(params, headers), accessTokenUri);
@@ -110,9 +151,33 @@ public class UserServiceImpl implements UserService {
 
         Long id = userMapper.getIdByAccount(user.getAccount());
 
-        if(id == null) userMapper.signUp(user);
+        if(id == null) this.signUp(user);
 
         return generateToken(id);
+    }
+
+    @Override
+    public void requestSnsLogin(String snsType) throws Exception {
+        String uri = null;
+
+        if(snsType.equals("naver")) {
+            uri = naverLoginRequestUri +
+                    "&client_id=" + naverClientId +
+                    "&redirect_uri=" + naverRedirectUri;
+
+        } else if(snsType.equals("kakao")){
+            uri = kakaoLoginRequestUri +
+                    "&client_id=" + kakaoRestApiKey +
+                    "&redirect_uri=" + kakaoRedirectUri;
+
+        } else if(snsType.equals("google")){
+            uri = googleLoginRequestUri +
+                    "&client_id=" + googleClientId +
+                    "&redirect_uri=" + googleRedirectUri;
+        }
+
+        System.out.println(uri);
+        response.sendRedirect(uri);
     }
 
     @Override
@@ -154,7 +219,7 @@ public class UserServiceImpl implements UserService {
                 String.class
         );
 
-        //System.out.println(token);
+        System.out.println(token);
 
         String access_token = null;
 
@@ -177,28 +242,59 @@ public class UserServiceImpl implements UserService {
 
         ResponseEntity<String> response = rt.exchange(
                 uri,
-                HttpMethod.POST,
+                HttpMethod.GET,
                 request,
                 String.class
         );
 
-        //System.out.println(response);
+        System.out.println(response);
 
         User user = null;
 
-        if(snsType == "Naver"){
+        if(snsType.equals("naver")){
             user = naverProfileParsing(response);
 
-        } else if(snsType == "Kakao"){
+        } else if(snsType.equals("kakao")){
             user = kakaoProfileParsing(response);
+
+        } else if(snsType.equals("google")){
+            user = googleProfileParsing(response);
         }
 
         return user;
     }
 
+    private User googleProfileParsing(ResponseEntity<String> response) throws Exception{
+        GoogleProfile googleProfile = null;
+
+        try{
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
+
+            googleProfile = new GoogleProfile().builder()
+                    .nickname((String) jsonObject.get("name"))
+                    .profile_image((String) jsonObject.get("picture"))
+                    .id((String) jsonObject.get("id"))
+                    .email((String) jsonObject.get("email"))
+                    .build();
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new Exception();
+        }
+
+        return new User().builder()
+                .account("Google" + "_" + googleProfile.getId())
+                .sns_email(googleProfile.getEmail())
+                .profile(googleProfile.getProfile_image())
+                .is_auth((short) 1)
+                .nickname("Google" + "_" + googleProfile.getId())
+                .build();
+    }
+
     private User kakaoProfileParsing(ResponseEntity<String> response) throws Exception {
 
-        KakaoProfile kakaoProfile = new KakaoProfile();
+        KakaoProfile kakaoProfile = null;
 
         try{
             JSONParser jsonParser = new JSONParser();
@@ -206,24 +302,25 @@ public class UserServiceImpl implements UserService {
             JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
             JSONObject profile = (JSONObject) kakaoAccount.get("profile");
 
-            kakaoProfile.setNickname((String) profile.get("nickname"));
-            kakaoProfile.setProfile_image((String) profile.get("profile_image_url"));
-            kakaoProfile.setId(((Long) jsonObject.get("id")).toString());
-            kakaoProfile.setEmail((String) kakaoAccount.get("email"));
+            kakaoProfile = new KakaoProfile().builder()
+                    .nickname((String) profile.get("nickname"))
+                    .profile_image((String) profile.get("profile_image_url"))
+                    .id(((Long) jsonObject.get("id")).toString())
+                    .email((String) kakaoAccount.get("email"))
+                    .build();
 
         } catch (ParseException e) {
             e.printStackTrace();
             throw new Exception();
         }
 
-        User user = new User();
-        user.setAccount("Kakao" + "_" + kakaoProfile.getId());
-        user.setNickname(kakaoProfile.getEmail() + "_" + kakaoProfile.getId());
-        user.setSns_email(kakaoProfile.getEmail());
-        user.setPassword(kakaoProfile.getProfile_image());
-        user.setIs_auth((short) 1);
-
-        return user;
+        return new User().builder()
+                .account("Kakao" + "_" + kakaoProfile.getId())
+                .sns_email(kakaoProfile.getEmail())
+                .profile(kakaoProfile.getProfile_image())
+                .is_auth((short) 1)
+                .nickname("Kakao" + "_" + kakaoProfile.getId())
+                .build();
     }
 
     private User naverProfileParsing(ResponseEntity<String> response) throws Exception {
@@ -236,7 +333,7 @@ public class UserServiceImpl implements UserService {
             naverUser = objectMapper.readValue(jsonObject.get("response").toString(), NaverUser.class);
             JSONObject response_obj = (JSONObject) jsonObject.get("response");
             String url = (String) response_obj.get("profile_image");
-            naverUser.setProfileImage(url);
+            naverUser.setProfile_image(url);
         } catch (ParseException e) {
             e.printStackTrace();
             throw new Exception();
@@ -245,13 +342,12 @@ public class UserServiceImpl implements UserService {
             throw new Exception();
         }
 
-        User user = new User();
-        user.setAccount("Naver" + "_" + naverUser.getId());
-        user.setSns_email(naverUser.getEmail());
-        user.setProfile(naverUser.getProfileImage());
-        user.setIs_auth((short) 1);
-        user.setNickname(naverUser.getEmail() + "_" + naverUser.getId());
-
-        return user;
+        return new User().builder()
+                .account("Naver" + "_" + naverUser.getId())
+                .sns_email(naverUser.getEmail())
+                .profile(naverUser.getProfile_image())
+                .is_auth((short) 1)
+                .nickname("Naver" + "_" + naverUser.getId())
+                .build();
     }
 }
