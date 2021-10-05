@@ -5,7 +5,8 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class User {
     private Long id;

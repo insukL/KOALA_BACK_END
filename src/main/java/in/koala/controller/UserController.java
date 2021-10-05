@@ -42,7 +42,7 @@ public class UserController {
         }
     }
 
-    @ApiOperation(value = "sns 로그인 요청", notes = "sns 로그인을 요청하는 api 입니다. 원하는 sns 를 path 에 넣으시면 됩니다.\nswagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
+    @ApiOperation(value = "sns 로그인 요청", notes = "sns 로그인을 요청하는 api 입니다. 원하는 sns 를 path 에 넣으시면 됩니다. swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
     @GetMapping(value="/{snsType}")
     public void requestSnsLogin(@PathVariable(name = "snsType") String snsType) throws Exception {
         userService.requestSnsLogin(snsType);
@@ -56,6 +56,6 @@ public class UserController {
 
     @PostMapping(value="/login")
     public ResponseEntity login(@RequestBody User user){
-        return null;
+        return new ResponseEntity(userService.login(user), HttpStatus.OK);
     }
 }

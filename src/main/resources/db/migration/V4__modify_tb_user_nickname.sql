@@ -1,1 +1,1 @@
-DROP INDEX sns_email ON USER;
+DROP INDEX sns_email ON user;

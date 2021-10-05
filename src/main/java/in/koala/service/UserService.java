@@ -1,7 +1,6 @@
 package in.koala.service;
 
 import in.koala.domain.User;
-import in.koala.domain.naverLogin.NaverCallBack;
 
 import java.io.IOException;
 import java.util.Map;
