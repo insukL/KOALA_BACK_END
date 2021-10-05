@@ -1,23 +1,21 @@
 package in.koala.serviceImpl;
 
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.User;
 import in.koala.domain.googleLogin.GoogleProfile;
 import in.koala.domain.kakaoLogin.KakaoProfile;
-import in.koala.domain.naverLogin.NaverCallBack;
-import in.koala.domain.naverLogin.NaverToken;
 import in.koala.domain.naverLogin.NaverUser;
 import in.koala.mapper.UserMapper;
 import in.koala.service.UserService;
+import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,10 +26,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +36,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final HttpServletResponse response;
+    private final Jwt jwt;
 
     @Value("${naver.client_id}")
     private String naverClientId;
@@ -109,6 +105,7 @@ public class UserServiceImpl implements UserService {
         String accessTokenUri = null;
         String profileUri = null;
 
+        //sns별 헤더 생성
         if(snsType.equals("naver")){
             headers.add("Content-type", "application/x-www-form-urlencoded");
 
@@ -142,12 +139,12 @@ public class UserServiceImpl implements UserService {
             profileUri = googleProfileUri;
         }
 
-        String accessToken = getAccessToken(new HttpEntity<>(params, headers), accessTokenUri);
+        String accessToken = requestAccessToken(new HttpEntity<>(params, headers), accessTokenUri);
 
         headers.clear();
         headers.add("Authorization", "Bearer " + accessToken);
 
-        User user = getUserProfile(new HttpEntity<>(headers), profileUri, snsType);
+        User user = requestUserProfile(new HttpEntity<>(headers), profileUri, snsType);
 
         Long id = userMapper.getIdByAccount(user.getAccount());
 
@@ -196,20 +193,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> login(User user) {
-        return null;
+        User loginUser = userMapper.getUserByAccount(user.getAccount());
+
+        if(loginUser == null);
+
+        if(BCrypt.checkpw(loginUser.getPassword(), user.getPassword()) == false);
+
+        return generateToken(loginUser.getId());
     }
 
-    private Map generateToken(Long id){
+    private Map<String, String> generateToken(Long id){
         Map<String, String> token = new HashMap<>();
 
-        token.put("access_token",  "Need to make access_token");
-        token.put("refresh_token", "Need to make refresh_token");
+        token.put("access_token", jwt.generateToken(id, "access_token"));
+        token.put("refresh_token", jwt.generateToken(id, "refresh_token"));
 
         return token;
     }
 
     // 각 sns 서비스에서 access_token 을 요청, 반환받은 json 객체에서 access_token 을 파싱하여 반환
-    private String getAccessToken(HttpEntity<MultiValueMap<String, String>> request, String uri){
+    private String requestAccessToken(HttpEntity<MultiValueMap<String, String>> request, String uri){
         RestTemplate rt = new RestTemplate();
 
         ResponseEntity<String> token = rt.exchange(
@@ -237,7 +240,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // 유저 프로파일을 sns 서비스에 요청, 반환받은 json 객체를 sns 서비스에 맞게 파싱하여 User 객체 생성 후 반환
-    private User getUserProfile(HttpEntity<MultiValueMap<String, String>> request, String uri, String snsType) throws Exception {
+    private User requestUserProfile(HttpEntity<MultiValueMap<String, String>> request, String uri, String snsType) throws Exception {
         RestTemplate rt = new RestTemplate();
 
         ResponseEntity<String> response = rt.exchange(
