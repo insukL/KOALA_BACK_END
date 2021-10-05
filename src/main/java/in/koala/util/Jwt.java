@@ -16,6 +16,12 @@ public class Jwt {
     @Value("${spring.jwt.secret}")
     private String key;
 
+    @Value("${spring.jwt.access-token")
+    private String accessToken;
+
+    @Value("${spring.jwt.refresh-token}")
+    private String refreshToken;
+
     public String generateToken(Long id, String sub){
 
         Map<String, Object> headers = new HashMap<>();
@@ -28,10 +34,10 @@ public class Jwt {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
-        if( sub.equals("access_token")) {
+        if( sub.equals(accessToken)) {
             calendar.add(Calendar.HOUR_OF_DAY, 24);
         }
-        else{
+        else if(sub.equals(refreshToken)){
             calendar.add(Calendar.DAY_OF_YEAR, 14);
         }
         Date exp = calendar.getTime();

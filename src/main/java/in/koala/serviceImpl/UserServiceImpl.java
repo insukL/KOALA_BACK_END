@@ -89,6 +89,12 @@ public class UserServiceImpl implements UserService {
     @Value("${google.login-request-uri}")
     private String googleLoginRequestUri;
 
+    @Value("${spring.jwt.access-token")
+    private String accessToken;
+
+    @Value("${spring.jwt.refresh-token")
+    private String refreshToken;
+
     @Override
     public String test() {
         return userMapper.test();
@@ -205,8 +211,8 @@ public class UserServiceImpl implements UserService {
     private Map<String, String> generateToken(Long id){
         Map<String, String> token = new HashMap<>();
 
-        token.put("access_token", jwt.generateToken(id, "access_token"));
-        token.put("refresh_token", jwt.generateToken(id, "refresh_token"));
+        token.put("access_token", jwt.generateToken(id, accessToken));
+        token.put("refresh_token", jwt.generateToken(id, refreshToken));
 
         return token;
     }
