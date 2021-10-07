@@ -11,4 +11,5 @@ public interface UserService {
     Map<String, String> login(User user);
     User signUp(User user);
     void requestSnsLogin(String snsType) throws Exception;
+    User getMyInfo();
 }

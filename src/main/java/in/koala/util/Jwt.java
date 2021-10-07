@@ -16,7 +16,7 @@ public class Jwt {
     @Value("${spring.jwt.secret}")
     private String key;
 
-    @Value("${spring.jwt.access-token")
+    @Value("${spring.jwt.access-token}")
     private String accessToken;
 
     @Value("${spring.jwt.refresh-token}")
@@ -43,5 +43,9 @@ public class Jwt {
         Date exp = calendar.getTime();
 
         return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(exp).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
+    }
+
+    public boolean isValid(String token){
+        return true;
     }
 }

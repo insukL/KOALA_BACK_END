@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository;
 public interface UserMapper {
     String test();
     void signUp(User user);
+    void snsSignUp(User user);
     Long getIdByAccount(String email);
     User getUserByAccount(String account);
     User getUserById(Long id);
     Integer checkNickname(String nickname);
+
 }

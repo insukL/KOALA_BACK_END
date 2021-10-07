@@ -8,6 +8,8 @@ import in.koala.domain.User;
 import in.koala.domain.googleLogin.GoogleProfile;
 import in.koala.domain.kakaoLogin.KakaoProfile;
 import in.koala.domain.naverLogin.NaverUser;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
 import in.koala.service.UserService;
 import in.koala.util.Jwt;
@@ -25,7 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,10 +94,10 @@ public class UserServiceImpl implements UserService {
     @Value("${google.login-request-uri}")
     private String googleLoginRequestUri;
 
-    @Value("${spring.jwt.access-token")
+    @Value("${spring.jwt.access-token}")
     private String accessToken;
 
-    @Value("${spring.jwt.refresh-token")
+    @Value("${spring.jwt.refresh-token}")
     private String refreshToken;
 
     @Override
@@ -145,20 +150,25 @@ public class UserServiceImpl implements UserService {
             profileUri = googleProfileUri;
         }
 
+        // 각 oauth2 제공하는 서비스 회사에 accessToken 요청
         String accessToken = requestAccessToken(new HttpEntity<>(params, headers), accessTokenUri);
+
 
         headers.clear();
         headers.add("Authorization", "Bearer " + accessToken);
 
+        // accessToken 을 이용하여 각 oauth2 제공하는 서비스 회사에 유저정보 요청
         User user = requestUserProfile(new HttpEntity<>(headers), profileUri, snsType);
 
         Long id = userMapper.getIdByAccount(user.getAccount());
 
-        if(id == null) this.signUp(user);
+        // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
+        if(id == null) userMapper.snsSignUp(user);
 
         return generateToken(id);
     }
 
+    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
     @Override
     public void requestSnsLogin(String snsType) throws Exception {
         String uri = null;
@@ -179,7 +189,7 @@ public class UserServiceImpl implements UserService {
                     "&redirect_uri=" + googleRedirectUri;
         }
 
-        System.out.println(uri);
+        //System.out.println(uri);
         response.sendRedirect(uri);
     }
 
@@ -187,11 +197,15 @@ public class UserServiceImpl implements UserService {
     public User signUp(User user) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
-        if(selectUser != null);
+        // 해당 계정명이 이미 존재한다면 예외처리
+        if(selectUser != null) throw new NonCriticalException(ErrorMessage.ACCOUNT_ALREADY_EXIST);
 
-        if(userMapper.checkNickname(user.getNickname()) >= 1);
+        // 해당 닉네임이 이미 존재한다면 예외처리
+        if(userMapper.checkNickname(user.getNickname()) >= 1) throw new NonCriticalException(ErrorMessage.NICKNAME_ALREADY_EXIST);
 
+        // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+        
         userMapper.signUp(user);
 
         return userMapper.getUserById(user.getId());
@@ -201,11 +215,32 @@ public class UserServiceImpl implements UserService {
     public Map<String, String> login(User user) {
         User loginUser = userMapper.getUserByAccount(user.getAccount());
 
-        if(loginUser == null);
+        // 해당 계정이 존재하지 않는다면 예외처리
+        if(loginUser == null) throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
 
-        if(BCrypt.checkpw(loginUser.getPassword(), user.getPassword()) == false);
+        // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
+        if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
         return generateToken(loginUser.getId());
+    }
+
+    @Override
+    public User getMyInfo() {
+        Long id = getLoginUserId();
+
+        User user = userMapper.getUserById(id);
+
+        if(user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+
+        return user;
+    }
+
+
+    private Long getLoginUserId(){
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String token = request.getHeader("Authorization");
+
+        return null;
     }
 
     private Map<String, String> generateToken(Long id){

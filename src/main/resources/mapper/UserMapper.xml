@@ -4,8 +4,16 @@
 
 
     <insert id="signUp" parameterType="in.koala.domain.User">
-        INSERT INTO user(nickname, account, password, find_email, sns_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{sns_email}, #{profile}, DEFAULT, #{is_auth}, DEFAULT, DEFAULT)
+        INSERT INTO user(nickname, account, password, find_email, profile, user_type, is_auth, created_at, updated_at)
+        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{profile}, DEFAULT, DEFAULT , DEFAULT, DEFAULT)
+        <selectKey keyProperty="id" resultType="Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <insert id="snsSignUp" parameterType="in.koala.domain.User">
+        INSERT INTO user(nickname, account, sns_email, profile, user_type, is_auth, created_at, updated_at)
+        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, DEFAULT, #{is_auth}, DEFAULT, DEFAULT)
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
         </selectKey>
