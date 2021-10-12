@@ -9,48 +9,69 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@Getter
 public class KakaoLogin implements SnsLoginService {
-    @Value("${kakao.restkey}")
-    private String kakaoRestApiKey;
+    @Value("${kakao.client-id}")
+    private String client_id;
 
     @Value("${kakao.redirect-uri}")
-    private String kakaoRedirectUri;
+    private String redirectUri;
 
     @Value("${kakao.access-token-uri}")
-    private String kakaoAccessTokenUri;
+    private String accessTokenUri;
 
     @Value("${kakao.profile-uri}")
-    private String kakaoProfileUri;
+    private String profileUri;
 
     @Value("${kakao.login-request-uri}")
-    private String kakaoLoginRequestUri;
+    private String loginRequestUri;
+
 
     @Override
-    public HttpEntity getSnsHttpEntity(String code) {
+    public Map requestUserProfile(String code) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        RestTemplate rt = new RestTemplate();
 
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", kakaoRestApiKey);
-        params.add("redirect_uri", kakaoRedirectUri);
-        params.add("code", code);
+        ResponseEntity<String> response = rt.exchange(
+                profileUri,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
 
-        return new HttpEntity<>(params, headers);
+        return profileParsing(response);
     }
 
-    private Map<String, String> kakaoProfileParsing(ResponseEntity<String> response) throws Exception {
+    @Override
+    public String getRedirectUri() {
+        Map<String, String> map = new HashMap<>();
+
+        map.put("client_id", client_id);
+        map.put("redirect_uri", redirectUri);
+
+        String uri = loginRequestUri;
+
+        for(String key : map.keySet()){
+            uri += "&" + key + "=" + map.get(key);
+        }
+
+        return uri;
+    }
+
+    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
 
         KakaoProfile kakaoProfile = null;
 
@@ -80,5 +101,20 @@ public class KakaoLogin implements SnsLoginService {
         parsedProfile.put("nickname", "Kakao" + "_" + kakaoProfile.getId());
 
         return parsedProfile;
+    }
+
+    @Override
+    public HttpEntity getSnsHttpEntity(String code) {
+        HttpHeaders headers = new HttpHeaders();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", client_id);
+        params.add("redirect_uri", redirectUri);
+        params.add("code", code);
+
+        return new HttpEntity<>(params, headers);
     }
 }

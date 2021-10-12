@@ -1,5 +1,6 @@
 package in.koala.serviceImpl.sns;
 
+import in.koala.domain.User;
 import in.koala.domain.googleLogin.GoogleProfile;
 import in.koala.service.SnsLoginService;
 import lombok.Getter;
@@ -8,10 +9,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,37 +24,58 @@ import java.util.Map;
 @Getter
 public class GoogleLogin implements SnsLoginService {
     @Value("${google.client-id}")
-    private String googleClientId;
+    private String clientId;
 
     @Value("${google.client-secret}")
-    private String googleClientSecret;
+    private String clientSecret;
 
     @Value("${google.access-token-uri}")
-    private String googleAccessTokenUri;
+    private String accessTokenUri;
 
     @Value("${google.profile-uri}")
-    private String googleProfileUri;
+    private String profileUri;
 
     @Value("${google.redirect-uri}")
-    private String googleRedirectUri;
+    private String redirectUri;
 
     @Value("${google.login-request-uri}")
-    private String googleLoginRequestUri;
+    private String loginRequestUri;
 
     @Override
-    public HttpEntity getSnsHttpEntity(String code) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    public Map requestUserProfile(String code) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        RestTemplate rt = new RestTemplate();
 
-        params.add("code", code);
-        params.add("client_id", googleClientId);
-        params.add("client_secret", googleClientSecret);
-        params.add("redirect_uri", googleRedirectUri);
-        params.add("grant_type", "authorization_code");
+        headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        return new HttpEntity<>(params);
+        ResponseEntity<String> response = rt.exchange(
+                profileUri,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        return profileParsing(response);
     }
 
-    private Map<String, String> googleProfileParsing(ResponseEntity<String> response) throws Exception{
+    @Override
+    public String getRedirectUri() {
+        Map<String, String> map = new HashMap<>();
+
+        map.put("client_id", clientId);
+        map.put("redirect_uri", redirectUri);
+
+        String uri = loginRequestUri;
+
+        for(String key : map.keySet()){
+            uri += "&" + key + "=" + map.get(key);
+        }
+
+        return uri;
+    }
+
+    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
         GoogleProfile googleProfile = null;
 
         try{
@@ -77,5 +102,18 @@ public class GoogleLogin implements SnsLoginService {
         parsedProfile.put("nickname", "Google" + "_" + googleProfile.getId());
 
         return parsedProfile;
+    }
+
+    @Override
+    public HttpEntity getSnsHttpEntity(String code) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        params.add("code", code);
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("redirect_uri", redirectUri);
+        params.add("grant_type", "authorization_code");
+
+        return new HttpEntity<>(params);
     }
 }

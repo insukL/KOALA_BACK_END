@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.User;
 import in.koala.domain.naverLogin.NaverUser;
 import in.koala.service.SnsLoginService;
-import lombok.Getter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -25,100 +24,74 @@ import java.util.Map;
 
 @Service
 public class NaverLogin implements SnsLoginService {
-    @Value("${naver.client_id}")
-    private String naverClientId;
+    @Value("${naver.client-id}")
+    private String clientId;
 
     @Value("${naver.client_secret}")
-    private String naverClientSecret;
+    private String clientSecret;
 
     @Value("${naver.access-token-uri}")
-    private String naverAccessTokenUri;
+    private String accessTokenUri;
 
     @Value("${naver.profile-uri}")
-    private String naverProfileUri;
+    private String profileUri;
 
     @Value("${naver.redirect-uri}")
-    private String naverRedirectUri;
+    private String redirectUri;
 
     @Value("${naver.login-request-uri}")
-    private String naverLoginRequestUri;
+    private String loginRequestUri;
 
     @Override
     public String getRedirectUri() {
-        return naverLoginRequestUri +
-                "&client_id=" + naverClientId +
-                "&redirect_uri=" + naverRedirectUri;
-    }
+        Map<String, String> map = new HashMap<>();
 
-    @Override
-    public String requestAccessToken(String code) {
-            RestTemplate rt = new RestTemplate();
+        map.put("client_id", clientId);
+        map.put("redirect_uri", redirectUri);
 
-            ResponseEntity<String> token = rt.exchange(
-                    naverAccessTokenUri,
-                    HttpMethod.POST,
-                    getSnsHttpEntity(code),
-                    String.class
-            );
+        String uri = loginRequestUri;
 
-            String accessToken = null;
-
-            try{
-                JSONParser jsonParser = new JSONParser();
-                JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-                accessToken = jsonObject.get("access_token").toString();
-
-            } catch(ParseException e){
-                e.printStackTrace();
-            }
-
-            return accessToken;
+        for(String key : map.keySet()){
+            uri += "&" + key + "=" + map.get(key);
         }
+
+        return uri;
     }
 
     @Override
-    public User requestUserProfile(String code) throws Exception {
+    public Map requestUserProfile(String code) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
 
-        headers.add("Authorization", "Bearer " + requestAccessToken(code));
+        headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = rt.exchange(
-                naverProfileUri,
+                profileUri,
                 HttpMethod.GET,
                 request,
                 String.class
         );
 
-        Map<String, String> parsedProfile = naverProfileParsing(response);
-
-        return User.builder()
-                .account(parsedProfile.get("account"))
-                .sns_email(parsedProfile.get("sns_email"))
-                .profile(parsedProfile.get("profile"))
-                .nickname(parsedProfile.get("nickname"))
-                .is_auth((short) 1)
-                .build();
+        return  profileParsing(response);
     }
 
-
-    private HttpEntity getSnsHttpEntity(String code) {
+    @Override
+    public HttpEntity getSnsHttpEntity(String code) {
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
         headers.add("Content-type", "application/x-www-form-urlencoded");
 
         params.add("grant_type", "authorization_code");
-        params.add("client_id", naverClientId);
-        params.add("client_secret", naverClientSecret);
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
         params.add("code", code);
 
         return new HttpEntity<>(headers, params);
     }
 
-    private Map<String, String> naverProfileParsing(ResponseEntity<String> response) throws Exception {
+    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
         NaverUser naverUser;
 
         try {

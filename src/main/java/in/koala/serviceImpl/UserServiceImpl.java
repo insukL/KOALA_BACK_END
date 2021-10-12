@@ -1,13 +1,6 @@
 package in.koala.serviceImpl;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.User;
-import in.koala.domain.googleLogin.GoogleProfile;
-import in.koala.domain.kakaoLogin.KakaoProfile;
-import in.koala.domain.naverLogin.NaverUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
@@ -18,19 +11,9 @@ import in.koala.serviceImpl.sns.KakaoLogin;
 import in.koala.serviceImpl.sns.NaverLogin;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -59,18 +42,27 @@ public class UserServiceImpl implements UserService {
     }
 
     // snstype을 열거형으로 바꾸기
-    // snstype에 따라 달라지는 코드들은 따로 sns 별로 인터페이스 생성 후 구현하는 클래스 만들기
     // oauth를 user와 분리하여 따로 controller와 service 만드는 것도 고려
     @Override
     public Map<String, String> snsLogin(String code, String snsType) throws Exception {
+        // sns 별 인터페이스 구현체 변경
         SnsLoginService snsLogin = initSnsService(snsType);
 
-        User user = snsLogin.requestUserProfile(code);
+        // SnsLoginService 클래스에 유저 정보요청
+        Map<String, String> parsedProfile = snsLogin.requestUserProfile(code);
 
-        Long id = userMapper.getIdByAccount(user.getAccount());
+        User snsUser = User.builder()
+                .account(parsedProfile.get("account"))
+                .sns_email(parsedProfile.get("sns_email"))
+                .profile(parsedProfile.get("profile"))
+                .nickname(parsedProfile.get("nickname"))
+                .is_auth((short) 1)
+                .build();
+
+        Long id = userMapper.getIdByAccount(snsUser.getAccount());
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
-        if(id == null) userMapper.snsSignUp(user);
+        if(id == null) userMapper.snsSignUp(snsUser);
 
         return generateToken(id);
     }
@@ -78,21 +70,7 @@ public class UserServiceImpl implements UserService {
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다. swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
     public void requestSnsLogin(String snsType) throws Exception {
-        String uri = null;
         SnsLoginService snsLogin = initSnsService(snsType);
-
-        if(snsType.equals("naver")) {
-
-        } else if(snsType.equals("kakao")){
-            uri = kakaoLoginRequestUri +
-                    "&client_id=" + kakaoRestApiKey +
-                    "&redirect_uri=" + kakaoRedirectUri;
-
-        } else if(snsType.equals("google")){
-            uri = googleLoginRequestUri +
-                    "&client_id=" + googleClientId +
-                    "&redirect_uri=" + googleRedirectUri;
-        }
 
         //System.out.println(uri);
         response.sendRedirect(snsLogin.getRedirectUri());
