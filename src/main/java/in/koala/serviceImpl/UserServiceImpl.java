@@ -11,7 +11,11 @@ import in.koala.domain.naverLogin.NaverUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
+import in.koala.service.SnsLoginService;
 import in.koala.service.UserService;
+import in.koala.serviceImpl.sns.GoogleLogin;
+import in.koala.serviceImpl.sns.KakaoLogin;
+import in.koala.serviceImpl.sns.NaverLogin;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
@@ -43,57 +47,6 @@ public class UserServiceImpl implements UserService {
     private final HttpServletResponse response;
     private final Jwt jwt;
 
-    @Value("${naver.client_id}")
-    private String naverClientId;
-
-    @Value("${naver.client_secret}")
-    private String naverClientSecret;
-
-    @Value("${naver.access-token-uri}")
-    private String naverAccessTokenUri;
-
-    @Value("${naver.profile-uri}")
-    private String naverProfileUri;
-
-    @Value("${naver.redirect-uri}")
-    private String naverRedirectUri;
-
-    @Value("${naver.login-request-uri}")
-    private String naverLoginRequestUri;
-
-    @Value("${kakao.restkey}")
-    private String kakaoRestApiKey;
-
-    @Value("${kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-
-    @Value("${kakao.access-token-uri}")
-    private String kakaoAccessTokenUri;
-
-    @Value("${kakao.profile-uri}")
-    private String kakaoProfileUri;
-
-    @Value("${kakao.login-request-uri}")
-    private String kakaoLoginRequestUri;
-
-    @Value("${google.client-id}")
-    private String googleClientId;
-
-    @Value("${google.client-secret}")
-    private String googleClientSecret;
-
-    @Value("${google.access-token-uri}")
-    private String googleAccessTokenUri;
-
-    @Value("${google.profile-uri}")
-    private String googleProfileUri;
-
-    @Value("${google.redirect-uri}")
-    private String googleRedirectUri;
-
-    @Value("${google.login-request-uri}")
-    private String googleLoginRequestUri;
-
     @Value("${spring.jwt.access-token}")
     private String accessToken;
 
@@ -110,55 +63,9 @@ public class UserServiceImpl implements UserService {
     // oauth를 user와 분리하여 따로 controller와 service 만드는 것도 고려
     @Override
     public Map<String, String> snsLogin(String code, String snsType) throws Exception {
+        SnsLoginService snsLogin = initSnsService(snsType);
 
-        HttpHeaders headers = new HttpHeaders();
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        String accessTokenUri = null;
-        String profileUri = null;
-
-        //sns별 헤더 생성
-        if(snsType.equals("naver")){
-            headers.add("Content-type", "application/x-www-form-urlencoded");
-
-            params.add("grant_type", "authorization_code");
-            params.add("client_id", naverClientId);
-            params.add("client_secret", naverClientSecret);
-            params.add("code", code);
-
-            accessTokenUri = naverAccessTokenUri;
-            profileUri = naverProfileUri;
-
-        } else if(snsType.equals("kakao")){
-            headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-            params.add("grant_type", "authorization_code");
-            params.add("client_id", kakaoRestApiKey);
-            params.add("redirect_uri", kakaoRedirectUri);
-            params.add("code", code);
-
-            accessTokenUri = kakaoAccessTokenUri;
-            profileUri = kakaoProfileUri;
-
-        } else if(snsType.equals("google")){
-            params.add("code", code);
-            params.add("client_id", googleClientId);
-            params.add("client_secret", googleClientSecret);
-            params.add("redirect_uri", googleRedirectUri);
-            params.add("grant_type", "authorization_code");
-
-            accessTokenUri = googleAccessTokenUri;
-            profileUri = googleProfileUri;
-        }
-
-        // 각 oauth2 제공하는 서비스 회사에 accessToken 요청
-        String accessToken = requestAccessToken(new HttpEntity<>(params, headers), accessTokenUri);
-
-
-        headers.clear();
-        headers.add("Authorization", "Bearer " + accessToken);
-
-        // accessToken 을 이용하여 각 oauth2 제공하는 서비스 회사에 유저정보 요청
-        User user = requestUserProfile(new HttpEntity<>(headers), profileUri, snsType);
+        User user = snsLogin.requestUserProfile(code);
 
         Long id = userMapper.getIdByAccount(user.getAccount());
 
@@ -168,15 +75,13 @@ public class UserServiceImpl implements UserService {
         return generateToken(id);
     }
 
-    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
+    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다. swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
     public void requestSnsLogin(String snsType) throws Exception {
         String uri = null;
+        SnsLoginService snsLogin = initSnsService(snsType);
 
         if(snsType.equals("naver")) {
-            uri = naverLoginRequestUri +
-                    "&client_id=" + naverClientId +
-                    "&redirect_uri=" + naverRedirectUri;
 
         } else if(snsType.equals("kakao")){
             uri = kakaoLoginRequestUri +
@@ -190,7 +95,7 @@ public class UserServiceImpl implements UserService {
         }
 
         //System.out.println(uri);
-        response.sendRedirect(uri);
+        response.sendRedirect(snsLogin.getRedirectUri());
     }
 
     @Override
@@ -252,146 +157,18 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
-    // 각 sns 서비스에서 access_token 을 요청, 반환받은 json 객체에서 access_token 을 파싱하여 반환
-    private String requestAccessToken(HttpEntity<MultiValueMap<String, String>> request, String uri){
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> token = rt.exchange(
-                uri,
-                HttpMethod.POST,
-                request,
-                String.class
-        );
-
-        System.out.println(token);
-
-        String access_token = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-            access_token = jsonObject.get("access_token").toString();
-
-        } catch(ParseException e){
-            e.printStackTrace();
-        }
-
-        return access_token;
-    }
-
-    // 유저 프로파일을 sns 서비스에 요청, 반환받은 json 객체를 sns 서비스에 맞게 파싱하여 User 객체 생성 후 반환
-    private User requestUserProfile(HttpEntity<MultiValueMap<String, String>> request, String uri, String snsType) throws Exception {
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> response = rt.exchange(
-                uri,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
-
-        System.out.println(response);
-
-        User user = null;
-
+    private SnsLoginService initSnsService(String snsType){
+        //sns별 헤더 생성
         if(snsType.equals("naver")){
-            user = naverProfileParsing(response);
+            return new NaverLogin();
 
         } else if(snsType.equals("kakao")){
-            user = kakaoProfileParsing(response);
+            return new KakaoLogin();
 
         } else if(snsType.equals("google")){
-            user = googleProfileParsing(response);
+            return new GoogleLogin();
+        } else{
+            throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
         }
-
-        return user;
-    }
-
-    private User googleProfileParsing(ResponseEntity<String> response) throws Exception{
-        GoogleProfile googleProfile = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
-
-            googleProfile = new GoogleProfile().builder()
-                    .nickname((String) jsonObject.get("name"))
-                    .profile_image((String) jsonObject.get("picture"))
-                    .id((String) jsonObject.get("id"))
-                    .email((String) jsonObject.get("email"))
-                    .build();
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new Exception();
-        }
-
-        return new User().builder()
-                .account("Google" + "_" + googleProfile.getId())
-                .sns_email(googleProfile.getEmail())
-                .profile(googleProfile.getProfile_image())
-                .is_auth((short) 1)
-                .nickname("Google" + "_" + googleProfile.getId())
-                .build();
-    }
-
-    private User kakaoProfileParsing(ResponseEntity<String> response) throws Exception {
-
-        KakaoProfile kakaoProfile = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
-            JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
-            JSONObject profile = (JSONObject) kakaoAccount.get("profile");
-
-            kakaoProfile = new KakaoProfile().builder()
-                    .nickname((String) profile.get("nickname"))
-                    .profile_image((String) profile.get("profile_image_url"))
-                    .id(((Long) jsonObject.get("id")).toString())
-                    .email((String) kakaoAccount.get("email"))
-                    .build();
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new Exception();
-        }
-
-        return new User().builder()
-                .account("Kakao" + "_" + kakaoProfile.getId())
-                .sns_email(kakaoProfile.getEmail())
-                .profile(kakaoProfile.getProfile_image())
-                .is_auth((short) 1)
-                .nickname("Kakao" + "_" + kakaoProfile.getId())
-                .build();
-    }
-
-    private User naverProfileParsing(ResponseEntity<String> response) throws Exception {
-        NaverUser naverUser = null;
-
-        try {
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
-            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            naverUser = objectMapper.readValue(jsonObject.get("response").toString(), NaverUser.class);
-            JSONObject response_obj = (JSONObject) jsonObject.get("response");
-            String url = (String) response_obj.get("profile_image");
-            naverUser.setProfile_image(url);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new Exception();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new Exception();
-        }
-
-        return new User().builder()
-                .account("Naver" + "_" + naverUser.getId())
-                .sns_email(naverUser.getEmail())
-                .profile(naverUser.getProfile_image())
-                .is_auth((short) 1)
-                .nickname("Naver" + "_" + naverUser.getId())
-                .build();
     }
 }

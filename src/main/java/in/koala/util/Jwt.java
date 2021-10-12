@@ -1,5 +1,7 @@
 package in.koala.util;
 
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +48,13 @@ public class Jwt {
     }
 
     public boolean isValid(String token){
+
+        if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
+        if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
+
+        String jwt = token.substring(8);
+
+        Jwts.parser()
         return true;
     }
 }

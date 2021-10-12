@@ -27,7 +27,10 @@ public enum ErrorMessage {
 	NAVER_LOGIN_ERROR(125, "네이버 로그인 오류"),
 	ACCOUNT_NOT_EXIST(126, "존재하지 않는 아이디입니다."),
 	WRONG_PASSWORD_EXCEPTION(127, "틀린 비밀번호입니다."),
-	USER_NOT_EXIST(128, "존재하지 않는 계정입니다")
+	USER_NOT_EXIST(128, "존재하지 않는 계정입니다"),
+	JWT_NOT_START_BEARER(127, "jwt 가 Bearer 로 시작하지 않습니다"),
+	JWT_NOT_EXIST(128, "jwt 이 존재하지 않습니다"),
+	SNSTYPE_NOT_VALID(129, "적절하지 않은 sns 요청입니다")
 	;
 
 	Integer code;
