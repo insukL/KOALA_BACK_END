@@ -54,7 +54,7 @@ public class Jwt {
 
         String jwt = token.substring(8);
 
-        Jwts.parser()
+        //Jwts.parser()
         return true;
     }
 }

@@ -1,8 +1,6 @@
 package in.koala.serviceImpl.sns;
 
 import in.koala.domain.kakaoLogin.KakaoProfile;
-import in.koala.service.SnsLoginService;
-import lombok.Getter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -20,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class KakaoLogin implements SnsLoginService {
+public class KakaoLogin implements SnsLogin {
     @Value("${kakao.client-id}")
-    private String client_id;
+    private String clientId;
 
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
@@ -59,7 +57,7 @@ public class KakaoLogin implements SnsLoginService {
     public String getRedirectUri() {
         Map<String, String> map = new HashMap<>();
 
-        map.put("client_id", client_id);
+        map.put("client_id", clientId);
         map.put("redirect_uri", redirectUri);
 
         String uri = loginRequestUri;
@@ -67,8 +65,13 @@ public class KakaoLogin implements SnsLoginService {
         for(String key : map.keySet()){
             uri += "&" + key + "=" + map.get(key);
         }
-
+        System.out.println(uri);
         return uri;
+    }
+
+    @Override
+    public String getSnsType() {
+        return "kakao";
     }
 
     private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
@@ -95,7 +98,7 @@ public class KakaoLogin implements SnsLoginService {
 
         Map<String, String> parsedProfile = new HashMap<>();
 
-        parsedProfile.put("accout", "Kakao" + "_" + kakaoProfile.getId());
+        parsedProfile.put("account", "Kakao" + "_" + kakaoProfile.getId());
         parsedProfile.put("sns_email", kakaoProfile.getEmail());
         parsedProfile.put("profile", kakaoProfile.getProfile_image());
         parsedProfile.put("nickname", "Kakao" + "_" + kakaoProfile.getId());
@@ -111,7 +114,7 @@ public class KakaoLogin implements SnsLoginService {
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         params.add("grant_type", "authorization_code");
-        params.add("client_id", client_id);
+        params.add("client_id", clientId);
         params.add("redirect_uri", redirectUri);
         params.add("code", code);
 

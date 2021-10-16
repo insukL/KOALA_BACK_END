@@ -44,7 +44,7 @@ public class UserController {
 
     @GetMapping(value="/my")
     public ResponseEntity getMyInfo(){
-        return null;
+        return new ResponseEntity<>(userService.getMyInfo(), HttpStatus.OK);
     }
 
 

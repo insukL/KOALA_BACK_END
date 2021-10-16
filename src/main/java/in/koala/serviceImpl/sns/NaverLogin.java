@@ -3,9 +3,7 @@ package in.koala.serviceImpl.sns;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import in.koala.domain.User;
 import in.koala.domain.naverLogin.NaverUser;
-import in.koala.service.SnsLoginService;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class NaverLogin implements SnsLoginService {
+public class NaverLogin implements SnsLogin {
     @Value("${naver.client-id}")
     private String clientId;
 
@@ -88,7 +86,12 @@ public class NaverLogin implements SnsLoginService {
         params.add("client_secret", clientSecret);
         params.add("code", code);
 
-        return new HttpEntity<>(headers, params);
+        return new HttpEntity<>(params, headers);
+    }
+
+    @Override
+    public String getSnsType() {
+        return "naver";
     }
 
     private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
@@ -112,7 +115,7 @@ public class NaverLogin implements SnsLoginService {
 
         Map<String, String> parsedProfile = new HashMap<>();
 
-        parsedProfile.put("accout", "Naver" + "_" + naverUser.getId());
+        parsedProfile.put("account", "Naver" + "_" + naverUser.getId());
         parsedProfile.put("sns_email", naverUser.getEmail());
         parsedProfile.put("profile", naverUser.getProfile_image());
         parsedProfile.put("nickname", "Naver" + "_" + naverUser.getId());

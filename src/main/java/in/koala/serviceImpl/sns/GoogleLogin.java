@@ -1,9 +1,6 @@
 package in.koala.serviceImpl.sns;
 
-import in.koala.domain.User;
 import in.koala.domain.googleLogin.GoogleProfile;
-import in.koala.service.SnsLoginService;
-import lombok.Getter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -21,8 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@Getter
-public class GoogleLogin implements SnsLoginService {
+public class GoogleLogin implements SnsLogin {
     @Value("${google.client-id}")
     private String clientId;
 
@@ -45,10 +41,10 @@ public class GoogleLogin implements SnsLoginService {
     public Map requestUserProfile(String code) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-
+        System.out.println("11111");
         headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
+        System.out.println("22222");
         ResponseEntity<String> response = rt.exchange(
                 profileUri,
                 HttpMethod.GET,
@@ -96,7 +92,7 @@ public class GoogleLogin implements SnsLoginService {
 
         Map<String, String> parsedProfile = new HashMap<>();
 
-        parsedProfile.put("accout", "Google" + "_" + googleProfile.getId());
+        parsedProfile.put("account", "Google" + "_" + googleProfile.getId());
         parsedProfile.put("sns_email", googleProfile.getEmail());
         parsedProfile.put("profile", googleProfile.getProfile_image());
         parsedProfile.put("nickname", "Google" + "_" + googleProfile.getId());
@@ -115,5 +111,10 @@ public class GoogleLogin implements SnsLoginService {
         params.add("grant_type", "authorization_code");
 
         return new HttpEntity<>(params);
+    }
+
+    @Override
+    public String getSnsType() {
+        return "google";
     }
 }

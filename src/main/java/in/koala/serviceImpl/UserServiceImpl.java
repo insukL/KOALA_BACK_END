@@ -4,13 +4,15 @@ import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
-import in.koala.service.SnsLoginService;
+import in.koala.serviceImpl.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.serviceImpl.sns.GoogleLogin;
 import in.koala.serviceImpl.sns.KakaoLogin;
 import in.koala.serviceImpl.sns.NaverLogin;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.var;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,16 +21,20 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final HttpServletResponse response;
     private final Jwt jwt;
+    private final List<SnsLogin> snsLoginList;
 
     @Value("${spring.jwt.access-token}")
     private String accessToken;
@@ -46,16 +52,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, String> snsLogin(String code, String snsType) throws Exception {
         // sns 별 인터페이스 구현체 변경
-        SnsLoginService snsLogin = initSnsService(snsType);
+        SnsLogin snsLogin = initSnsService(snsType);
 
         // SnsLoginService 클래스에 유저 정보요청
-        Map<String, String> parsedProfile = snsLogin.requestUserProfile(code);
+        Map<String, String> userProfile = snsLogin.requestUserProfile(code);
 
         User snsUser = User.builder()
-                .account(parsedProfile.get("account"))
-                .sns_email(parsedProfile.get("sns_email"))
-                .profile(parsedProfile.get("profile"))
-                .nickname(parsedProfile.get("nickname"))
+                .account(userProfile.get("account"))
+                .sns_email(userProfile.get("sns_email"))
+                .profile(userProfile.get("profile"))
+                .nickname(userProfile.get("nickname"))
                 .is_auth((short) 1)
                 .build();
 
@@ -70,7 +76,7 @@ public class UserServiceImpl implements UserService {
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다. swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
     public void requestSnsLogin(String snsType) throws Exception {
-        SnsLoginService snsLogin = initSnsService(snsType);
+        SnsLogin snsLogin = initSnsService(snsType);
 
         //System.out.println(uri);
         response.sendRedirect(snsLogin.getRedirectUri());
@@ -109,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getMyInfo() {
-        Long id = getLoginUserId();
+        Long id = getLoginUserIdFromToken();
 
         User user = userMapper.getUserById(id);
 
@@ -119,7 +125,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private Long getLoginUserId(){
+    private Long getLoginUserIdFromToken(){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
@@ -135,18 +141,12 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
-    private SnsLoginService initSnsService(String snsType){
-        //sns별 헤더 생성
-        if(snsType.equals("naver")){
-            return new NaverLogin();
+    private SnsLogin initSnsService(String snsType){
 
-        } else if(snsType.equals("kakao")){
-            return new KakaoLogin();
-
-        } else if(snsType.equals("google")){
-            return new GoogleLogin();
-        } else{
-            throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
+        for(val snsLogin : snsLoginList){
+            if(snsLogin.getSnsType().equals(snsType)) return snsLogin;
         }
+
+        throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
     }
 }
