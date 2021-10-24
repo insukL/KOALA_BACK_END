@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
 import in.koala.serviceImpl.sns.SnsLogin;
@@ -35,12 +36,6 @@ public class UserServiceImpl implements UserService {
     private final HttpServletResponse response;
     private final Jwt jwt;
     private final List<SnsLogin> snsLoginList;
-
-    @Value("${spring.jwt.access-token}")
-    private String accessToken;
-
-    @Value("${spring.jwt.refresh-token}")
-    private String refreshToken;
 
     @Override
     public String test() {
@@ -135,8 +130,8 @@ public class UserServiceImpl implements UserService {
     private Map<String, String> generateToken(Long id){
         Map<String, String> token = new HashMap<>();
 
-        token.put("access_token", jwt.generateToken(id, accessToken));
-        token.put("refresh_token", jwt.generateToken(id, refreshToken));
+        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS));
+        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH));
 
         return token;
     }

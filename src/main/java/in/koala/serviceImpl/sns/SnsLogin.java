@@ -21,36 +21,6 @@ public interface SnsLogin {
     String getRedirectUri();
     HttpEntity getSnsHttpEntity(String code);
     String getSnsType();
-
     // sns 사에 access token 요청하는 메서드
-    default String requestAccessToken(String code, String uri) {
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> token;
-
-        try {
-            token = rt.exchange(
-                    uri,
-                    HttpMethod.POST,
-                    getSnsHttpEntity(code),
-                    String.class
-            );
-        } catch(Exception e){
-            throw new CriticalException(ErrorMessage.ACCOUNT_ALREADY_EXIST);
-        }
-
-        String accessToken = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-            accessToken = jsonObject.get("access_token").toString();
-
-        } catch(ParseException e){
-            e.printStackTrace();
-        }
-
-        return accessToken;
-    }
+    String requestAccessToken(String code);
 }

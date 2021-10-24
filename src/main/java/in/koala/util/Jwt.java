@@ -1,6 +1,7 @@
 package in.koala.util;
 
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,13 +19,8 @@ public class Jwt {
     @Value("${spring.jwt.secret}")
     private String key;
 
-    @Value("${spring.jwt.access-token}")
-    private String accessToken;
 
-    @Value("${spring.jwt.refresh-token}")
-    private String refreshToken;
-
-    public String generateToken(Long id, String sub){
+    public String generateToken(Long id, TokenType tokenType){
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
@@ -32,14 +28,14 @@ public class Jwt {
 
         Map<String, Object> payloads = new HashMap<>();
         payloads.put("id", id );
-        payloads.put("sub", sub);
+        payloads.put("sub", "");
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
-        if( sub.equals(accessToken)) {
+        if( tokenType.equals(TokenType.ACCESS)) {
             calendar.add(Calendar.HOUR_OF_DAY, 24);
         }
-        else if(sub.equals(refreshToken)){
+        else if(tokenType.equals(TokenType.REFRESH)){
             calendar.add(Calendar.DAY_OF_YEAR, 14);
         }
         Date exp = calendar.getTime();

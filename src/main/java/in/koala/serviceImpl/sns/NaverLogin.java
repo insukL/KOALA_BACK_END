@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.naverLogin.NaverUser;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.CriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -61,7 +63,7 @@ public class NaverLogin implements SnsLogin {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
 
-        headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
+        headers.add("Authorization", "Bearer " + requestAccessToken(code));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = rt.exchange(
@@ -121,5 +123,37 @@ public class NaverLogin implements SnsLogin {
         parsedProfile.put("nickname", "Naver" + "_" + naverUser.getId());
 
         return parsedProfile;
+    }
+
+    @Override
+    public String requestAccessToken(String code) {
+        RestTemplate rt = new RestTemplate();
+
+        ResponseEntity<String> token;
+
+        try {
+            token = rt.exchange(
+                    accessTokenUri,
+                    HttpMethod.POST,
+                    getSnsHttpEntity(code),
+                    String.class
+            );
+        } catch(Exception e){
+            throw new CriticalException(ErrorMessage.NAVER_ACCESSTOKEN_REQUEST_ERROR);
+        }
+
+        String accessToken = null;
+
+        try{
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
+
+            accessToken = jsonObject.get("access_token").toString();
+
+        } catch(ParseException e){
+            e.printStackTrace();
+        }
+
+        return accessToken;
     }
 }

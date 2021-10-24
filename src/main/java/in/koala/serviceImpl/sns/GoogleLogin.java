@@ -1,6 +1,8 @@
 package in.koala.serviceImpl.sns;
 
 import in.koala.domain.googleLogin.GoogleProfile;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.CriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -41,10 +43,10 @@ public class GoogleLogin implements SnsLogin {
     public Map requestUserProfile(String code) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-        System.out.println("11111");
-        headers.add("Authorization", "Bearer " + requestAccessToken(code, accessTokenUri));
+
+        headers.add("Authorization", "Bearer " + requestAccessToken(code));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-        System.out.println("22222");
+
         ResponseEntity<String> response = rt.exchange(
                 profileUri,
                 HttpMethod.GET,
@@ -103,6 +105,7 @@ public class GoogleLogin implements SnsLogin {
     @Override
     public HttpEntity getSnsHttpEntity(String code) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        HttpHeaders headers = new HttpHeaders();
 
         params.add("code", code);
         params.add("client_id", clientId);
@@ -110,11 +113,44 @@ public class GoogleLogin implements SnsLogin {
         params.add("redirect_uri", redirectUri);
         params.add("grant_type", "authorization_code");
 
-        return new HttpEntity<>(params);
+        return new HttpEntity<>(params, headers);
     }
 
     @Override
     public String getSnsType() {
         return "google";
+    }
+
+    @Override
+    public String requestAccessToken(String code) {
+        RestTemplate rt = new RestTemplate();
+
+        ResponseEntity<String> token;
+
+        try {
+            token = rt.exchange(
+                    accessTokenUri,
+                    HttpMethod.POST,
+                    getSnsHttpEntity(code),
+                    String.class
+            );
+        } catch(Exception e){
+            e.printStackTrace();
+            throw new CriticalException(ErrorMessage.GOOGLE_ACCESSTOKEN_REQUEST_ERROR);
+        }
+
+        String accessToken = null;
+
+        try{
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
+
+            accessToken = jsonObject.get("access_token").toString();
+
+        } catch(ParseException e){
+            e.printStackTrace();
+        }
+
+        return accessToken;
     }
 }
