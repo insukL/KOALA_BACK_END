@@ -2,6 +2,7 @@ package in.koala.serviceImpl.sns;
 
 import in.koala.domain.kakaoLogin.KakaoProfile;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.SnsType;
 import in.koala.exception.CriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class KakaoLogin implements SnsLogin {
+public class KakaoLogin extends AbstractSnsLogin {
     @Value("${kakao.client-id}")
     private String clientId;
 
@@ -39,20 +40,7 @@ public class KakaoLogin implements SnsLogin {
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate rt = new RestTemplate();
-
-        headers.add("Authorization", "Bearer " + requestAccessToken(code));
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = rt.exchange(
-                profileUri,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
-
-        return profileParsing(response);
+        return this.requestUserProfile(code, profileUri);
     }
 
     @Override
@@ -61,24 +49,26 @@ public class KakaoLogin implements SnsLogin {
 
         map.put("client_id", clientId);
         map.put("redirect_uri", redirectUri);
+        map.put("response_type", "code");
 
         String uri = loginRequestUri;
 
         for(String key : map.keySet()){
             uri += "&" + key + "=" + map.get(key);
         }
-        System.out.println(uri);
+
         return uri;
     }
 
     @Override
-    public String getSnsType() {
-        return "kakao";
+    public SnsType getSnsType() {
+        return SnsType.KAKAO;
     }
 
-    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
+    @Override
+    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
 
-        KakaoProfile kakaoProfile = null;
+        Map<String, String> parsedProfile = new HashMap<>();
 
         try{
             JSONParser jsonParser = new JSONParser();
@@ -86,30 +76,21 @@ public class KakaoLogin implements SnsLogin {
             JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
             JSONObject profile = (JSONObject) kakaoAccount.get("profile");
 
-            kakaoProfile = new KakaoProfile().builder()
-                    .nickname((String) profile.get("nickname"))
-                    .profile_image((String) profile.get("profile_image_url"))
-                    .id(((Long) jsonObject.get("id")).toString())
-                    .email((String) kakaoAccount.get("email"))
-                    .build();
+            parsedProfile.put("account", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
+            parsedProfile.put("sns_email", (String) kakaoAccount.get("email"));
+            parsedProfile.put("profile", (String) profile.get("profile_image_url"));
+            parsedProfile.put("nickname", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
 
         } catch (ParseException e) {
             e.printStackTrace();
             throw new Exception();
         }
 
-        Map<String, String> parsedProfile = new HashMap<>();
-
-        parsedProfile.put("account", "Kakao" + "_" + kakaoProfile.getId());
-        parsedProfile.put("sns_email", kakaoProfile.getEmail());
-        parsedProfile.put("profile", kakaoProfile.getProfile_image());
-        parsedProfile.put("nickname", "Kakao" + "_" + kakaoProfile.getId());
-
         return parsedProfile;
     }
 
     @Override
-    public HttpEntity getSnsHttpEntity(String code) {
+    public HttpEntity getRequestAccessTokenHttpEntity(String code) {
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
@@ -125,33 +106,6 @@ public class KakaoLogin implements SnsLogin {
 
     @Override
     public String requestAccessToken(String code) {
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> token;
-
-        try {
-            token = rt.exchange(
-                    accessTokenUri,
-                    HttpMethod.POST,
-                    getSnsHttpEntity(code),
-                    String.class
-            );
-        } catch(Exception e){
-            throw new CriticalException(ErrorMessage.KAKAO_ACCESSTOKEN_REQUEST_ERROR);
-        }
-
-        String accessToken = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-            accessToken = jsonObject.get("access_token").toString();
-
-        } catch(ParseException e){
-            e.printStackTrace();
-        }
-
-        return accessToken;
+        return this.requestAccessToken(code, accessTokenUri);
     }
 }

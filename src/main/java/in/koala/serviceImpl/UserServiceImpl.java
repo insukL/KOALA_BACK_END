@@ -5,17 +5,12 @@ import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
-import in.koala.serviceImpl.sns.SnsLogin;
+import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
-import in.koala.serviceImpl.sns.GoogleLogin;
-import in.koala.serviceImpl.sns.KakaoLogin;
-import in.koala.serviceImpl.sns.NaverLogin;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import lombok.var;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -68,7 +63,8 @@ public class UserServiceImpl implements UserService {
         return generateToken(id);
     }
 
-    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다. swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
+    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
+    // swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
     public void requestSnsLogin(String snsType) throws Exception {
         SnsLogin snsLogin = initSnsService(snsType);

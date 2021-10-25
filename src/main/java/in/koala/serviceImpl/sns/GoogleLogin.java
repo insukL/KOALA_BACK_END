@@ -2,6 +2,7 @@ package in.koala.serviceImpl.sns;
 
 import in.koala.domain.googleLogin.GoogleProfile;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.SnsType;
 import in.koala.exception.CriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class GoogleLogin implements SnsLogin {
+public class GoogleLogin extends AbstractSnsLogin {
     @Value("${google.client-id}")
     private String clientId;
 
@@ -41,20 +42,7 @@ public class GoogleLogin implements SnsLogin {
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate rt = new RestTemplate();
-
-        headers.add("Authorization", "Bearer " + requestAccessToken(code));
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = rt.exchange(
-                profileUri,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
-
-        return profileParsing(response);
+        return this.requestUserProfile(code, profileUri);
     }
 
     @Override
@@ -63,6 +51,9 @@ public class GoogleLogin implements SnsLogin {
 
         map.put("client_id", clientId);
         map.put("redirect_uri", redirectUri);
+        map.put("scope", "profile");
+        map.put("response_type", "code");
+        map.put("include_granted_scopes", "true");
 
         String uri = loginRequestUri;
 
@@ -73,37 +64,40 @@ public class GoogleLogin implements SnsLogin {
         return uri;
     }
 
-    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
-        GoogleProfile googleProfile = null;
+    @Override
+    public SnsType getSnsType() {
+        return SnsType.GOOGLE;
+    }
+
+    @Override
+    public String requestAccessToken(String code) {
+        return this.requestAccessToken(code, accessTokenUri);
+    }
+
+    @Override
+    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
+
+        Map<String, String> parsedProfile = new HashMap<>();
 
         try{
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
 
-            googleProfile = new GoogleProfile().builder()
-                    .nickname((String) jsonObject.get("name"))
-                    .profile_image((String) jsonObject.get("picture"))
-                    .id((String) jsonObject.get("id"))
-                    .email((String) jsonObject.get("email"))
-                    .build();
+            parsedProfile.put("account", this.getSnsType() + "_" + (String) jsonObject.get("id"));
+            parsedProfile.put("sns_email", (String) jsonObject.get("email"));
+            parsedProfile.put("profile", (String) jsonObject.get("picture"));
+            parsedProfile.put("nickname", this.getSnsType() + "_" + (String) jsonObject.get("id"));
 
         } catch (ParseException e) {
             e.printStackTrace();
             throw new Exception();
         }
 
-        Map<String, String> parsedProfile = new HashMap<>();
-
-        parsedProfile.put("account", "Google" + "_" + googleProfile.getId());
-        parsedProfile.put("sns_email", googleProfile.getEmail());
-        parsedProfile.put("profile", googleProfile.getProfile_image());
-        parsedProfile.put("nickname", "Google" + "_" + googleProfile.getId());
-
         return parsedProfile;
     }
 
     @Override
-    public HttpEntity getSnsHttpEntity(String code) {
+    public HttpEntity getRequestAccessTokenHttpEntity(String code) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         HttpHeaders headers = new HttpHeaders();
 
@@ -114,43 +108,5 @@ public class GoogleLogin implements SnsLogin {
         params.add("grant_type", "authorization_code");
 
         return new HttpEntity<>(params, headers);
-    }
-
-    @Override
-    public String getSnsType() {
-        return "google";
-    }
-
-    @Override
-    public String requestAccessToken(String code) {
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> token;
-
-        try {
-            token = rt.exchange(
-                    accessTokenUri,
-                    HttpMethod.POST,
-                    getSnsHttpEntity(code),
-                    String.class
-            );
-        } catch(Exception e){
-            e.printStackTrace();
-            throw new CriticalException(ErrorMessage.GOOGLE_ACCESSTOKEN_REQUEST_ERROR);
-        }
-
-        String accessToken = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-            accessToken = jsonObject.get("access_token").toString();
-
-        } catch(ParseException e){
-            e.printStackTrace();
-        }
-
-        return accessToken;
     }
 }

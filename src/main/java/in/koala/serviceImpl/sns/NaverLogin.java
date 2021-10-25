@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.naverLogin.NaverUser;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.SnsType;
 import in.koala.exception.CriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class NaverLogin implements SnsLogin {
+public class NaverLogin extends AbstractSnsLogin {
     @Value("${naver.client-id}")
     private String clientId;
 
@@ -48,6 +49,8 @@ public class NaverLogin implements SnsLogin {
 
         map.put("client_id", clientId);
         map.put("redirect_uri", redirectUri);
+        map.put("response_type", "code");
+        map.put("state", "STATE_STRING");
 
         String uri = loginRequestUri;
 
@@ -60,24 +63,11 @@ public class NaverLogin implements SnsLogin {
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate rt = new RestTemplate();
-
-        headers.add("Authorization", "Bearer " + requestAccessToken(code));
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = rt.exchange(
-                profileUri,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
-
-        return  profileParsing(response);
+        return this.requestUserProfile(code, profileUri);
     }
 
     @Override
-    public HttpEntity getSnsHttpEntity(String code) {
+    public HttpEntity getRequestAccessTokenHttpEntity(String code) {
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
@@ -92,11 +82,12 @@ public class NaverLogin implements SnsLogin {
     }
 
     @Override
-    public String getSnsType() {
-        return "naver";
+    public SnsType getSnsType() {
+        return SnsType.NAVER;
     }
 
-    private Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
+    @Override
+    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
         NaverUser naverUser;
 
         try {
@@ -117,43 +108,16 @@ public class NaverLogin implements SnsLogin {
 
         Map<String, String> parsedProfile = new HashMap<>();
 
-        parsedProfile.put("account", "Naver" + "_" + naverUser.getId());
+        parsedProfile.put("account", this.getSnsType() + "_" + naverUser.getId());
         parsedProfile.put("sns_email", naverUser.getEmail());
         parsedProfile.put("profile", naverUser.getProfile_image());
-        parsedProfile.put("nickname", "Naver" + "_" + naverUser.getId());
+        parsedProfile.put("nickname", this.getSnsType() + "_" + naverUser.getId());
 
         return parsedProfile;
     }
 
     @Override
     public String requestAccessToken(String code) {
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> token;
-
-        try {
-            token = rt.exchange(
-                    accessTokenUri,
-                    HttpMethod.POST,
-                    getSnsHttpEntity(code),
-                    String.class
-            );
-        } catch(Exception e){
-            throw new CriticalException(ErrorMessage.NAVER_ACCESSTOKEN_REQUEST_ERROR);
-        }
-
-        String accessToken = null;
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
-
-            accessToken = jsonObject.get("access_token").toString();
-
-        } catch(ParseException e){
-            e.printStackTrace();
-        }
-
-        return accessToken;
+        return this.requestAccessToken(code, accessTokenUri);
     }
 }
