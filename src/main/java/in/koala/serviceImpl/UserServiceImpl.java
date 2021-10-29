@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.UserMapper;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final HttpServletResponse response;
     private final Jwt jwt;
+    // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
 
     @Override
@@ -37,16 +39,15 @@ public class UserServiceImpl implements UserService {
         return userMapper.test();
     }
 
-    // snstype을 열거형으로 바꾸기
-    // oauth를 user와 분리하여 따로 controller와 service 만드는 것도 고려
     @Override
-    public Map<String, String> snsLogin(String code, String snsType) throws Exception {
+    public Map<String, String> snsLogin(String code, SnsType snsType) throws Exception {
         // sns 별 인터페이스 구현체 변경
         SnsLogin snsLogin = initSnsService(snsType);
 
-        // SnsLoginService 클래스에 유저 정보요청
+        // snsLogin 에 유저 정보요청
         Map<String, String> userProfile = snsLogin.requestUserProfile(code);
 
+        // 받은 정보를 이용하여 User domain 생성
         User snsUser = User.builder()
                 .account(userProfile.get("account"))
                 .sns_email(userProfile.get("sns_email"))
@@ -60,13 +61,14 @@ public class UserServiceImpl implements UserService {
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
         if(id == null) userMapper.snsSignUp(snsUser);
 
-        return generateToken(id);
+        return generateAccessAndRefreshToken(id);
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
     // swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
-    public void requestSnsLogin(String snsType) throws Exception {
+    public void requestSnsLogin(SnsType snsType) throws Exception {
+        // snsType 에 맞게 구현체를 결정하는 메소드
         SnsLogin snsLogin = initSnsService(snsType);
 
         //System.out.println(uri);
@@ -101,7 +103,7 @@ public class UserServiceImpl implements UserService {
         // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
         if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
-        return generateToken(loginUser.getId());
+        return generateAccessAndRefreshToken(loginUser.getId());
     }
 
     @Override
@@ -123,7 +125,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    private Map<String, String> generateToken(Long id){
+    private Map<String, String> generateAccessAndRefreshToken(Long id){
         Map<String, String> token = new HashMap<>();
 
         token.put("access_token", jwt.generateToken(id, TokenType.ACCESS));
@@ -132,7 +134,8 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
-    private SnsLogin initSnsService(String snsType){
+    // 로그인 요청이 들어온 sns 에 맞춰 SnsLogin 인터페이스 구현체 결정
+    private SnsLogin initSnsService(SnsType snsType){
 
         for(val snsLogin : snsLoginList){
             if(snsLogin.getSnsType().equals(snsType)) return snsLogin;

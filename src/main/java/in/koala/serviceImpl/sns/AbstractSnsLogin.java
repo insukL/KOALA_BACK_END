@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
-// 인터페이스 구현의 중복을 제거하기 위해 생성한 abstract 클래스
+// 인터페이스 구현의 중복을 제거하기 위해 생성한 SnsLogin 인터페이스를 상속받는 abstract 클래스
 public abstract class AbstractSnsLogin implements SnsLogin {
     
     protected Map requestUserProfile(String code, String profileUri) throws Exception {
@@ -60,4 +60,6 @@ public abstract class AbstractSnsLogin implements SnsLogin {
         return accessToken;
     }
 
+    abstract Map profileParsing(ResponseEntity<String> response) throws Exception;
+    abstract HttpEntity getRequestAccessTokenHttpEntity(String code);
 }
