@@ -3,11 +3,9 @@ package in.koala.util;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
@@ -45,7 +43,7 @@ public class Jwt {
         return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(exp).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
 
-    public boolean isValid(String token){
+    public boolean isValid(String token, TokenType){
 
         if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
@@ -53,6 +51,7 @@ public class Jwt {
         String jwt = token.substring(7);
 
        //JwtBuilder.
+
         return true;
     }
 }

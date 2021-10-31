@@ -1,9 +1,13 @@
 package in.koala.enums;
 
-public enum TokenType {
-    REFRESH(30), ACCESS(60);
+import java.util.Calendar;
 
-    private final int tokenRemainTime;
+public enum TokenType {
+    REFRESH(void setClendar(){
+
+    }), ACCESS(60);
+
+    private final Calendar tokenRemainTime;
 
     TokenType(int tokenRemainTime) {
         this.tokenRemainTime = tokenRemainTime;

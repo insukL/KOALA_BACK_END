@@ -1,5 +1,6 @@
 package in.koala.controller;
 
+import in.koala.annotation.Auth;
 import in.koala.domain.User;
 import in.koala.domain.googleLogin.GoogleCallBack;
 import in.koala.domain.kakaoLogin.KakaoCallBack;
@@ -43,6 +44,7 @@ public class UserController {
         }
     }
 
+    @Auth
     @GetMapping(value="/my")
     public ResponseEntity getMyInfo(){
         return new ResponseEntity<>(userService.getMyInfo(), HttpStatus.OK);
