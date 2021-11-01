@@ -1,6 +1,7 @@
 package in.koala.interceptor;
 
 import in.koala.annotation.Auth;
+import in.koala.enums.TokenType;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.method.HandlerMethod;
@@ -25,7 +26,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         if (auth == null) {
             return true;
         } else {
-            if (jwt.isValid(request.getHeader("Authorization"))){
+            if (jwt.isValid(request.getHeader("Authorization"), TokenType.ACCESS)){
                 return true;
             }
             else{

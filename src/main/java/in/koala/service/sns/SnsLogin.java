@@ -9,5 +9,4 @@ public interface SnsLogin {
     String getRedirectUri();
     SnsType getSnsType();
     String requestAccessToken(String code);
-
 }

@@ -31,10 +31,10 @@ public enum ErrorMessage {
 	JWT_NOT_START_BEARER(127, "jwt 가 Bearer 로 시작하지 않습니다"),
 	JWT_NOT_EXIST(128, "jwt 이 존재하지 않습니다"),
 	SNSTYPE_NOT_VALID(129, "적절하지 않은 sns 요청입니다"),
-	NAVER_ACCESSTOKEN_REQUEST_ERROR(130, "네이버 access token 요청 오류"),
-	GOOGLE_ACCESSTOKEN_REQUEST_ERROR(131, "구글 access token 요청 오류"),
-	KAKAO_ACCESSTOKEN_REQUEST_ERROR(132, "카카오 access token 요청 오류"),
-
+	ACCESSTOKEN_EXPIRED_EXCEPTION(130, "access token 만료"),
+	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
+	ACCESSTOKEN_INVALID_EXCEPTION(132, "유효하지 않은 access token"),
+	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token")
 	;
 
 	Integer code;

@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> login(User user) {
-        User loginUser = userMapper.getUserByAccount(user.getAccount());
+        User loginUser = userMapper.getUserPassword(user.getAccount());
 
         // 해당 계정이 존재하지 않는다면 예외처리
         if(loginUser == null) throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
-        return null;
+        return 1L;
     }
 
     private Map<String, String> generateAccessAndRefreshToken(Long id){
