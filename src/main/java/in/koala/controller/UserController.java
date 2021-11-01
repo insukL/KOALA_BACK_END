@@ -1,23 +1,18 @@
 package in.koala.controller;
 
 import in.koala.annotation.Auth;
+import in.koala.annotation.Xss;
 import in.koala.domain.User;
-import in.koala.domain.googleLogin.GoogleCallBack;
-import in.koala.domain.kakaoLogin.KakaoCallBack;
-import in.koala.domain.kakaoLogin.KakaoProfile;
-import in.koala.domain.naverLogin.NaverCallBack;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/user")
@@ -44,10 +39,12 @@ public class UserController {
         }
     }
 
+    @Xss
     @Auth
     @GetMapping(value="/my")
+    @ApiOperation(value ="유저의 현재정보" , notes = "유재의 현재 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getMyInfo(){
-        return new ResponseEntity<>(userService.getMyInfo(), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getLoginUserInfo(), HttpStatus.OK);
     }
 
 

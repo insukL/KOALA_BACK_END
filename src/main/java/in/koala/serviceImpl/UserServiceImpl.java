@@ -107,22 +107,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getMyInfo() {
-        Long id = getLoginUserIdFromToken();
+    public User getLoginUserInfo() {
+        Long id = this.getLoginUserIdFromJwt(TokenType.ACCESS);
 
         User user = userMapper.getUserById(id);
 
-        if(user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
 
         return user;
     }
 
-
-    private Long getLoginUserIdFromToken(){
+    private Long getLoginUserIdFromJwt(TokenType tokenType){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
-        return 1L;
+        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwtToken(token, tokenType).get("id")));
     }
 
     private Map<String, String> generateAccessAndRefreshToken(Long id){

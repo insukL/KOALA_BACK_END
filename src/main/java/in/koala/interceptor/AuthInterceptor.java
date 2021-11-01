@@ -4,6 +4,7 @@ import in.koala.annotation.Auth;
 import in.koala.enums.TokenType;
 import in.koala.util.Jwt;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@Component
 @RequiredArgsConstructor
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 

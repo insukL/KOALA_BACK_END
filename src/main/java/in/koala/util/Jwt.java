@@ -4,7 +4,7 @@ import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -35,15 +35,13 @@ public class Jwt {
         if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
 
-        String jwt = token.substring(7);
-
-        Claims claims = this.getClaimsFromJwtToken(jwt);
+        Claims claims = this.getClaimsFromJwtToken(token, tokenType);
 
         String sub = String.valueOf(claims.get("sub"));
 
         if(!sub.equals(tokenType.name())) {
             if (tokenType.equals(TokenType.ACCESS)) {
-                // access token 에 refresh token 이 들어간 경우우
+                // access token 에 refresh token 이 들어간 경우
                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
             } else {
@@ -55,10 +53,11 @@ public class Jwt {
         return true;
     }
 
-    public Claims getClaimsFromJwtToken(String token){
-
+    public Claims getClaimsFromJwtToken(String token, TokenType tokenType){
+        System.out.println(token);
         Claims claims = null;
         String sub = null;
+        token = token.substring(7);
 
         try{
             claims = Jwts.parser()
@@ -67,9 +66,7 @@ public class Jwt {
                     .getBody();
 
         } catch(ExpiredJwtException e){
-            sub = String.valueOf(claims.get("sub"));
-
-            if(sub.equals(TokenType.ACCESS.name())) {
+            if(tokenType.equals(TokenType.ACCESS)) {
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_EXPIRED_EXCEPTION);
 
             } else {
@@ -77,7 +74,7 @@ public class Jwt {
             }
 
         } catch(Exception e){
-            if(sub.equals(TokenType.ACCESS.name())) {
+            if(tokenType.equals(TokenType.ACCESS)) {
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
             } else {
