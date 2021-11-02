@@ -14,5 +14,5 @@ public interface UserMapper {
     User getUserByAccount(String account);
     User getUserById(Long id);
     Integer checkNickname(String nickname);
-
+    User getUserPassword(String account);
 }

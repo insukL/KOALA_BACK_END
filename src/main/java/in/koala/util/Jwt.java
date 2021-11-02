@@ -3,15 +3,10 @@ package in.koala.util;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,29 +25,63 @@ public class Jwt {
 
         Map<String, Object> payloads = new HashMap<>();
         payloads.put("id", id );
-        payloads.put("sub", "");
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
+        payloads.put("sub", tokenType.name());
 
-        if( tokenType.equals(TokenType.ACCESS)) {
-            calendar.add(Calendar.HOUR_OF_DAY, 24);
-        }
-        else if(tokenType.equals(TokenType.REFRESH)){
-            calendar.add(Calendar.DAY_OF_YEAR, 14);
-        }
-        Date exp = calendar.getTime();
-
-        return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(exp).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
+        return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(tokenType.getTokenExp()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
 
-    public boolean isValid(String token){
+    public boolean isValid(String token, TokenType tokenType){
 
         if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
 
-        String jwt = token.substring(7);
+        Claims claims = this.getClaimsFromJwtToken(token, tokenType);
 
-       //JwtBuilder.
+        String sub = String.valueOf(claims.get("sub"));
+
+        if(!sub.equals(tokenType.name())) {
+            if (tokenType.equals(TokenType.ACCESS)) {
+                // access token 에 refresh token 이 들어간 경우
+               throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else {
+                // refresh token 에 access token 이 들어간 경우
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            }
+        }
+
         return true;
+    }
+
+    public Claims getClaimsFromJwtToken(String token, TokenType tokenType){
+        System.out.println(token);
+        Claims claims = null;
+        String sub = null;
+        token = token.substring(7);
+
+        try{
+            claims = Jwts.parser()
+                    .setSigningKey(key.getBytes())
+                    .parseClaimsJws(token)
+                    .getBody();
+
+        } catch(ExpiredJwtException e){
+            if(tokenType.equals(TokenType.ACCESS)) {
+                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_EXPIRED_EXCEPTION);
+
+            } else {
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_EXPIRED_EXCEPTION);
+            }
+
+        } catch(Exception e){
+            if(tokenType.equals(TokenType.ACCESS)) {
+                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else {
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            }
+        }
+
+        return claims;
     }
 }

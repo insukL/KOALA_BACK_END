@@ -45,6 +45,10 @@
         SELECT count(*) FROM user WHERE nickname=#{nickname};
     </select>
 
+    <select id="getUserPassword" parameterType="String" resultType="in.koala.domain.User">
+        SELECT id, password FROM user WHERE account=#{account};
+    </select>
+
     <select id="test" resultType="String">
         SELECT nickname from user where id=1;
     </select>
@@ -53,8 +57,7 @@
     <sql id="userInfo">
         ${alias}id, 
         ${alias}account,
-        ${alias}password,
-        ${alias}find_email, 
+        ${alias}find_email,
         ${alias}sns_email,
         ${alias}nickname,
         ${alias}profile,

@@ -3,7 +3,6 @@ package in.koala.service;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 
-import java.io.IOException;
 import java.util.Map;
 
 public interface UserService {
@@ -12,5 +11,5 @@ public interface UserService {
     Map<String, String> login(User user);
     User signUp(User user);
     void requestSnsLogin(SnsType snsType) throws Exception;
-    User getMyInfo();
+    User getLoginUserInfo();
 }
