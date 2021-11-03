@@ -16,4 +16,9 @@ public class CrawlingController {
     public void dormCrawling() throws Exception{
         crawlingService.dormCrawling();
     }
+
+    @GetMapping(value="/youtube")
+    public void youtubeCrawling() throws Exception{
+        crawlingService.youtubeCrawling();
+    }
 }
