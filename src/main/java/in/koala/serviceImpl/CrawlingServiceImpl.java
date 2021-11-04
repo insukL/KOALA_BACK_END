@@ -28,8 +28,8 @@ import java.util.List;
 @Service
 public class CrawlingServiceImpl implements CrawlingService {
 
-    @Value("${dorm.page.find.url}")
-    private String dormPageFindUrl;
+    @Value("${dorm.url}")
+    private String dormUrl;
 
     @Value("${youtube.channel.id}")
     private String youtubeChannelID;
@@ -50,36 +50,23 @@ public class CrawlingServiceImpl implements CrawlingService {
 
     @Override
     public void dormCrawling() throws Exception {
-        int page = 0;
-        int maxPage = 0;
-        int idx = 0;
-
+        List<Crawling> crawlingList = new ArrayList<Crawling>();
         try{
-            Connection conn = Jsoup.connect(dormPageFindUrl);
+            Connection conn = Jsoup.connect(dormUrl);
             Document html = conn.get();
-            Elements elements = html.select(".listCount");
-            System.out.println(elements.text());
-            maxPage = Integer.parseInt(elements.text().substring(18,20));
+
+            Elements elements = html.select(".boardList > tbody > tr");
+            for(Element element : elements) {
+                String title = element.select("td > a").text();
+                String url = element.child(1).child(0).absUrl("href");
+                String createdAt = element.select(".center").get(2).text();
+                Crawling crawling = new Crawling(title, url, (short) 1, createdAt);
+                crawlingList.add(crawling);
+            }
+            crawlingMapper.addCrawlingData(crawlingList);
         }
         catch (IOException e){
             e.printStackTrace();
-        }
-
-        while(page<=maxPage){
-            try{
-                ++page;
-                String url = "https://dorm.koreatech.ac.kr/content/board/list.php?now_page="+page+"&GUBN=&SEARCH=&BOARDID=notice"; // 아우미르
-                Connection conn = Jsoup.connect(url);
-                Document html = conn.get();
-
-                Elements elements = html.select(".boardList > tbody > tr > td:not(.center) > a");
-                for(Element element : elements) {
-                    System.out.println(++idx + " - " + "주소 : " + element.attr("abs:href") + "\n     제목 : " + element.text());
-                }
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
         }
     }
 
