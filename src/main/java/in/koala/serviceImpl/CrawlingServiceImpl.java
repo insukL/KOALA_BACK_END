@@ -15,6 +15,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CrawlingServiceImpl implements CrawlingService {
@@ -104,18 +106,24 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Override
     public void portalCrawling() throws Exception {
 
-        Connection conn = Jsoup.connect(portalGeneralNoticeUrl);
-        Document html = conn.get();
+        String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
 
-        Elements elements = html.select(".bc-s-tbllist > tbody > tr");
-        System.out.println(elements);
-        for(Element boardUrl : elements){
-            System.out.println("주소 : " + boardUrl.absUrl("data-url"));
-            Elements title = boardUrl.select("td > div > span");
-            System.out.println("제목 : " + title.attr("title"));
-            Elements date = boardUrl.select(".bc-s-cre_dt");
-            System.out.println("작성일 : " + date.text());
-            System.out.println("-------------------------------------------------");
+        for(String boradNumber : boardList) {
+            String url = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boradNumber +"&ls=20&ln=1&dm=m";
+
+            Connection conn = Jsoup.connect(url);
+            Document html = conn.get();
+
+            Elements elements = html.select(".bc-s-tbllist > tbody > tr");
+            for(Element boardUrl : elements){
+                System.out.println("board Number : " + boradNumber);
+                System.out.println("주소 : " + boardUrl.absUrl("data-url"));
+                Elements title = boardUrl.select("td > div > span");
+                System.out.println("제목 : " + title.attr("title"));
+                Elements date = boardUrl.select(".bc-s-cre_dt");
+                System.out.println("작성일 : " + date.text());
+                System.out.println("-------------------------------------------------");
+            }
         }
     }
 }
