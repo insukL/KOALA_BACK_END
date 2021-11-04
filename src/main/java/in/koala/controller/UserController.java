@@ -21,11 +21,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping(value = "/test")
-    public String test() {
-        return userService.test();
-    }
-
     @GetMapping(value = "/oauth2/authorization/{snsType}")
     public ResponseEntity snsLogin(
             @PathVariable(name="snsType") SnsType snsType,
@@ -47,7 +42,6 @@ public class UserController {
         return new ResponseEntity<>(userService.getLoginUserInfo(), HttpStatus.OK);
     }
 
-
     @ApiOperation(value = "sns 로그인 요청", notes = "sns 로그인을 요청하는 api 입니다. 원하는 sns 를 path 에 넣으시면 됩니다. swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
     @GetMapping(value="/{snsType}")
     public void requestSnsLogin(@PathVariable(name = "snsType") SnsType snsType) throws Exception {
@@ -63,4 +57,6 @@ public class UserController {
     public ResponseEntity login(@RequestBody User user){
         return new ResponseEntity(userService.login(user), HttpStatus.OK);
     }
+
+
 }

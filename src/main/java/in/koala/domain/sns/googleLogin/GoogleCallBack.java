@@ -1,4 +1,4 @@
-package in.koala.domain.googleLogin;
+package in.koala.domain.sns.googleLogin;
 
 import lombok.Getter;
 import lombok.Setter;

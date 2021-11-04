@@ -34,7 +34,8 @@ public enum ErrorMessage {
 	ACCESSTOKEN_EXPIRED_EXCEPTION(130, "access token 만료"),
 	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
 	ACCESSTOKEN_INVALID_EXCEPTION(132, "유효하지 않은 access token"),
-	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token")
+	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token"),
+	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다")
 	;
 
 	Integer code;
