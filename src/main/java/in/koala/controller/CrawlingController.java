@@ -21,4 +21,9 @@ public class CrawlingController {
     public void youtubeCrawling() throws Exception{
         crawlingService.youtubeCrawling();
     }
+
+    @GetMapping(value="/portal")
+    public void portalCrawling() throws Exception{
+        crawlingService.portalCrawling();
+    }
 }

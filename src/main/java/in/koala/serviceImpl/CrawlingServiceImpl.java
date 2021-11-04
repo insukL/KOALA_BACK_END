@@ -22,11 +22,17 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Value("${dorm.page.find.url}")
     private String dormPageFindUrl;
 
-    @Value("${youtube.koreatch.channel.id}")
-    private String youtubeKoreatechChannelID;
+    @Value("${youtube.channel.id}")
+    private String youtubeChannelID;
 
     @Value("${youtube.access.key}")
     private String youtubeAccessKey;
+
+    @Value("${youtube.api.call.url}")
+    private String youtubeApiUrl;
+
+    @Value("${portal.general.notice.url}")
+    private String portalGeneralNoticeUrl;
 
     @Override
     public void dormCrawling() throws Exception {
@@ -67,10 +73,9 @@ public class CrawlingServiceImpl implements CrawlingService {
     public void youtubeCrawling() throws Exception {
         Boolean check = true;
 
-        String url = "https://www.googleapis.com/youtube/v3/search";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
                 .queryParam("part", "snippet")
-                .queryParam("channelId",  youtubeKoreatechChannelID)
+                .queryParam("channelId",  youtubeChannelID)
                 .queryParam("key",  youtubeAccessKey)
                 .queryParam("maxResults", "50")
                 .queryParam("type", "video");
@@ -93,6 +98,24 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         if(youtube.getStatusCodeValue()==200){
             System.out.println(youtube.getBody());
+        }
+    }
+
+    @Override
+    public void portalCrawling() throws Exception {
+
+        Connection conn = Jsoup.connect(portalGeneralNoticeUrl);
+        Document html = conn.get();
+
+        Elements elements = html.select(".bc-s-tbllist > tbody > tr");
+        System.out.println(elements);
+        for(Element boardUrl : elements){
+            System.out.println("주소 : " + boardUrl.absUrl("data-url"));
+            Elements title = boardUrl.select("td > div > span");
+            System.out.println("제목 : " + title.attr("title"));
+            Elements date = boardUrl.select(".bc-s-cre_dt");
+            System.out.println("작성일 : " + date.text());
+            System.out.println("-------------------------------------------------");
         }
     }
 }
