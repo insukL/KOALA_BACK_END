@@ -28,4 +28,9 @@ public class CrawlingController {
     public void portalCrawling() throws Exception{
         crawlingService.portalCrawling();
     }
+
+    @GetMapping(value = "/test")
+    public String test() {
+        return crawlingService.test();
+    }
 }

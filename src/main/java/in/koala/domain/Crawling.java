@@ -12,14 +12,15 @@ public class Crawling {
     private Long id;
     private String title;
     private String url;
-    private Short from;
+    private short site;
     private Short isDeleted;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private String createdAt;
+    private String updatedAt;
 
-    @Builder
-    public Crawling(String title, String url){
+    public Crawling(String title, String url, Short site, String createdAt){
         this.title = title;
         this.url = url;
+        this.site = site;
+        this.createdAt = createdAt;
     }
 }

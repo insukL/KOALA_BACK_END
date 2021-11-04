@@ -1,11 +1,14 @@
 package in.koala.serviceImpl;
 
+import in.koala.domain.Crawling;
+import in.koala.mapper.CrawlingMapper;
 import in.koala.service.CrawlingService;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -13,8 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +40,13 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Value("${youtube.api.call.url}")
     private String youtubeApiUrl;
 
-    @Value("${portal.general.notice.url}")
-    private String portalGeneralNoticeUrl;
+    @Autowired
+    private CrawlingMapper crawlingMapper;
+
+    @Override
+    public String test() {
+        return crawlingMapper.test();
+    }
 
     @Override
     public void dormCrawling() throws Exception {
@@ -107,23 +119,24 @@ public class CrawlingServiceImpl implements CrawlingService {
     public void portalCrawling() throws Exception {
 
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
+        List<Crawling> crawlingList = new ArrayList<Crawling>();
 
-        for(String boradNumber : boardList) {
-            String url = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boradNumber +"&ls=20&ln=1&dm=m";
+        for(String boardNumber : boardList) {
+            String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
 
-            Connection conn = Jsoup.connect(url);
+            Connection conn = Jsoup.connect(portalUrl);
             Document html = conn.get();
 
             Elements elements = html.select(".bc-s-tbllist > tbody > tr");
             for(Element boardUrl : elements){
-                System.out.println("board Number : " + boradNumber);
-                System.out.println("주소 : " + boardUrl.absUrl("data-url"));
-                Elements title = boardUrl.select("td > div > span");
-                System.out.println("제목 : " + title.attr("title"));
-                Elements date = boardUrl.select(".bc-s-cre_dt");
-                System.out.println("작성일 : " + date.text());
-                System.out.println("-------------------------------------------------");
+                String title = boardUrl.select("td > div > span").attr("title");
+                StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
+                String url = buffer.insert(4,"s").toString();
+                String createdAt = boardUrl.select(".bc-s-cre_dt").text();
+                Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
+                crawlingList.add(crawling);
             }
         }
+        crawlingMapper.addCrawlingData(crawlingList);
     }
 }
