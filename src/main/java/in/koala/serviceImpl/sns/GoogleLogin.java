@@ -46,9 +46,10 @@ public class GoogleLogin extends AbstractSnsLogin {
 
         map.put("client_id", clientId);
         map.put("redirect_uri", redirectUri);
-        map.put("scope", "profile");
+        map.put("scope", "https://www.googleapis.com/auth/userinfo.email");
         map.put("response_type", "code");
         map.put("include_granted_scopes", "true");
+        map.put("state", "state_parameter_passthrough_value");
 
         String uri = loginRequestUri;
 
@@ -71,7 +72,7 @@ public class GoogleLogin extends AbstractSnsLogin {
 
     @Override
     public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
-
+        System.out.println(response);
         Map<String, String> parsedProfile = new HashMap<>();
 
         try{
