@@ -1,4 +1,4 @@
-package in.koala.domain.naverLogin;
+package in.koala.domain.sns.naverLogin;
 
 import lombok.Getter;
 import lombok.Setter;

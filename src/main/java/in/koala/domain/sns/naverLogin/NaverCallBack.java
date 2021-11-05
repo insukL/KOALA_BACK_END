@@ -1,13 +1,11 @@
-package in.koala.domain.kakaoLogin;
+package in.koala.domain.sns.naverLogin;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
-public class KakaoCallBack {
+public class NaverCallBack {
     private String code;
     private String state;
     private String error;
