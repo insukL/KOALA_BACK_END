@@ -3,24 +3,41 @@
 <mapper namespace="in.koala.mapper.ScrapMapper">
 
     <!--
-    <insert id="scrapBoard" parameterType="in.koala.domain.Scrap">
-        INSERT INTO scrap(user_id, board_id) VALUES (#{user_id}, #{board_id});
-    </insert>
+    <resultMap id="scrapList" type="in.koala.domain.Board">
 
-    
-    <select id="스크랩 조회"
-    
+    </resultMap>
+
+    <select id="getScrapList" resultMap="scrapList">
+
+    </select>
     -->
+
+    <!-- resultMap 수정 후 board_id도 select-->
+    <select id="getScrapList" resultType="in.koala.domain.Board">
+        SELECT b.title, b.content, b.crawling_from, b.url, b.updated_at
+        FROM koala.board AS b JOIN koala.scrap AS s
+        ON s.board_id = b.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
+    </select>
+    
+    <insert id="scrapBoard" parameterType="in.koala.domain.Scrap">
+        INSERT INTO koala.scrap(user_id, board_id) VALUES (#{userId}, #{boardId});
+    </insert>
     
     <update id="deleteScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{board_id}
+        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{boardId};
     </update>
 
     <update id="deleteAllScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{user_id}
+        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{userId}
     </update>
 
+    <select id="checkBoardExist" resultType="Boolean">
+        SELECT EXISTS (SELECT id FROM koala.board WHERE id = #{id})
+    </select>
 
-
+    <select id="checkAlreadyScraped" resultType="Long">
+        SELECT count(*) FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
+    </select>
+    
 
 </mapper>

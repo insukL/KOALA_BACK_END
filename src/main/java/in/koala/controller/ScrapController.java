@@ -1,8 +1,10 @@
 package in.koala.controller;
 
+import in.koala.annotation.Auth;
 import in.koala.domain.Scrap;
 import in.koala.service.ScrapService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,32 +18,35 @@ public class ScrapController {
     @Resource
     ScrapService scrapService;
 
-    /*
-    @ApiOperation(value = "보관함 조회", notes = "보관함 조회 api 입니다.")
+    @Auth
+    @ApiOperation(value = "보관함 조회", notes = "보관함 조회 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/scrap")
     public ResponseEntity getScrap() throws Exception {
-        return new ResponseEntity(scrapService.getScrap(board_id), HttpStatus.OK);
+        return new ResponseEntity(scrapService.getScrap(), HttpStatus.OK);
     }
-     */
 
-    @ApiOperation(value = "보관함 이동", notes = "보관함 이동 api 입니다.")
+
+    @Auth
+    @ApiOperation(value = "보관함 이동", notes = "보관함 이동 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/scrap")
     public ResponseEntity Scrap(@RequestBody Scrap scrap) throws Exception {
         scrapService.Scrap(scrap);
         return new ResponseEntity("보관함으로 이동되었습니다.", HttpStatus.OK);
     }
 
-    @ApiOperation(value = "보관함 선택 삭제", notes = "보관함 선택 삭제 api 입니다.")
-    @DeleteMapping(value = "/scrap/{board_id}")
-    public ResponseEntity deleteScrap(@RequestParam Long board_id) throws Exception {
-        scrapService.deleteScrap(board_id);
+    @Auth
+    @ApiOperation(value = "보관함 선택 삭제", notes = "보관함 선택 삭제 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @DeleteMapping(value = "/scrap/{boardId}")
+    public ResponseEntity deleteScrap(@RequestParam Long boardId) throws Exception {
+        scrapService.deleteScrap(boardId);
         return new ResponseEntity("선택 삭제되었습니다.", HttpStatus.OK);
     }
 
-    @ApiOperation(value = "보관함 전체 삭제", notes = "보관함 전체 삭제 api 입니다.")
+    @Auth
+    @ApiOperation(value = "보관함 전체 삭제", notes = "보관함 전체 삭제 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @DeleteMapping(value = "/scrap")
-    public ResponseEntity deleteAllScrap(Long user_id) throws Exception {
-        scrapService.deleteAllScrap(user_id);
+    public ResponseEntity deleteAllScrap(Long userId) throws Exception {
+        scrapService.deleteAllScrap(userId);
         return new ResponseEntity("전체 삭제되었습니다.", HttpStatus.OK);
     }
 

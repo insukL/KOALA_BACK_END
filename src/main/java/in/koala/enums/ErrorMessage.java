@@ -34,8 +34,18 @@ public enum ErrorMessage {
 	ACCESSTOKEN_EXPIRED_EXCEPTION(130, "access token 만료"),
 	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
 	ACCESSTOKEN_INVALID_EXCEPTION(132, "유효하지 않은 access token"),
-	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token")
+	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token"),
+
+
+	/*
+	 * Scrap, Memo
+	 */
+	BOARD_NOT_EXIST(200, "글이 존재하지 않습니다"),
+	ALREADY_SCRAP_BOARD(201, "이미 보관함에 있습니다")
+
 	;
+
+
 
 	Integer code;
 	String errorMessage;
