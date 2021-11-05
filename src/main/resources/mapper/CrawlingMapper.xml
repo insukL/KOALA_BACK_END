@@ -9,7 +9,7 @@
     <insert id="addCrawlingData">
         INSERT INTO crawling(title, url, site, created_at)
         VALUES
-        <foreach item="crawling" separator=" , " collection="list   ">
+        <foreach item="crawling" separator=" , " collection="list">
             (
              #{crawling.title},
              #{crawling.url},
