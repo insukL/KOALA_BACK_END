@@ -19,19 +19,18 @@ public class ScrapController {
     ScrapService scrapService;
 
     @Auth
-    @ApiOperation(value = "보관함 조회", notes = "보관함 조회 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @GetMapping(value = "/scrap")
-    public ResponseEntity getScrap() throws Exception {
-        return new ResponseEntity(scrapService.getScrap(), HttpStatus.OK);
-    }
-
-
-    @Auth
     @ApiOperation(value = "보관함 이동", notes = "보관함 이동 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/scrap")
     public ResponseEntity Scrap(@RequestBody Scrap scrap) throws Exception {
         scrapService.Scrap(scrap);
         return new ResponseEntity("보관함으로 이동되었습니다.", HttpStatus.OK);
+    }
+
+    @Auth
+    @ApiOperation(value = "보관함 조회", notes = "보관함 조회 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/scrap")
+    public ResponseEntity getScrap() throws Exception {
+        return new ResponseEntity(scrapService.getScrap(), HttpStatus.OK);
     }
 
     @Auth

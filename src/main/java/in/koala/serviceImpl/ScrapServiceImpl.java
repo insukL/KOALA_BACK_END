@@ -41,6 +41,17 @@ public class ScrapServiceImpl implements ScrapService {
         scrapMapper.scrapBoard(userId, scrap.getBoard_id());
     }
 
+    // 보관함 조회
+    @Override
+    public List<Board> getScrap() throws Exception {
+        User user = userService.getLoginUserInfo();
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        return scrapMapper.getScrapList(user.getId());
+    }
+
     // 보관함 선택 삭제
     @Override
     public void deleteScrap(Long boardId) throws Exception {
@@ -65,19 +76,6 @@ public class ScrapServiceImpl implements ScrapService {
         }
 
         scrapMapper.deleteAllScrap(userId);
-    }
-
-    // 정렬순서?
-    // 보관함 집어넣은 순서인지, 날짜인지, 안 읽은 글 먼저인지 ?
-    // 보관함 조회
-    @Override
-    public List<Board> getScrap() throws Exception {
-        User user = userService.getLoginUserInfo();
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
-
-        return scrapMapper.getScrapList(user.getId());
     }
 
 }

@@ -7,17 +7,16 @@
         VALUES(#{user_scrap_id}, #{memo})
     </insert>
 
-    <update id="deleteMemo" parameterType="in.koala.domain.Memo">
-        UPDATE memo SET is_deleted = 1 WHERE user_scrap_id = #{user_scrap_id} AND is_deleted = 0
-    </update>
-
-    <update id="updateMemo" parameterType="in.koala.domain.Memo">
-        UPDATE memo SET memo = #{memo} WHERE user_scrap_id = #{user_scrap_id} AND is_deleted = 0
-    </update>
-
-    <select id="getMemo" resultType="in.koala.domain.Memo">
-        SELECT memo FROM boot_sample.memo WHERE user_scrap_id = #{user_scrap_id} AND is_deleted = 0
+    <select id="getMemo" resultType="String">
+        SELECT memo FROM koala.memo WHERE user_scrap_id = #{userScrapId};
     </select>
 
+    <update id="updateMemo" parameterType="in.koala.domain.Memo">
+        UPDATE memo SET memo = #{memo} WHERE user_scrap_id = #{user_scrap_id};
+    </update>
+
+    <select id="checkMemoExist" resultType="Boolean">
+        SELECT EXISTS (SELECT user_scrap_id FROM koala.memo WHERE user_scrap_id = #{userScrapId})
+    </select>
 
 </mapper>
