@@ -1,15 +1,13 @@
 package in.koala.mapper;
 
-import in.koala.domain.Board;
-import in.koala.domain.Scrap;
+import in.koala.domain.Crawling;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 @Mapper
 public interface ScrapMapper {
-    List<Board> getScrapList(Long userId);
+    List<Crawling> getScrapList(Long userId);
     void scrapBoard(Long userId, Long boardId);
     Long getScrapId(Long userId, Long boardId);
     void deleteScrap(Long boardId);

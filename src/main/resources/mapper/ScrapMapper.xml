@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.ScrapMapper">
 
-    <select id="getScrapList" resultType="in.koala.domain.Board">
-        SELECT b.title, b.content, b.crawling_from, b.url, b.updated_at
-        FROM koala.board AS b JOIN koala.scrap AS s
+    <select id="getScrapList" resultType="in.koala.domain.Crawling">
+        SELECT b.title, b.url, b.site, b.updated_at
+        FROM koala.crawling AS b JOIN koala.scrap AS s
         ON s.board_id = b.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
     </select>
 
