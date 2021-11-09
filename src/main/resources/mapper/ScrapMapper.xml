@@ -2,25 +2,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.ScrapMapper">
 
-    <!--
+    <select id="getScrapList" resultType="in.koala.domain.Board">
+        SELECT b.title, b.content, b.crawling_from, b.url, b.updated_at
+        FROM koala.board AS b JOIN koala.scrap AS s
+        ON s.board_id = b.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
+    </select>
+
     <insert id="scrapBoard" parameterType="in.koala.domain.Scrap">
-        INSERT INTO scrap(user_id, board_id) VALUES (#{user_id}, #{board_id});
+        INSERT INTO koala.scrap(user_id, board_id) VALUES (#{userId}, #{boardId});
     </insert>
 
-    
-    <select id="스크랩 조회"
-    
-    -->
-    
     <update id="deleteScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{board_id}
+        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{boardId};
     </update>
 
     <update id="deleteAllScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{user_id}
+        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{userId}
     </update>
 
+    <select id="checkBoardExist" resultType="Boolean">
+        SELECT EXISTS (SELECT id FROM koala.board WHERE id = #{id})
+    </select>
 
+    <select id="checkAlreadyScraped" resultType="Long">
+        SELECT count(*) FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
+    </select>
+
+    <select id="getScrapId" resultType="Long">
+        SELECT id FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
+    </select>
 
 
 </mapper>

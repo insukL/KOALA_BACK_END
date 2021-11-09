@@ -35,8 +35,20 @@ public enum ErrorMessage {
 	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
 	ACCESSTOKEN_INVALID_EXCEPTION(132, "유효하지 않은 access token"),
 	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token"),
-	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다")
+	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다"),
+
+
+	/*
+	 * Scrap, Memo
+	 */
+	BOARD_NOT_EXIST(200, "글이 존재하지 않습니다"),
+	ALREADY_SCRAP_BOARD(201, "이미 보관함에 존재합니다"),
+	SCRAP_NOT_EXIST(202, "보관함에 존재하지 않습니다."),
+	ALREADY_MEMO_EXIST(203, "이미 메모가 존재합니다."),
+	MEMO_NOT_EXIST(204, "메모가 존재하지 않습니다.")
 	;
+
+
 
 	Integer code;
 	String errorMessage;

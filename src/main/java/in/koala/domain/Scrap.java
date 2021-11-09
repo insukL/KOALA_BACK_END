@@ -3,7 +3,7 @@ package in.koala.domain;
 public class Scrap {
     private Long id;
     private Long user_id;
-    private Long scrap_id;
+    private Long board_id;
     private Long is_deleted;
     private String created_at;
     private String updated_at;
@@ -24,12 +24,12 @@ public class Scrap {
         this.user_id = user_id;
     }
 
-    public Long getScrap_id() {
-        return scrap_id;
+    public Long getBoard_id() {
+        return board_id;
     }
 
-    public void setScrap_id(Long scrap_id) {
-        this.scrap_id = scrap_id;
+    public void setBoard_id(Long board_id) {
+        this.board_id = board_id;
     }
 
     public Long getIs_deleted() {
