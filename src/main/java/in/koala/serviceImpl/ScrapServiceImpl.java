@@ -1,6 +1,6 @@
 package in.koala.serviceImpl;
 
-import in.koala.domain.Board;
+import in.koala.domain.Crawling;
 import in.koala.domain.Scrap;
 import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
@@ -43,7 +43,7 @@ public class ScrapServiceImpl implements ScrapService {
 
     // 보관함 조회
     @Override
-    public List<Board> getScrap() throws Exception {
+    public List<Crawling> getScrap() throws Exception {
         User user = userService.getLoginUserInfo();
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
