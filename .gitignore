@@ -38,3 +38,4 @@ src/main/resources/application-oauth2.properties
 src/main/resources*/*.properties
 .properties
 /.mvn/
+src/main/resources/*.json
