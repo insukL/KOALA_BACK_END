@@ -185,6 +185,8 @@ public class UserServiceImpl implements UserService {
             secret += random.nextInt(10);
         }
 
+        authEmail.setSecret(secret);
+
         Context context = new Context();
         context.setVariable("secret", secret);
 
@@ -210,7 +212,7 @@ public class UserServiceImpl implements UserService {
         calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
         Timestamp end =  new Timestamp(calendar.getTimeInMillis());
 
-        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUserId(), authEmail.getType(), start, end) > 5){
+        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUserId(), authEmail.getType(), start, end) >= 5){
             return true;
         }
 

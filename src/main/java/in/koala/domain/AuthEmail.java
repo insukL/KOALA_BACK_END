@@ -10,4 +10,5 @@ public class AuthEmail {
     private Long userId;
     private Short type;
     private String email;
+    private String secret;
 }

@@ -6,6 +6,7 @@ import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
@@ -73,12 +74,13 @@ public class UserController {
     @Auth
     @PatchMapping(value="/nickname")
     @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
-    public ResponseEntity changeNickname(@RequestBody String nickname){
+    public ResponseEntity changeNickname(@RequestParam String nickname){
         userService.updateNickname(nickname);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping(value="/refresh")
+    @ApiOperation(value="access token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity refresh(){
         return new ResponseEntity(userService.refresh(), HttpStatus.OK);
     }
@@ -89,5 +91,12 @@ public class UserController {
     public ResponseEntity sendEmail(@RequestBody AuthEmail authEmail){
         userService.sendEmail(authEmail);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @Auth
+    @PostMapping(value="/email/certification")
+    @ApiOperation(value="이메일 전송 인증")
+    public ResponseEntity certificateEmail(@RequestBody AuthEmail authEmail){
+        return null;
     }
 }
