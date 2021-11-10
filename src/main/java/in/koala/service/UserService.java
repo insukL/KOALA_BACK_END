@@ -1,5 +1,6 @@
 package in.koala.service;
 
+import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 
@@ -12,4 +13,8 @@ public interface UserService {
     User signUp(User user);
     void requestSnsLogin(SnsType snsType) throws Exception;
     User getLoginUserInfo();
+    void updateNickname(String nickname);
+    Boolean checkNickname(String nickname);
+    Map<String, String> refresh();
+    void sendEmail(AuthEmail authEmail);
 }

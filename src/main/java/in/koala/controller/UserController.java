@@ -2,6 +2,7 @@ package in.koala.controller;
 
 import in.koala.annotation.Auth;
 import in.koala.annotation.Xss;
+import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
@@ -37,7 +38,7 @@ public class UserController {
     @Xss
     @Auth
     @GetMapping(value="/my")
-    @ApiOperation(value ="유저의 현재정보" , notes = "유재의 현재 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value ="유저의 현재정보" , notes = "로그인된 유저의 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getMyInfo(){
         return new ResponseEntity<>(userService.getLoginUserInfo(), HttpStatus.OK);
     }
@@ -49,14 +50,44 @@ public class UserController {
     }
 
     @PostMapping(value="/sing-up")
+    @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
     public ResponseEntity signUp(@RequestBody User user){
         return new ResponseEntity(userService.signUp(user), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
+    @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
     public ResponseEntity login(@RequestBody User user){
         return new ResponseEntity(userService.login(user), HttpStatus.OK);
     }
 
+    @GetMapping(value="/nickname-check")
+    @ApiOperation(value="닉네임 중복체크", notes="닉네임 중복체크하는 api")
+    public ResponseEntity checkNickname(@RequestParam String nickname){
+        if ( userService.checkNickname(nickname) )
+            return new ResponseEntity("사용 가능한 닉네임입니다." ,HttpStatus.OK);
+        else
+            return new ResponseEntity("중복된 닉네임입니다." ,HttpStatus.BAD_REQUEST);
+    }
 
+    @Auth
+    @PatchMapping(value="/nickname")
+    @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity changeNickname(@RequestBody String nickname){
+        userService.updateNickname(nickname);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping(value="/refresh")
+    public ResponseEntity refresh(){
+        return new ResponseEntity(userService.refresh(), HttpStatus.OK);
+    }
+
+    @Auth
+    @PostMapping(value="/email")
+    @ApiOperation(value="이메일 전송 요청", notes="전송할 email 과 전송 type 를 받는다 type 이 0이면 비밀번호 재발급, 1 이면 채팅 인증이다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity sendEmail(@RequestBody AuthEmail authEmail){
+        userService.sendEmail(authEmail);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }

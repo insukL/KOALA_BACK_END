@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.sns.naverLogin.NaverUser;
+import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
+import in.koala.exception.NonCriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -59,7 +61,12 @@ public class NaverLogin extends AbstractSnsLogin {
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
-        return this.requestUserProfile(code, profileUri);
+        try {
+            return this.requestUserProfile(code, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.NAVER_LOGIN_ERROR);
+        }
     }
 
     @Override
@@ -114,6 +121,11 @@ public class NaverLogin extends AbstractSnsLogin {
 
     @Override
     public String requestAccessToken(String code) {
-        return this.requestAccessToken(code, accessTokenUri);
+        try {
+            return this.requestAccessToken(code, accessTokenUri);
+
+        } catch (Exception e) {
+            throw new NonCriticalException(ErrorMessage.NAVER_LOGIN_ERROR);
+        }
     }
 }

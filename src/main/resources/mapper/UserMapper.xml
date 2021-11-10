@@ -13,7 +13,7 @@
 
     <insert id="snsSignUp" parameterType="in.koala.domain.User">
         INSERT INTO user(nickname, account, sns_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, DEFAULT, #{is_auth}, DEFAULT, DEFAULT)
+        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, #{user_type}, DEFAULT, DEFAULT, DEFAULT)
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -48,6 +48,13 @@
     <select id="getUserPassword" parameterType="String" resultType="in.koala.domain.User">
         SELECT id, password FROM user WHERE account=#{account};
     </select>
+
+    <update id="updateNickname" parameterType="in.koala.domain.User">
+        UPDATE user
+        SET
+            nickname=#{nickname}
+        WHERE id = #{id}
+    </update>
 
     <select id="test" resultType="String">
         SELECT nickname from user where id=1;

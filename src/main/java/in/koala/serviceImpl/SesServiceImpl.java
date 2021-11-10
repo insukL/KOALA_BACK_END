@@ -31,7 +31,7 @@ public class SesServiceImpl implements SesService {
         try{
             Context context = new Context();
             context.setVariable("content",sampleMail.getContent());
-            String html = templateEngine.process("mail-sample.html",context);
+            String html = templateEngine.process("authenticationEmail.html",context);
             sesSender.sendMail("no-reply@" + domain, sampleMail.getTo(),sampleMail.getSubject(),html);
             return new ResponseEntity("mail send Success", HttpStatus.OK);
         }catch (Exception e){

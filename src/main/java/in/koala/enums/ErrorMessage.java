@@ -22,20 +22,23 @@ public enum ErrorMessage {
 	/*
 	 * USER
 	 */
-	ACCOUNT_ALREADY_EXIST(123, "이미 존재하는 아이디입니다"),
-	NICKNAME_ALREADY_EXIST(124, "이미 존재하는 닉네임입니다"),
+	DUPLICATED_ACCOUNT_EXCEPTION(123, "이미 존재하는 아이디입니다"),
+	DUPLICATED_NICKNAME_EXCEPTION(124, "이미 존재하는 닉네임입니다"),
 	NAVER_LOGIN_ERROR(125, "네이버 로그인 오류"),
 	ACCOUNT_NOT_EXIST(126, "존재하지 않는 아이디입니다."),
 	WRONG_PASSWORD_EXCEPTION(127, "틀린 비밀번호입니다."),
 	USER_NOT_EXIST(128, "존재하지 않는 계정입니다"),
 	JWT_NOT_START_BEARER(127, "jwt 가 Bearer 로 시작하지 않습니다"),
 	JWT_NOT_EXIST(128, "jwt 이 존재하지 않습니다"),
-	SNSTYPE_NOT_VALID(129, "적절하지 않은 sns 요청입니다"),
+	SNSTYPE_NOT_VALID(129, "적절하지 않은 sns 타입입니다"),
 	ACCESSTOKEN_EXPIRED_EXCEPTION(130, "access token 만료"),
 	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
 	ACCESSTOKEN_INVALID_EXCEPTION(132, "유효하지 않은 access token"),
 	REFRESHTOKEN_INVALID_EXCEPTION(133, "유효하지 않은 refresh token"),
-	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다")
+	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다"),
+	GOOGLE_LOGIN_ERROR(135, "구글 로그인 오류"),
+	KAKAO_LOGIN_ERROR(136, "카카오 로그인 오류"),
+	EMAIL_SEND_EXCEED_EXCEPTION(137, "이메인 전송 가능 횟수 초과")
 	;
 
 	Integer code;

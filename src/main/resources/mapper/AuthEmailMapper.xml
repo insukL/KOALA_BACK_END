@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.AuthEmailMapper">
+
+    <select id="getAuthEmailNumByUserIdAndType" resultType="Integer">
+        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND type=#{type} AND created_at BETWEEN #{start} AND #{end};
+    </select>
+
+    <update id="expirePastAuthEmail">
+        UPDATE auth_email SET is_deleted=1, expired_at=CURRENT_TIMESTAMP
+        WHERE user_id=#{userId} AND type=#{type} AND is_deleted=0;
+    </update>
+
+    <insert id="insertAuthEmail">
+        INSERT INTO auth_email(user_id, type, is_deleted, created_at, expired_at) VALUES(#{userId}, #{type}, default, default, null)
+    </insert>
+</mapper>

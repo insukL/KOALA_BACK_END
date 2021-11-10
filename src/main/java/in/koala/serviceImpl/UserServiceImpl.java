@@ -1,27 +1,31 @@
 package in.koala.serviceImpl;
 
+import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
+import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.Jwt;
+import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +33,13 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
     private final Jwt jwt;
     // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
+    private final SesSender sesSender;
+    private final SpringTemplateEngine springTemplateEngine;
 
     @Override
     public String test() {
@@ -53,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .is_auth((short) 1)
+                .user_type((short) 1)
                 .build();
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
@@ -80,10 +87,10 @@ public class UserServiceImpl implements UserService {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
         // 해당 계정명이 이미 존재한다면 예외처리
-        if(selectUser != null) throw new NonCriticalException(ErrorMessage.ACCOUNT_ALREADY_EXIST);
+        if(selectUser != null) throw new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION);
 
         // 해당 닉네임이 이미 존재한다면 예외처리
-        if(userMapper.checkNickname(user.getNickname()) >= 1) throw new NonCriticalException(ErrorMessage.NICKNAME_ALREADY_EXIST);
+        if(userMapper.checkNickname(user.getNickname()) >= 1) throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
 
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
@@ -117,9 +124,104 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public void updateNickname(String nickname) {
+        if (userMapper.checkNickname(nickname) > 0) {
+            throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
+        }
+
+        User updateUser = new User();
+
+        updateUser.setNickname(nickname);
+        updateUser.setId(this.getLoginUserIdFromJwt(TokenType.ACCESS));
+
+        if(userMapper.getUserById(updateUser.getId()) == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        userMapper.updateNickname(updateUser);
+
+        return;
+    }
+
+    @Override
+    public Boolean checkNickname(String nickname) {
+        if (userMapper.checkNickname(nickname) > 0) {
+            throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
+
+        } else{
+            return true;
+        }
+    }
+
+    @Override
+    public Map<String, String> refresh() {
+        Long id = this.getLoginUserIdFromJwt(TokenType.REFRESH);
+
+        if(userMapper.getUserById(id) == null) {
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        return this.generateAccessAndRefreshToken(id);
+    }
+
+    @Override
+    public void sendEmail(AuthEmail authEmail) {
+
+        Long userId = this.getLoginUserIdFromJwt(TokenType.ACCESS);
+
+        authEmail.setUserId(userId);
+
+        // 당일 전송한 이메일의 횟수가 5를 초과했는지 확인하는 메소드
+        if(isEmailSentNumExceed(authEmail)){
+            throw new NonCriticalException(ErrorMessage.EMAIL_SEND_EXCEED_EXCEPTION);
+        }
+
+        String secret = "";
+        Random random = new Random();
+
+        // 난수 생성
+        for(int i = 0; i < 5; i++){
+            secret += random.nextInt(10);
+        }
+
+        Context context = new Context();
+        context.setVariable("secret", secret);
+
+        String body = springTemplateEngine.process("authenticationEmail", context);
+        sesSender.sendMail("no-reply@koala.im", authEmail.getEmail(),
+                "KOALA 서비스 인증 메일입니다.", body);
+
+        authEmailMapper.expirePastAuthEmail(authEmail);
+        authEmailMapper.insertAuthEmail(authEmail);
+
+        return;
+    }
+
+    private boolean isEmailSentNumExceed(AuthEmail authEmail){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.set(year,month,day,0,0 ,0); // 해당 날짜의 00시 00분 00초
+        Timestamp start =  new Timestamp(calendar.getTimeInMillis());
+        calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
+        Timestamp end =  new Timestamp(calendar.getTimeInMillis());
+
+        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUserId(), authEmail.getType(), start, end) > 5){
+            return true;
+        }
+
+        return false;
+    }
+
     private Long getLoginUserIdFromJwt(TokenType tokenType){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
+
+        jwt.isValid(token, tokenType);
 
         return Long.valueOf(String.valueOf(jwt.getClaimsFromJwtToken(token, tokenType).get("id")));
     }

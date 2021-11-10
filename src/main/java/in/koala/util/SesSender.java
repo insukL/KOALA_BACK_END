@@ -2,15 +2,17 @@ package in.koala.util;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsync;
 import com.amazonaws.services.simpleemail.model.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
 @Component
+@RequiredArgsConstructor
 public class SesSender {
-    @Resource
-    private AmazonSimpleEmailServiceAsync amazonSimpleEmailServiceAsync;
+
+    private final AmazonSimpleEmailServiceAsync amazonSimpleEmailServiceAsync;
 
     public void sendMail(String FROM, String TO, String SUBJECT, String HTMLBODY) {
         SendEmailRequest request = new SendEmailRequest()

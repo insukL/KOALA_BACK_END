@@ -13,4 +13,5 @@ public interface UserMapper {
     User getUserById(Long id);
     Integer checkNickname(String nickname);
     User getUserPassword(String account);
+    void updateNickname(User user);
 }
