@@ -48,8 +48,20 @@ public enum ErrorMessage {
 	EMAIL_AUTHORIZE_ORDER_EXCEPTION(144, "먼저 이메일을 전송해 주세요"),
 	SAME_PASSWORD_EXCEPTION(145, "변경하고자 하는 비밀번호와 기존 비밀번호가 같습니다."),
 	EMAIL_NOT_AUTHORIZE_EXCEPTION(146, "이메일 인증이 완료되지 않았습니다"),
-	EMAIL_SEND_FAILED(147, "ses 이메일 전송 실패")
+	EMAIL_SEND_FAILED(147, "ses 이메일 전송 실패"),
+
+
+	/*
+	 * Scrap, Memo
+	 */
+	BOARD_NOT_EXIST(200, "글이 존재하지 않습니다"),
+	ALREADY_SCRAP_BOARD(201, "이미 보관함에 존재합니다"),
+	SCRAP_NOT_EXIST(202, "보관함에 존재하지 않습니다."),
+	ALREADY_MEMO_EXIST(203, "이미 메모가 존재합니다."),
+	MEMO_NOT_EXIST(204, "메모가 존재하지 않습니다.")
 	;
+
+
 
 	Integer code;
 	String errorMessage;

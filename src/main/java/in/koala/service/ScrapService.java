@@ -1,11 +1,14 @@
 package in.koala.service;
 
 
+import in.koala.domain.Crawling;
 import in.koala.domain.Scrap;
+
+import java.util.List;
 
 public interface ScrapService {
     void Scrap(Scrap scrap) throws Exception;
-    void deleteScrap(Long board_id) throws Exception;
-    void deleteAllScrap(Long user_id) throws Exception;
-    //List<Board> getScrap(Long user_id) throws Exception;
+    List<Crawling> getScrap() throws Exception;
+    void deleteScrap(Long boardId) throws Exception;
+    void deleteAllScrap(Long userId) throws Exception;
 }
