@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Repository
 public interface AuthEmailMapper {
@@ -12,4 +13,7 @@ public interface AuthEmailMapper {
     int getAuthEmailNumByUserIdAndType(Long userId, Short type, Timestamp start, Timestamp end);
     void expirePastAuthEmail(AuthEmail authEmail);
     void insertAuthEmail(AuthEmail authEmail);
+    List<AuthEmail> getUndeletedAuthEmailByUserIdAndType(AuthEmail authEmail);
+    void setIsAuth(Long id);
+    int getUndeletedIsAuthNumByUserId(Long UserId);
 }

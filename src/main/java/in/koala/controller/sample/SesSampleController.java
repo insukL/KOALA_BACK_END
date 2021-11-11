@@ -17,8 +17,7 @@ public class SesSampleController {
     @PostMapping(value = "")
     public @ResponseBody
     ResponseEntity uploadFile(@ApiParam(required = true) @RequestBody SampleMail sampleMail) throws Exception {
-
-        return sesService.send(sampleMail);
+        return null;
     }
 
 }

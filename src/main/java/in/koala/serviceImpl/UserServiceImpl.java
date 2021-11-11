@@ -5,6 +5,7 @@ import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
+import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
@@ -168,9 +169,34 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendEmail(AuthEmail authEmail) {
 
-        Long userId = this.getLoginUserIdFromJwt(TokenType.ACCESS);
+        User user = null;
 
-        authEmail.setUserId(userId);
+        if(authEmail.getType() == 2){
+            user = userMapper.getUserByFindEmail(authEmail.getEmail());
+
+        } else {
+            user = userMapper.getUserByAccount(authEmail.getAccount());
+        }
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        // sns 로그인으로 가입한 계정이 비밀번호 찾기를 요청할 경우 발생하는 예외
+        if(user.getUser_type() == 1 && authEmail.getType() == 0){
+            throw new NonCriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
+        }
+
+        if(authEmail.getType() == 0 && !user.getFind_email().equals(authEmail.getEmail())){
+            throw new NonCriticalException(ErrorMessage.EMAIL_NOT_MATCH);
+        }
+
+        // 이미 이메일 인증을 끝낸 계정이 채팅 인증 이메일 전송을 요청하면 예외 발생
+        if(authEmail.getType() == 1 && user.getIs_auth() == 1){
+            throw new NonCriticalException(ErrorMessage.EMAIL_ALREADY_CERTIFICATE);
+        }
+
+        authEmail.setUser_id(user.getId());
 
         // 당일 전송한 이메일의 횟수가 5를 초과했는지 확인하는 메소드
         if(isEmailSentNumExceed(authEmail)){
@@ -185,19 +211,159 @@ public class UserServiceImpl implements UserService {
             secret += random.nextInt(10);
         }
 
-        authEmail.setSecret(secret);
-
         Context context = new Context();
         context.setVariable("secret", secret);
 
         String body = springTemplateEngine.process("authenticationEmail", context);
-        sesSender.sendMail("no-reply@koala.im", authEmail.getEmail(),
-                "KOALA 서비스 인증 메일입니다.", body);
 
+        try {
+            sesSender.sendMail("no-reply@koala.im", authEmail.getEmail(),
+                    "KOALA 서비스 인증 메일입니다.", body);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.EMAIL_SEND_FAILED);
+        }
+
+        // 이전에 보냈던 이메일들은 전부 무효화
         authEmailMapper.expirePastAuthEmail(authEmail);
+
+        // 이메일 유효 기간 설정
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Timestamp(System.currentTimeMillis()));
+        calendar.add(Calendar.SECOND, 5 * 60);
+        authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
+
+        authEmail.setSecret(secret);
+
+        // 이번에 보낸 이메일 삽입
         authEmailMapper.insertAuthEmail(authEmail);
 
         return;
+    }
+
+    @Override
+    public void certificateEmail(AuthEmail authEmail) {
+
+        User user = null;
+
+        if(authEmail.getType() == 2){
+            user = userMapper.getUserByFindEmail(authEmail.getEmail());
+
+        } else {
+            user = userMapper.getUserByAccount(authEmail.getAccount());
+        }
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        authEmail.setUser_id(user.getId());
+
+        List<AuthEmail> authEmailList = authEmailMapper.getUndeletedAuthEmailByUserIdAndType(authEmail);
+
+        // 만약 delete 되지 않은 이메일이 하나보다 많다면 예외 발생, 없겠지만 혹시나...
+        if(authEmailList.size() > 1){
+            authEmailMapper.expirePastAuthEmail(authEmail);
+            throw new CriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
+        }
+
+        // 이메일 전송이 전행되어야 함
+        if(authEmailList.size() <= 0){
+            throw new NonCriticalException(ErrorMessage.EMAIL_AUTHORIZE_ORDER_EXCEPTION);
+        }
+
+        AuthEmail selectedAuthEmail = authEmailList.get(0);
+
+        // 메일 인증 유효기간 지났을때 발생
+        if(selectedAuthEmail.getExpired_at().before(new Timestamp(System.currentTimeMillis()))){
+            throw new NonCriticalException(ErrorMessage.EMAIL_EXPIRED_AUTH_EXCEPTION);
+        }
+
+        // secret 이 일치하지 않음
+        if(!selectedAuthEmail.getSecret().equals(authEmail.getSecret())){
+            throw new NonCriticalException(ErrorMessage.EMAIL_SECRET_NOT_MATCH);
+        }
+
+        // 만약 채팅 인증이라면 인증했다는 사실을 User 에 기록
+        if(authEmail.getType() == 1){
+            userMapper.updateIsAuth(selectedAuthEmail.getUser_id());
+        }
+
+        // 인증 완료하였으니 체크
+        authEmailMapper.setIsAuth(authEmail.getId());
+
+        // 만약 학교 인증이거나 계정 찾기면 만료
+        if(authEmail.getType() == 1 || authEmail.getType() == 2) {
+            authEmailMapper.expirePastAuthEmail(authEmail);
+        }
+        return;
+    }
+
+    @Override
+    public boolean isEmailCertification() {
+        User user = getLoginUserInfo();
+
+        if(user.getIs_auth() == 1){
+            return true;
+
+        } else {
+            throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
+        }
+    }
+
+    @Override
+    public Boolean checkAccount(String account) {
+        User user = userMapper.getUserByAccount(account);
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
+        }
+
+        return true;
+    }
+
+    @Override
+    public void changePassword(User user) {
+
+        User selectedUser = userMapper.getUserPassword(user.getAccount());
+
+        if(selectedUser == null){
+            throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
+        }
+
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId()) <= 0){
+            throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
+        }
+        
+        // 변경하고자 하는 비밀번호와 기존 비밀번호가 같으변 발생하는 예외
+        if(BCrypt.checkpw(user.getPassword(), selectedUser.getPassword())){
+            throw new NonCriticalException(ErrorMessage.SAME_PASSWORD_EXCEPTION);
+        }
+
+        selectedUser.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+
+        userMapper.updatePassword(selectedUser);
+
+        AuthEmail authEmail = new AuthEmail();
+        authEmail.setUser_id(selectedUser.getId());
+        authEmail.setType((short)0);
+
+        authEmailMapper.expirePastAuthEmail(authEmail);
+    }
+
+    @Override
+    public String findAccount(String email) {
+        User user = userMapper.getUserByFindEmail(email);
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        String account = user.getAccount();
+        account = account.substring(0, account.length() - 2);
+        account += "**";
+
+        return account;
     }
 
     private boolean isEmailSentNumExceed(AuthEmail authEmail){
@@ -212,7 +378,7 @@ public class UserServiceImpl implements UserService {
         calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
         Timestamp end =  new Timestamp(calendar.getTimeInMillis());
 
-        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUserId(), authEmail.getType(), start, end) >= 5){
+        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start, end) >= 5){
             return true;
         }
 

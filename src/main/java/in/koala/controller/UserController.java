@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -85,18 +86,49 @@ public class UserController {
         return new ResponseEntity(userService.refresh(), HttpStatus.OK);
     }
 
-    @Auth
     @PostMapping(value="/email")
-    @ApiOperation(value="이메일 전송 요청", notes="전송할 email 과 전송 type 를 받는다 type 이 0이면 비밀번호 재발급, 1 이면 채팅 인증이다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. account 와 email, type 이 필요합니다. type 이 0이면 비밀번호 재발급, 1 이면 채팅 인증, 2 이면 계정 찾기입니다. \n 계정 찾기의 경우 account 는 없어도 됩니다")
     public ResponseEntity sendEmail(@RequestBody AuthEmail authEmail){
         userService.sendEmail(authEmail);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity("전송 성공", HttpStatus.OK);
+    }
+
+    @PostMapping(value="/email/certification")
+    @ApiOperation(value="이메일 전송 인증", notes="전송 이메일 인증 API 입니다. account 와 email, type 이 필요합니다. \n type 2 계정 찾기의 경우 account 는 없어도 됩니다.")
+    public ResponseEntity certificateEmail(@RequestBody AuthEmail authEmail){
+        userService.certificateEmail(authEmail);
+        return new ResponseEntity("인증 성공", HttpStatus.OK);
+    }
+
+    @GetMapping(value="/account-check")
+    @ApiOperation(value="계정이 존재하는지 확인", notes="계정이 존재하는지 확인하는 API 입니다")
+    public ResponseEntity checkAccount(@RequestParam String account){
+        if(userService.checkAccount(account)){
+            return new ResponseEntity("존재하는 계정입니다", HttpStatus.OK);
+
+        } else{
+            return new ResponseEntity("존재하지 않는 계정입니다", HttpStatus.OK);
+        }
+    }
+
+    @PostMapping(value="/password-change")
+    @ApiOperation(value="비밀변호 변경", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n 비밀번호와 계정을 입력받습니다")
+    public ResponseEntity changePassword(@RequestBody User user){
+        userService.changePassword(user);
+        return new ResponseEntity("비밀번호 변경 성공", HttpStatus.OK);
+    }
+
+    @GetMapping(value="/account-find")
+    @ApiOperation(value="계정 찾기", notes="계정을 조회하는 API, 이메일 인증이 선행되어야 합니다.")
+    public ResponseEntity findAccount(@RequestParam String email){
+        return new ResponseEntity(userService.findAccount(email), HttpStatus.OK);
     }
 
     @Auth
-    @PostMapping(value="/email/certification")
-    @ApiOperation(value="이메일 전송 인증")
-    public ResponseEntity certificateEmail(@RequestBody AuthEmail authEmail){
-        return null;
+    @GetMapping(value="/auth-check")
+    @ApiOperation(value="이메일 인증 여부 확인", notes="해당 계정의 학교 인증 여부를 확인하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity checkAuth(){
+        userService.isEmailCertification();
+        return new ResponseEntity("인증 완료", HttpStatus.OK);
     }
 }

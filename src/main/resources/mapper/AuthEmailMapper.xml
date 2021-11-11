@@ -6,13 +6,26 @@
         SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND type=#{type} AND created_at BETWEEN #{start} AND #{end};
     </select>
 
+    <select id="getUndeletedAuthEmailByUserIdAndType" resultType="in.koala.domain.AuthEmail">
+        SELECT * FROM auth_email WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0;
+    </select>
+
+    <select id="getUndeletedIsAuthNumByUserId" resultType="Integer">
+        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND is_deleted=0 AND type=0;
+    </select>
+
     <update id="expirePastAuthEmail">
-        UPDATE auth_email SET is_deleted=1, expired_at=CURRENT_TIMESTAMP
-        WHERE user_id=#{userId} AND type=#{type} AND is_deleted=0;
+        UPDATE auth_email SET is_deleted=1
+        WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0;
+    </update>
+
+    <update id="setIsAuth">
+        UPDATE auth_email SET is_Auth=1
+        WHERE id=#{id}
     </update>
 
     <insert id="insertAuthEmail">
         INSERT INTO auth_email(user_id, type, is_deleted, created_at, expired_at, secret)
-        VALUES(#{userId}, #{type}, default, default, null, #{secret})
+        VALUES(#{user_id}, #{type}, default, default, #{expired_at}, #{secret})
     </insert>
 </mapper>

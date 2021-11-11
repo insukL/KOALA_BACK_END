@@ -38,7 +38,17 @@ public enum ErrorMessage {
 	PROFILE_SCOPE_ERROR(134, "oauth2 sns 로부터 제공되는 정보가 부족합니다"),
 	GOOGLE_LOGIN_ERROR(135, "구글 로그인 오류"),
 	KAKAO_LOGIN_ERROR(136, "카카오 로그인 오류"),
-	EMAIL_SEND_EXCEED_EXCEPTION(137, "이메인 전송 가능 횟수 초과")
+	EMAIL_SEND_EXCEED_EXCEPTION(137, "이메인 전송 가능 횟수 초과"),
+	UNEXPECTED_EMAIL_CERTIFICATE_ERROR(138, "이메일 인증 중 예상치 못한 오류 발생"),
+	EMAIL_EXPIRED_AUTH_EXCEPTION(139, "이메일 인증 유효 기간 만료되었습니다."),
+	EMAIL_SECRET_NOT_MATCH(140, "secret 이 일치하지 않습니다"),
+	EMAIL_ALREADY_CERTIFICATE(141, "이미 이메일 인증을 완료하였습니다"),
+	USER_TYPE_NOT_VALID_EXCEPTION(142, "sns 로 가입하신 경우 비밀번호 찾기 불가합니다"),
+	EMAIL_NOT_MATCH(143, "가입할 때 설정한 찾기용 이메일과 일치하지 않습니다."),
+	EMAIL_AUTHORIZE_ORDER_EXCEPTION(144, "먼저 이메일을 전송해 주세요"),
+	SAME_PASSWORD_EXCEPTION(145, "변경하고자 하는 비밀번호와 기존 비밀번호가 같습니다."),
+	EMAIL_NOT_AUTHORIZE_EXCEPTION(146, "이메일 인증이 완료되지 않았습니다"),
+	EMAIL_SEND_FAILED(147, "ses 이메일 전송 실패")
 	;
 
 	Integer code;

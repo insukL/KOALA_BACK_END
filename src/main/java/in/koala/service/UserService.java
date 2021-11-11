@@ -15,6 +15,11 @@ public interface UserService {
     User getLoginUserInfo();
     void updateNickname(String nickname);
     Boolean checkNickname(String nickname);
+    Boolean checkAccount(String account);
     Map<String, String> refresh();
     void sendEmail(AuthEmail authEmail);
+    void certificateEmail(AuthEmail authEmail);
+    boolean isEmailCertification();
+    void changePassword(User user);
+    String findAccount(String email);
 }

@@ -22,6 +22,15 @@
     <select id="getIdByAccount" parameterType="String" resultType="Long">
         SELECT id FROM user WHERE account=#{account};
     </select>
+
+    <select id="getUserByFindEmail" resultType="in.koala.domain.User">
+        SELECT
+        <include refid="userInfo">
+            <property name="alias" value=""/>
+        </include>
+        FROM user
+        WHERE find_email=#{email}
+    </select>
     
     <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.User">
         SELECT
@@ -54,6 +63,20 @@
         SET
             nickname=#{nickname}
         WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE user
+        SET
+            password=#{password}
+        WHERE id=#{id}
+    </update>
+
+    <update id="updateIsAuth">
+        UPDATE user
+        SET
+            is_auth=1
+        WHERE id=#{id}
     </update>
 
     <select id="test" resultType="String">
