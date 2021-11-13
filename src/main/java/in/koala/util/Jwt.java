@@ -54,7 +54,7 @@ public class Jwt {
     }
 
     public Claims getClaimsFromJwtToken(String token, TokenType tokenType){
-        System.out.println(token);
+        //System.out.println(token);
         Claims claims = null;
         String sub = null;
         token = token.substring(7);
@@ -78,6 +78,15 @@ public class Jwt {
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
             } else {
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            }
+        }
+
+        if(claims.get("id") == null || claims.get("sub") == null || claims.get("exp") == null){
+            if(tokenType.equals(TokenType.ACCESS)){
+                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else{
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
             }
         }

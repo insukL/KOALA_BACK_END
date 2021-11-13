@@ -219,12 +219,19 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.11.313</version>
+        </dependency>
+
         <!-- fcm -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>8.1.0</version>
         </dependency>
+
     </dependencies>
 
     <build>

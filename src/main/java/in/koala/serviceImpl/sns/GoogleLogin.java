@@ -1,6 +1,8 @@
 package in.koala.serviceImpl.sns;
 
+import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
+import in.koala.exception.NonCriticalException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -37,7 +39,12 @@ public class GoogleLogin extends AbstractSnsLogin {
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
-        return this.requestUserProfile(code, profileUri);
+        try {
+            return this.requestUserProfile(code, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
+        }
     }
 
     @Override
@@ -67,7 +74,12 @@ public class GoogleLogin extends AbstractSnsLogin {
 
     @Override
     public String requestAccessToken(String code) {
-        return this.requestAccessToken(code, accessTokenUri);
+        try {
+            return this.requestAccessToken(code, accessTokenUri);
+
+        } catch (Exception e) {
+            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
+        }
     }
 
     @Override

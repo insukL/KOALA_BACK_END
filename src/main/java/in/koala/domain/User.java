@@ -22,7 +22,7 @@ public class User {
     private Timestamp updated_at;
 
     @Builder
-    public User(String account, String sns_email, String nickname, String profile, Short is_auth) {
+    public User(String account, String sns_email, String nickname, String profile, Short user_type) {
         this.account = account;
         this.sns_email = sns_email;
         this.nickname = nickname;
