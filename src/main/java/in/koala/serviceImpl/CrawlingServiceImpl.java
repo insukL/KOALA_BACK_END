@@ -59,10 +59,10 @@ public class CrawlingServiceImpl implements CrawlingService {
 
     @Override
     public void dormCrawling() throws Exception {
-        
+
         // 크롤링한 객체들을 담을 List
         List<Crawling> crawlingList = new ArrayList<Crawling>();
-        
+
         try{
             //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
             Connection conn = Jsoup.connect(dormUrl);
@@ -83,10 +83,13 @@ public class CrawlingServiceImpl implements CrawlingService {
                 // 1 -> 아우미르
                 Crawling crawling = new Crawling(title, url, (short) 1, createdAt);
                 // 크롤링 객체를 전부 담기 위해 리스트에 추가
-                crawlingList.add(crawling);
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingList.add(crawling);
+                }
             }
             // 크롤링 객체를 담은 리스트를 db에 추가
-            crawlingMapper.addCrawlingData(crawlingList);
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -145,9 +148,13 @@ public class CrawlingServiceImpl implements CrawlingService {
             SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
             String createdAt = format2.format(format2.parse(map2.get("publishTime")));
             Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
-            crawlingList.add(crawling);
+            if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                crawlingList.add(crawling);
+            }
         }
-        crawlingMapper.addCrawlingData(crawlingList);
+        // 크롤링 객체를 담은 리스트를 db에 추가
+        if(!crawlingList.isEmpty())
+            crawlingMapper.addCrawlingData(crawlingList);
     }
 
     @Override
@@ -171,9 +178,14 @@ public class CrawlingServiceImpl implements CrawlingService {
                 String url = buffer.insert(4,"s").toString();
                 String createdAt = boardUrl.select(".bc-s-cre_dt").text();
                 Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
-                crawlingList.add(crawling);
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingList.add(crawling);
+                }
             }
         }
-        crawlingMapper.addCrawlingData(crawlingList);
+        // 크롤링 객체를 담은 리스트를 db에 추가
+        if(!crawlingList.isEmpty())
+            crawlingMapper.addCrawlingData(crawlingList);
     }
+
 }
