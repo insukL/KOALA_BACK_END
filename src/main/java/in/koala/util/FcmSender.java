@@ -36,6 +36,7 @@ public class FcmSender {
     public void sendMessage(String targetToken, String title, String body) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + this.getAccessToken());
+        httpHeaders.add("Content-Type", "application/json; charset=UTF-8");
         FcmRequest fcmRequest = new FcmRequest(targetToken, title, body);
         HttpEntity<FcmRequest> request = new HttpEntity<FcmRequest>(fcmRequest, httpHeaders);
         restTemplate.postForObject(fcmRequestUrl, request, String.class);

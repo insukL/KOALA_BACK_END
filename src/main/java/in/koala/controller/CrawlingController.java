@@ -9,28 +9,27 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/crawling")
 @RequiredArgsConstructor
 public class CrawlingController {
 
     private final CrawlingService crawlingService;
 
-    @GetMapping(value = "/dorm")
+    @GetMapping(value = "/crawling/dorm")
     public void dormCrawling() throws Exception{
         crawlingService.dormCrawling();
     }
 
-    @GetMapping(value="/youtube")
+    @GetMapping(value="/crawling/youtube")
     public void youtubeCrawling() throws Exception{
         crawlingService.youtubeCrawling();
     }
 
-    @GetMapping(value="/portal")
+    @GetMapping(value="/crawling/portal")
     public void portalCrawling() throws Exception{
         crawlingService.portalCrawling();
     }
 
-    @GetMapping(value = "/test")
+    @GetMapping(value = "/crawling/test")
     public String test() {
         return crawlingService.test();
     }
