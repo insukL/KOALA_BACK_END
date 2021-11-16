@@ -2,6 +2,8 @@ package in.koala.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.Crawling;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.CrawlingException;
 import in.koala.mapper.CrawlingMapper;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +94,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                 crawlingMapper.addCrawlingData(crawlingList);
         }
         catch (IOException e){
-            e.printStackTrace();
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
         }
     }
 
@@ -164,28 +166,32 @@ public class CrawlingServiceImpl implements CrawlingService {
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
         // 아우미르 크롤링이랑 로직은 비슷함
         List<Crawling> crawlingList = new ArrayList<Crawling>();
+        try{
+            for(String boardNumber : boardList) {
+                String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
 
-        for(String boardNumber : boardList) {
-            String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
+                Connection conn = Jsoup.connect(portalUrl);
+                Document html = conn.get();
 
-            Connection conn = Jsoup.connect(portalUrl);
-            Document html = conn.get();
-
-            Elements elements = html.select(".bc-s-tbllist > tbody > tr");
-            for(Element boardUrl : elements){
-                String title = boardUrl.select("td > div > span").attr("title");
-                StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
-                String url = buffer.insert(4,"s").toString();
-                String createdAt = boardUrl.select(".bc-s-cre_dt").text();
-                Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
-                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                    crawlingList.add(crawling);
+                Elements elements = html.select(".bc-s-tbllist > tbody > tr");
+                for(Element boardUrl : elements){
+                    String title = boardUrl.select("td > div > span").attr("title");
+                    StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
+                    String url = buffer.insert(4,"s").toString();
+                    String createdAt = boardUrl.select(".bc-s-cre_dt").text();
+                    Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingList.add(crawling);
+                    }
                 }
             }
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
-        // 크롤링 객체를 담은 리스트를 db에 추가
-        if(!crawlingList.isEmpty())
-            crawlingMapper.addCrawlingData(crawlingList);
-    }
+        catch (IOException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
+        }
 
+    }
 }
