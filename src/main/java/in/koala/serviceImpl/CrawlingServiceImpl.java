@@ -102,9 +102,8 @@ public class CrawlingServiceImpl implements CrawlingService {
     public void youtubeCrawling() throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        Date now = new Date();
-        String tmp = format.format(now);
-        String test = "2021-01-01T13:23:46Z";
+        Date tmp = new Date();
+        String now = format.format(tmp);
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
@@ -113,7 +112,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                 .queryParam("key",  youtubeAccessKey)
                 .queryParam("maxResults", "50")
                 .queryParam("type", "video")
-                .queryParam("publishedAfter", test);
+                .queryParam("publishedAfter", now);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -135,28 +134,27 @@ public class CrawlingServiceImpl implements CrawlingService {
         JSONObject jsonObject = (JSONObject) jsonParser.parse(youtube.getBody());
         JSONArray jsonArray = (JSONArray) jsonObject.get("items");
 
-        if(jsonArray.isEmpty())
-            return;
+        if(!jsonArray.isEmpty()){
+            for(int i=0;i<jsonArray.size();i++){
 
-        for(int i=0;i<jsonArray.size();i++){
+                JSONObject jsonObj = (JSONObject)jsonArray.get(i);
 
-            JSONObject jsonObj = (JSONObject)jsonArray.get(i);
+                Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
+                Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
 
-            Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
-            Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
-
-            String title = map2.get("title");
-            String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
-            SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
-            String createdAt = format2.format(format2.parse(map2.get("publishTime")));
-            Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
-            if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                crawlingList.add(crawling);
+                String title = map2.get("title");
+                String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
+                SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+                String createdAt = format2.format(format2.parse(map2.get("publishTime")));
+                Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingList.add(crawling);
+                }
             }
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
-        // 크롤링 객체를 담은 리스트를 db에 추가
-        if(!crawlingList.isEmpty())
-            crawlingMapper.addCrawlingData(crawlingList);
     }
 
     @Override
