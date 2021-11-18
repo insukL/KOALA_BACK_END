@@ -17,15 +17,6 @@ public class KeywordController {
 
     private final KeywordService keywordService;
 
-//    @Xss
-//    @Auth
-//    @GetMapping(value = "/keyword")
-//    public void registerKeyword(@RequestParam(name = "keyword2") String keyword,
-//                                          @RequestParam(name = "site") String site,
-//                                          @RequestParam(name = "isImportant") String isImportant){
-//        keywordService.registerKeyword(keyword, site, isImportant);
-//    }
-
     @Xss
     @Auth
     @ApiOperation(value ="키워드 삽입" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
