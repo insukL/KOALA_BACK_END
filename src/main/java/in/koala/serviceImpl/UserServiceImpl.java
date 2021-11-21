@@ -180,6 +180,7 @@ public class UserServiceImpl implements UserService {
         return this.generateAccessAndRefreshToken(id);
     }
 
+    // 각 경우에 따라 분리 예정
     @Override
     public void sendEmail(AuthEmail authEmail) {
 
@@ -258,6 +259,7 @@ public class UserServiceImpl implements UserService {
         return;
     }
 
+    // 각 경우에 따라 분리예정
     @Override
     public void certificateEmail(AuthEmail authEmail) {
 
@@ -332,7 +334,7 @@ public class UserServiceImpl implements UserService {
     public Boolean checkAccount(String account) {
         User user = userMapper.getUserByAccount(account);
 
-        if(user == null){
+        if(user != null){
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
 
@@ -397,7 +399,7 @@ public class UserServiceImpl implements UserService {
         userMapper.softDeleteUser(user);
     }
 
-    // 5회 전송 이후 10분간 전송 불가.....
+    // 5회 전송 이후 10분간 전송 불가.....?
     private boolean isEmailSentNumExceed(AuthEmail authEmail){
 
         Calendar calendar = Calendar.getInstance();
@@ -410,7 +412,7 @@ public class UserServiceImpl implements UserService {
         calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
         Timestamp end =  new Timestamp(calendar.getTimeInMillis());
 
-        // 그날 보낸 해당 인증의 이메일 개수가 5개 이상이면 한계 초과
+        //
         if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start, end) >= 5){
             return true;
         }

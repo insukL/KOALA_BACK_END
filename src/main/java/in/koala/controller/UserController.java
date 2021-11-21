@@ -91,7 +91,7 @@ public class UserController {
     }
 
     @PostMapping(value="/refresh")
-    @ApiOperation(value="access token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="access, refresh token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity refresh(){
         return new ResponseEntity(userService.refresh(), HttpStatus.OK);
     }
@@ -117,9 +117,10 @@ public class UserController {
             return new ResponseEntity("존재하는 계정입니다", HttpStatus.OK);
 
         } else{
-            return new ResponseEntity("존재하지 않는 계정입니다", HttpStatus.OK);
+            return new ResponseEntity("가입하지 않은 계정입니다", HttpStatus.OK);
         }
     }
+
 
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n 비밀번호와 계정을 입력받습니다")
