@@ -6,14 +6,13 @@ import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -70,6 +69,17 @@ public class UserController {
             return new ResponseEntity("사용 가능한 닉네임입니다." ,HttpStatus.OK);
         else
             return new ResponseEntity("중복된 닉네임입니다." ,HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping(value="/email-check")
+    @ApiOperation(value="찾기용 이메일 중복체크", notes="비밀번호나 계정을 찾기 위해 등록하는 이메일의 중복체크")
+    public ResponseEntity checkFindEmail(@RequestParam String email){
+        if(userService.checkFindEmail(email)){
+            return new ResponseEntity("사용 가능한 이메일입니다", HttpStatus.OK);
+
+        } else{
+            return new ResponseEntity("이미 존재하는 이메일입니다", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Auth
@@ -130,5 +140,13 @@ public class UserController {
     public ResponseEntity checkAuth(){
         userService.isEmailCertification();
         return new ResponseEntity("인증 완료", HttpStatus.OK);
+    }
+
+    @Auth
+    @PatchMapping(value="/delete")
+    @ApiOperation(value="유저 탈퇴", notes="유저 탈퇴", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity deleteUser(){
+        userService.softDeleteUser();
+        return new ResponseEntity("탈퇴 완료", HttpStatus.OK);
     }
 }

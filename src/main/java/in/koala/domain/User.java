@@ -27,6 +27,6 @@ public class User {
         this.sns_email = sns_email;
         this.nickname = nickname;
         this.profile = profile;
-        this.is_auth = is_auth;
+        this.user_type = user_type;
     }
 }

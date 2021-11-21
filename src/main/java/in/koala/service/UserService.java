@@ -22,4 +22,6 @@ public interface UserService {
     boolean isEmailCertification();
     void changePassword(User user);
     String findAccount(String email);
+    void softDeleteUser();
+    Boolean checkFindEmail(String email);
 }

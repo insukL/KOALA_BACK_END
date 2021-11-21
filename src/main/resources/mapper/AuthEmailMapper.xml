@@ -28,4 +28,8 @@
         INSERT INTO auth_email(user_id, type, is_deleted, created_at, expired_at, secret)
         VALUES(#{user_id}, #{type}, default, default, #{expired_at}, #{secret})
     </insert>
+
+    <select id="getLatestAuth">
+        SELECT * FROM auth_email WHERE user_id=#{user_id} ORDER BY id DESC LIMIT 1;
+    </select>
 </mapper>

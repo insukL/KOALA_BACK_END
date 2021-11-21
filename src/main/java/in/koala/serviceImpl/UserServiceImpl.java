@@ -67,7 +67,10 @@ public class UserServiceImpl implements UserService {
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
-        if(id == null) userMapper.snsSignUp(snsUser);
+        if(id == null) {
+            System.out.println(snsUser.getUser_type());
+            userMapper.snsSignUp(snsUser);
+        }
 
         return generateAccessAndRefreshToken(id);
     }
@@ -84,6 +87,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkFindEmail(String email) {
+        if(userMapper.getUserByFindEmail(email) == null) {
+            return true;
+
+        } else{
+            throw new NonCriticalException(ErrorMessage.DUPLICATED_EMAIL_EXCEPTION);
+        }
+    }
+
+    @Override
     public User signUp(User user) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
@@ -93,6 +106,7 @@ public class UserServiceImpl implements UserService {
         // 해당 닉네임이 이미 존재한다면 예외처리
         if(userMapper.checkNickname(user.getNickname()) >= 1) throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
 
+        if(userMapper.getUserByFindEmail(user.getFind_email()) != null) throw new NonCriticalException(ErrorMessage.DUPLICATED_EMAIL_EXCEPTION);
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         
@@ -182,8 +196,8 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        // sns 로그인으로 가입한 계정이 비밀번호 찾기를 요청할 경우 발생하는 예외
-        if(user.getUser_type() == 1 && authEmail.getType() == 0){
+        // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
+        if(user.getUser_type() == 1 && (authEmail.getType() == 0 || authEmail.getType() == 2)){
             throw new NonCriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
@@ -198,10 +212,13 @@ public class UserServiceImpl implements UserService {
 
         authEmail.setUser_id(user.getId());
 
-        // 당일 전송한 이메일의 횟수가 5를 초과했는지 확인하는 메소드
+        /*
+        // 당일 전송한 이메일의 횟수가 5를 초과했는지 확인
         if(isEmailSentNumExceed(authEmail)){
             throw new NonCriticalException(ErrorMessage.EMAIL_SEND_EXCEED_EXCEPTION);
         }
+        */
+
 
         String secret = "";
         Random random = new Random();
@@ -366,6 +383,21 @@ public class UserServiceImpl implements UserService {
         return account;
     }
 
+    @Override
+    public void softDeleteUser() {
+        User user = this.getLoginUserInfo();
+
+        String deleted = "deletedUser_" + user.getId().toString();
+
+        user.setNickname(deleted);
+        user.setAccount(deleted);
+        user.setFind_email(deleted + "@deletedUser.deleted");
+        user.setSns_email(deleted + "@deletedUser.deleted");
+
+        userMapper.softDeleteUser(user);
+    }
+
+    // 5회 전송 이후 10분간 전송 불가.....
     private boolean isEmailSentNumExceed(AuthEmail authEmail){
 
         Calendar calendar = Calendar.getInstance();
@@ -378,6 +410,7 @@ public class UserServiceImpl implements UserService {
         calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
         Timestamp end =  new Timestamp(calendar.getTimeInMillis());
 
+        // 그날 보낸 해당 인증의 이메일 개수가 5개 이상이면 한계 초과
         if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start, end) >= 5){
             return true;
         }
