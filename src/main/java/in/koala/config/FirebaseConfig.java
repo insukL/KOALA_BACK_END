@@ -16,10 +16,9 @@ import java.util.Arrays;
 
 @Configuration
 public class FirebaseConfig {
-    @Value("firebase.key_path")
+    @Value("${firebase.key_path}")
     private String keyPath;
 
-    /*
     @PostConstruct
     public void initFirebase(){
         try{
@@ -28,7 +27,6 @@ public class FirebaseConfig {
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-
             FirebaseApp.initializeApp(options);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -36,7 +34,6 @@ public class FirebaseConfig {
             e.printStackTrace();
         }
     }
-    */
 
 
 }

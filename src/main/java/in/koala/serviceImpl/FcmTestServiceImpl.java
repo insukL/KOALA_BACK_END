@@ -15,4 +15,9 @@ public class FcmTestServiceImpl implements FcmTestService {
         fcmSender.sendMessage(token, "test", "테스트중입니다");
         return "success";
     }
+
+    public String sendJavaTest(String token) throws Exception{
+        fcmSender.sendMessageV2(token, "test2", "자바 객체 테스트입니다.");
+        return "success";
+    }
 }
