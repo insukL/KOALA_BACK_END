@@ -2,7 +2,9 @@ package in.koala.util;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.messaging.*;
-import in.koala.domain.FcmRequest;
+import in.koala.domain.Fcm.FcmRequest;
+import in.koala.domain.Fcm.TokenMessage;
+import in.koala.domain.Fcm.TopicMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,8 +41,8 @@ public class FcmSender {
     public void sendMessage(String targetToken, String title, String body) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + this.getAccessToken());
-        FcmRequest fcmRequest = new FcmRequest(title, body);
-        fcmRequest.setToken(targetToken);
+        TokenMessage message = new TokenMessage(title, body, targetToken);
+        FcmRequest fcmRequest = new FcmRequest(message);
         HttpEntity<FcmRequest> request = new HttpEntity<FcmRequest>(fcmRequest, httpHeaders);
         restTemplate.postForObject(fcmRequestUrl, request, String.class);
         System.out.println("전송 완료");
@@ -113,8 +115,8 @@ public class FcmSender {
     public void sendMessageTopic(String topic, String title, String body) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + this.getAccessToken());
-        FcmRequest fcmRequest = new FcmRequest(title, body);
-        fcmRequest.setTopic(topic);
+        TopicMessage message = new TopicMessage(title, body, topic);
+        FcmRequest fcmRequest = new FcmRequest(message);
         HttpEntity<FcmRequest> request = new HttpEntity<FcmRequest>(fcmRequest, httpHeaders);
         restTemplate.postForObject(fcmRequestUrl, request, String.class);
         System.out.println("전송 완료");
@@ -132,5 +134,4 @@ public class FcmSender {
         String response = FirebaseMessaging.getInstance().send(message);
         System.out.println("전송 완료 : " + response);
     }
-
 }

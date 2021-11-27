@@ -1,6 +1,7 @@
 package in.koala.controller;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import in.koala.domain.Fcm.*;
 import in.koala.service.FcmTestService;
 import in.koala.util.FcmSender;
 import org.springframework.http.HttpStatus;
@@ -102,6 +103,24 @@ public class FcmTestController {
             e.printStackTrace();
             return new ResponseEntity("fail", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/tokenmessage")
+    public FcmRequest viewToken(){
+        FcmMessage message = new TokenMessage("test", "test2", "test3");
+        return new FcmRequest(message);
+    }
+
+    @GetMapping("/topicmessage")
+    public FcmRequest viewTopic(){
+        FcmMessage message = new TopicMessage("test", "test2", "test3");
+        return new FcmRequest(message);
+    }
+
+    @GetMapping("/conditionmessage")
+    public FcmRequest viewCondition(){
+        FcmMessage message = new ConditionMessage("test", "test2", "test3");
+        return new FcmRequest(message);
     }
 
 }
