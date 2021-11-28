@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
+/*
 @Configuration
 public class FirebaseConfig {
     @Value("${firebase.key_path}")
@@ -37,3 +38,4 @@ public class FirebaseConfig {
 
 
 }
+ */

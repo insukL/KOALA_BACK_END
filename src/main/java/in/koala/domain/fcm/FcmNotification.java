@@ -1,4 +1,4 @@
-package in.koala.domain.Fcm;
+package in.koala.domain.fcm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
