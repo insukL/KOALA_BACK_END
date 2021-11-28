@@ -12,6 +12,8 @@ import in.koala.util.Parser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -21,6 +23,7 @@ import org.springframework.web.method.HandlerMethod;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -49,6 +52,20 @@ public class GlobalExceptionHandler {
 			((CriticalException) e).setErrorTrace(e.getStackTrace()[0].toString());
 			baseException = (CriticalException) e;
 			slack=true;
+		}
+
+		if (e instanceof MethodArgumentNotValidException){
+			baseException = new BaseException(e.getClass().getSimpleName(), ErrorMessage.VALIDATION_FAIL_EXCEPTION);
+
+			//validation error message에서 본인이 domain에 작성한 default message만 가져오도록 하는
+			List<ObjectError> messageList = ((MethodArgumentNotValidException) e).getBindingResult().getAllErrors();
+			String message = "";
+			for(int i=0; i<messageList.size(); i++){
+				String validationMessage =  messageList.get(i).getDefaultMessage();
+				message += "[" + validationMessage + "]";
+			}
+			baseException.setErrorMessage(message);
+			baseException.setErrorTrace(e.getStackTrace()[0].toString());
 		}
 
 		if(baseException == null){

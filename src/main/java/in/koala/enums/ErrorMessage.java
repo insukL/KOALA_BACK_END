@@ -7,6 +7,7 @@ public enum ErrorMessage {
 	JSON_PARSE_EXCEPTION(2,"JSON Parse 과정에 문제가 있습니다. 데이터를 확인해주세요"),
 	AOP_XSS_SETTER_NO_EXSISTS_EXCEPTION(3,"해당 필드에 SETTER가 존재하지 않습니다."),
 	AOP_XSS_FIELD_NO_EXSISTS_EXCEPTION(3,"해당 필드에 FIELD가 존재하지 않습니다."),
+	VALIDATION_FAIL_EXCEPTION(4, "입력값이 valid 하지 않습니다"),
 	/*
 	 * DB_CONSTRAIN INVALID
 	 */

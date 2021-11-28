@@ -22,4 +22,11 @@ public final class ValidationGroups {
 
     public interface CreateAdmin extends Default {};
     public interface UpdateAdmin extends Default {};
+
+    // User groups
+    public interface Login extends Default{}
+    public interface SingIn extends Default{}
+    public interface Email extends Default{}
+    public interface Password extends Default{}
+
 }

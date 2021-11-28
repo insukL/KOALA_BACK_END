@@ -1,6 +1,7 @@
 package in.koala.controller;
 
 import in.koala.annotation.Auth;
+import in.koala.annotation.ValidationGroups;
 import in.koala.annotation.Xss;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
@@ -12,8 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 @RestController
@@ -50,21 +54,21 @@ public class UserController {
         userService.requestSnsLogin(snsType);
     }
 
-    @PostMapping(value="/sing-up")
+    @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
-    public ResponseEntity signUp(@RequestBody User user){
+    public ResponseEntity signUp(@RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
         return new ResponseEntity(userService.signUp(user), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
     @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
-    public ResponseEntity login(@RequestBody User user){
+    public ResponseEntity login(@RequestBody @Validated({ValidationGroups.Login.class}) User user){
         return new ResponseEntity(userService.login(user), HttpStatus.OK);
     }
 
     @GetMapping(value="/nickname-check")
     @ApiOperation(value="닉네임 중복체크", notes="닉네임 중복체크하는 api")
-    public ResponseEntity checkNickname(@RequestParam String nickname){
+    public ResponseEntity checkNickname(@RequestParam @NotNull String nickname){
         if ( userService.checkNickname(nickname) )
             return new ResponseEntity("사용 가능한 닉네임입니다." ,HttpStatus.OK);
         else
@@ -73,7 +77,7 @@ public class UserController {
 
     @GetMapping(value="/email-check")
     @ApiOperation(value="찾기용 이메일 중복체크", notes="비밀번호나 계정을 찾기 위해 등록하는 이메일의 중복체크")
-    public ResponseEntity checkFindEmail(@RequestParam String email){
+    public ResponseEntity checkFindEmail(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
         if(userService.checkFindEmail(email)){
             return new ResponseEntity("사용 가능한 이메일입니다", HttpStatus.OK);
 
@@ -85,7 +89,7 @@ public class UserController {
     @Auth
     @PatchMapping(value="/nickname")
     @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
-    public ResponseEntity changeNickname(@RequestParam String nickname){
+    public ResponseEntity changeNickname(@RequestParam @NotNull String nickname){
         userService.updateNickname(nickname);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -98,21 +102,21 @@ public class UserController {
 
     @PostMapping(value="/email")
     @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. account 와 email, type 이 필요합니다. type 이 0이면 비밀번호 재발급, 1 이면 채팅 인증, 2 이면 계정 찾기입니다. \n 계정 찾기의 경우 account 는 없어도 됩니다")
-    public ResponseEntity sendEmail(@RequestBody AuthEmail authEmail){
+    public ResponseEntity sendEmail(@RequestBody @Validated AuthEmail authEmail){
         userService.sendEmail(authEmail);
         return new ResponseEntity("전송 성공", HttpStatus.OK);
     }
 
     @PostMapping(value="/email/certification")
     @ApiOperation(value="이메일 전송 인증", notes="전송 이메일 인증 API 입니다. account 와 email, type 이 필요합니다. \n type 2 계정 찾기의 경우 account 는 없어도 됩니다.")
-    public ResponseEntity certificateEmail(@RequestBody AuthEmail authEmail){
+    public ResponseEntity certificateEmail(@RequestBody @Validated AuthEmail authEmail){
         userService.certificateEmail(authEmail);
         return new ResponseEntity("인증 성공", HttpStatus.OK);
     }
 
     @GetMapping(value="/account-check")
     @ApiOperation(value="계정이 존재하는지 확인", notes="계정이 존재하는지 확인하는 API 입니다")
-    public ResponseEntity checkAccount(@RequestParam String account){
+    public ResponseEntity checkAccount(@RequestParam @NotNull String account){
         if(userService.checkAccount(account)){
             return new ResponseEntity("존재하는 계정입니다", HttpStatus.OK);
 
@@ -131,7 +135,7 @@ public class UserController {
 
     @GetMapping(value="/account-find")
     @ApiOperation(value="계정 찾기", notes="계정을 조회하는 API, 이메일 인증이 선행되어야 합니다.")
-    public ResponseEntity findAccount(@RequestParam String email){
+    public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
         return new ResponseEntity(userService.findAccount(email), HttpStatus.OK);
     }
 
