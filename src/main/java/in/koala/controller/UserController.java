@@ -6,14 +6,13 @@ import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -72,6 +71,17 @@ public class UserController {
             return new ResponseEntity("중복된 닉네임입니다." ,HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping(value="/email-check")
+    @ApiOperation(value="찾기용 이메일 중복체크", notes="비밀번호나 계정을 찾기 위해 등록하는 이메일의 중복체크")
+    public ResponseEntity checkFindEmail(@RequestParam String email){
+        if(userService.checkFindEmail(email)){
+            return new ResponseEntity("사용 가능한 이메일입니다", HttpStatus.OK);
+
+        } else{
+            return new ResponseEntity("이미 존재하는 이메일입니다", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @Auth
     @PatchMapping(value="/nickname")
     @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
@@ -81,7 +91,7 @@ public class UserController {
     }
 
     @PostMapping(value="/refresh")
-    @ApiOperation(value="access token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="access, refresh token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity refresh(){
         return new ResponseEntity(userService.refresh(), HttpStatus.OK);
     }
@@ -107,9 +117,10 @@ public class UserController {
             return new ResponseEntity("존재하는 계정입니다", HttpStatus.OK);
 
         } else{
-            return new ResponseEntity("존재하지 않는 계정입니다", HttpStatus.OK);
+            return new ResponseEntity("가입하지 않은 계정입니다", HttpStatus.OK);
         }
     }
+
 
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n 비밀번호와 계정을 입력받습니다")
@@ -130,5 +141,13 @@ public class UserController {
     public ResponseEntity checkAuth(){
         userService.isEmailCertification();
         return new ResponseEntity("인증 완료", HttpStatus.OK);
+    }
+
+    @Auth
+    @PatchMapping(value="/delete")
+    @ApiOperation(value="유저 탈퇴", notes="유저 탈퇴", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity deleteUser(){
+        userService.softDeleteUser();
+        return new ResponseEntity("탈퇴 완료", HttpStatus.OK);
     }
 }

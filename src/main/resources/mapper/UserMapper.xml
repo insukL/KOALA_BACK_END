@@ -13,14 +13,14 @@
 
     <insert id="snsSignUp" parameterType="in.koala.domain.User">
         INSERT INTO user(nickname, account, sns_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, #{user_type}, DEFAULT, DEFAULT, DEFAULT)
+        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, 1, DEFAULT, DEFAULT, DEFAULT)
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
 
     <select id="getIdByAccount" parameterType="String" resultType="Long">
-        SELECT id FROM user WHERE account=#{account};
+        SELECT id FROM user WHERE account=#{account} AND deleted_at IS NULL;
     </select>
 
     <select id="getUserByFindEmail" resultType="in.koala.domain.User">
@@ -29,7 +29,7 @@
             <property name="alias" value=""/>
         </include>
         FROM user
-        WHERE find_email=#{email}
+        WHERE find_email=#{email} AND deleted_at IS NULL
     </select>
     
     <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.User">
@@ -38,7 +38,7 @@
             <property name="alias" value=""/>
         </include>
         FROM user
-        WHERE account=#{account}
+        WHERE account=#{account} AND deleted_at IS NULL
     </select>
 
     <select id="getUserById" parameterType="Long" resultType="in.koala.domain.User">
@@ -47,7 +47,7 @@
             <property name="alias" value=""/>
         </include>
         FROM user
-        WHERE id=#{id};
+        WHERE id=#{id} AND deleted_at IS NULL
     </select>
 
     <select id="checkNickname" parameterType="String" resultType="Integer">
@@ -55,7 +55,7 @@
     </select>
 
     <select id="getUserPassword" parameterType="String" resultType="in.koala.domain.User">
-        SELECT id, password FROM user WHERE account=#{account};
+        SELECT id, password FROM user WHERE account=#{account} AND deleted_at IS NULL
     </select>
 
     <update id="updateNickname" parameterType="in.koala.domain.User">
@@ -76,6 +76,17 @@
         UPDATE user
         SET
             is_auth=1
+        WHERE id=#{id}
+    </update>
+
+    <update id="softDeleteUser">
+        UPDATE user
+        SET
+            deleted_at=CURRENT_TIMESTAMP,
+            account=#{account},
+            find_email=#{find_email},
+            sns_email=#{sns_email},
+            nickname=#{nickname}
         WHERE id=#{id}
     </update>
 

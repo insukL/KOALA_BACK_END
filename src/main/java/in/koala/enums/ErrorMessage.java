@@ -24,6 +24,7 @@ public enum ErrorMessage {
 	 */
 	DUPLICATED_ACCOUNT_EXCEPTION(123, "이미 존재하는 아이디입니다"),
 	DUPLICATED_NICKNAME_EXCEPTION(124, "이미 존재하는 닉네임입니다"),
+	DUPLICATED_EMAIL_EXCEPTION(125, "이미 존재하는 이메일입니다"),
 	NAVER_LOGIN_ERROR(125, "네이버 로그인 오류"),
 	ACCOUNT_NOT_EXIST(126, "존재하지 않는 아이디입니다."),
 	WRONG_PASSWORD_EXCEPTION(127, "틀린 비밀번호입니다."),

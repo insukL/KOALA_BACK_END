@@ -17,4 +17,5 @@ public interface UserMapper {
     void updateNickname(User user);
     void updateIsAuth(Long id);
     void updatePassword(User user);
+    void softDeleteUser(User user);
 }
