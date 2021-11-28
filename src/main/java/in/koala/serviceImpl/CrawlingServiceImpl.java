@@ -2,6 +2,8 @@ package in.koala.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.Crawling;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.CrawlingException;
 import in.koala.mapper.CrawlingMapper;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
@@ -59,10 +61,10 @@ public class CrawlingServiceImpl implements CrawlingService {
 
     @Override
     public void dormCrawling() throws Exception {
-        
+
         // 크롤링한 객체들을 담을 List
         List<Crawling> crawlingList = new ArrayList<Crawling>();
-        
+
         try{
             //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
             Connection conn = Jsoup.connect(dormUrl);
@@ -83,13 +85,16 @@ public class CrawlingServiceImpl implements CrawlingService {
                 // 1 -> 아우미르
                 Crawling crawling = new Crawling(title, url, (short) 1, createdAt);
                 // 크롤링 객체를 전부 담기 위해 리스트에 추가
-                crawlingList.add(crawling);
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingList.add(crawling);
+                }
             }
             // 크롤링 객체를 담은 리스트를 db에 추가
-            crawlingMapper.addCrawlingData(crawlingList);
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
         catch (IOException e){
-            e.printStackTrace();
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
         }
     }
 
@@ -97,9 +102,8 @@ public class CrawlingServiceImpl implements CrawlingService {
     public void youtubeCrawling() throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        Date now = new Date();
-        String tmp = format.format(now);
-        String test = "2021-01-01T13:23:46Z";
+        Date tmp = new Date();
+        String now = format.format(tmp);
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
@@ -108,7 +112,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                 .queryParam("key",  youtubeAccessKey)
                 .queryParam("maxResults", "50")
                 .queryParam("type", "video")
-                .queryParam("publishedAfter", test);
+                .queryParam("publishedAfter", now);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -130,24 +134,27 @@ public class CrawlingServiceImpl implements CrawlingService {
         JSONObject jsonObject = (JSONObject) jsonParser.parse(youtube.getBody());
         JSONArray jsonArray = (JSONArray) jsonObject.get("items");
 
-        if(jsonArray.isEmpty())
-            return;
+        if(!jsonArray.isEmpty()){
+            for(int i=0;i<jsonArray.size();i++){
 
-        for(int i=0;i<jsonArray.size();i++){
+                JSONObject jsonObj = (JSONObject)jsonArray.get(i);
 
-            JSONObject jsonObj = (JSONObject)jsonArray.get(i);
+                Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
+                Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
 
-            Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
-            Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
-
-            String title = map2.get("title");
-            String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
-            SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
-            String createdAt = format2.format(format2.parse(map2.get("publishTime")));
-            Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
-            crawlingList.add(crawling);
+                String title = map2.get("title");
+                String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
+                SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+                String createdAt = format2.format(format2.parse(map2.get("publishTime")));
+                Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingList.add(crawling);
+                }
+            }
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
-        crawlingMapper.addCrawlingData(crawlingList);
     }
 
     @Override
@@ -157,23 +164,32 @@ public class CrawlingServiceImpl implements CrawlingService {
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
         // 아우미르 크롤링이랑 로직은 비슷함
         List<Crawling> crawlingList = new ArrayList<Crawling>();
+        try{
+            for(String boardNumber : boardList) {
+                String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
 
-        for(String boardNumber : boardList) {
-            String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
+                Connection conn = Jsoup.connect(portalUrl);
+                Document html = conn.get();
 
-            Connection conn = Jsoup.connect(portalUrl);
-            Document html = conn.get();
-
-            Elements elements = html.select(".bc-s-tbllist > tbody > tr");
-            for(Element boardUrl : elements){
-                String title = boardUrl.select("td > div > span").attr("title");
-                StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
-                String url = buffer.insert(4,"s").toString();
-                String createdAt = boardUrl.select(".bc-s-cre_dt").text();
-                Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
-                crawlingList.add(crawling);
+                Elements elements = html.select(".bc-s-tbllist > tbody > tr");
+                for(Element boardUrl : elements){
+                    String title = boardUrl.select("td > div > span").attr("title");
+                    StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
+                    String url = buffer.insert(4,"s").toString();
+                    String createdAt = boardUrl.select(".bc-s-cre_dt").text();
+                    Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingList.add(crawling);
+                    }
+                }
             }
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            if(!crawlingList.isEmpty())
+                crawlingMapper.addCrawlingData(crawlingList);
         }
-        crawlingMapper.addCrawlingData(crawlingList);
+        catch (IOException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
+        }
+
     }
 }
