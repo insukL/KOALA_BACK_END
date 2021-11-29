@@ -6,6 +6,15 @@
         SELECT title FROM crawling LIMIT 1;
     </select>
 
+    <select id="checkDuplicatedData" parameterType="in.koala.domain.Crawling" resultType="int">
+        SELECT count(*)
+        FROM crawling
+        WHERE title = #{title}
+            AND url = #{url}
+            AND site = #{site}
+            AND created_at = #{createdAt}
+    </select>
+
     <insert id="addCrawlingData">
         INSERT INTO crawling(title, url, site, created_at)
         VALUES
@@ -18,7 +27,6 @@
             )
         </foreach>
     </insert>
-
     <!--<insert id="addCrawlingData" parameterType="in.koala.domain.Crawling">
         INSERT INTO crawling(title, url, site, created_at)
         VALUES (#{title}, #{url}, #{site}, #{createdAt});
