@@ -41,7 +41,7 @@ public class FcmSender {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + this.getAccessToken());
         httpHeaders.add("Content-Type", "application/json; charset=UTF-8");
-        FcmRequest fcmRequest = new FcmRequest(targetToken, title, body);
+        FcmRequest fcmRequest = new FcmRequest(message);
         HttpEntity<FcmRequest> request = new HttpEntity<FcmRequest>(fcmRequest, httpHeaders);
         restTemplate.postForObject(fcmRequestUrl, request, String.class);
     }
