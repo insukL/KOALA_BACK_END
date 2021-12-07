@@ -27,7 +27,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
             List<Map<String, String>> tmp = keywordPushMapper.pushKeyword(userId);
             for(Map<String, String> map : tmp){
                 System.out.println(map.get("title") + " " + map.get("url"));
-                fcmSender.sendMessage(deviceToken, map.get("title"), map.get("url"));
+                //fcmSender.sendMessage(deviceToken, map.get("title"), map.get("url"));
             }
         }
         catch (Exception e){
