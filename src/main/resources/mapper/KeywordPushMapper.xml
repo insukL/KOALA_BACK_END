@@ -5,7 +5,7 @@
     <select id="pushKeyword" parameterType="java.lang.Long" resultType="java.util.Map">
         SELECT c.title, c.url
         FROM crawling as c
-                 INNER JOIN keyword as k ON c.title LIKE CONCAT('%',k.keyword,'%')
+                 INNER JOIN keyword as k ON c.title LIKE CONCAT('%',k.name,'%')
                  INNER JOIN user_keyword as uk ON uk.keyword_id = k.id
         WHERE uk.user_id = #{userId};
     </select>
