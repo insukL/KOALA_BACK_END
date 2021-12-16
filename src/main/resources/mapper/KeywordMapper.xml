@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.KeywordMapper">
+
+    <select id = "myKeywordList" parameterType="java.lang.Long" resultType="in.koala.domain.Keyword">
+        SELECT k.id, k.name as keyword, k.site, uk.is_important as isImportant
+        FROM keyword as k
+            INNER JOIN user_keyword as uk ON uk.keyword_id = k.id
+        WHERE uk.user_id = #{userId}
+    </select>
+
     <insert id="insertKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (keyword, site)
+        INSERT INTO keyword (name, site)
         VALUES (#{keyword}, #{site})
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
@@ -13,4 +21,18 @@
         INSERT INTO user_keyword (user_id, keyword_id, is_important)
         VALUES (#{user_id}, #{keyword_id}, #{is_important})
     </insert>
+
+    <update id="deleteKeyword" parameterType="java.util.Map">
+        UPDATE user_keyword
+        SET is_deleted = 1
+        WHERE user_id = #{user_id}
+            AND keyword_id = #{keyword_id}
+    </update>
+
+    <update id="modifyKeyword" parameterType="java.util.Map">
+        UPDATE keyword
+        SET name = #{keyword_name}
+        WHERE id = #{keyword_id}
+    </update>
+
 </mapper>
