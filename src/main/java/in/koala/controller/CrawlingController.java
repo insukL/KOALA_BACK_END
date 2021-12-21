@@ -11,6 +11,16 @@ public class CrawlingController {
 
     private final CrawlingService crawlingService;
 
+    @GetMapping(value = "/crawling/test")
+    public String test() {
+        return crawlingService.test();
+    }
+
+    @GetMapping(value="/crawling/portal")
+    public void portalCrawling() throws Exception{
+        crawlingService.portalCrawling();
+    }
+
     @GetMapping(value = "/crawling/dorm")
     public void dormCrawling() throws Exception{
         crawlingService.dormCrawling();
@@ -21,13 +31,4 @@ public class CrawlingController {
         crawlingService.youtubeCrawling();
     }
 
-    @GetMapping(value="/crawling/portal")
-    public void portalCrawling() throws Exception{
-        crawlingService.portalCrawling();
-    }
-
-    @GetMapping(value = "/crawling/test")
-    public String test() {
-        return crawlingService.test();
-    }
 }

@@ -36,11 +36,15 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class CrawlingServiceImpl implements CrawlingService {
 
-    @Value("${dorm.url}")
+    private static final short PORTAL  = 0; // 아우누리
+    private static final short DORM = 1; // 아우미르
+    private static final short YOUTUBE = 2; // 유튜브
+
+   @Value("${dorm.url}")
     private String dormUrl;
 
     @Value("${youtube.channel.id}")
@@ -54,16 +58,36 @@ public class CrawlingServiceImpl implements CrawlingService {
 
     private final CrawlingMapper crawlingMapper;
 
+
     @Override
     public String test() {
         return crawlingMapper.test();
     }
 
     @Override
+    public void updateLog(String site, Timestamp crawlingAt) {
+        crawlingMapper.updateLog(site, crawlingAt);
+    }
+
+    @Override
+    public void updateTable(List<Crawling> crawlingInsertList, List<Crawling> crawlingUpdateList){
+        if(!crawlingInsertList.isEmpty()){
+            crawlingMapper.addCrawlingData(crawlingInsertList);
+        }
+        if(!crawlingUpdateList.isEmpty()){
+            crawlingMapper.updateCrawlingData(crawlingUpdateList);
+        }
+    }
+
+    @Override
     public void dormCrawling() throws Exception {
 
-        // 크롤링한 객체들을 담을 List
-        List<Crawling> crawlingList = new ArrayList<Crawling>();
+        // 크롤링한 객체들을 담을 List - 신규 데이터
+        List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
+        // 크롤링한 객체들을 담을 List - 중복된 데이터
+        List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
+        // 크롤링한 시점
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
 
         try{
             //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
@@ -81,21 +105,77 @@ public class CrawlingServiceImpl implements CrawlingService {
                 String url = element.child(1).child(0).absUrl("href");
                 // td 태그 중에서 center 클래스로 지정되었는 태그들이 많은데 3번째로 존재하는 td 태그에 작성일이 담겨있음
                 String createdAt = element.select(".center").get(2).text();
-                // 추출한 데이터들을 crawling 객체에 전부 담음
-                // 1 -> 아우미르
-                Crawling crawling = new Crawling(title, url, (short) 1, createdAt);
+
+                Crawling crawling = new Crawling(title, url, DORM, createdAt, crawlingAt);
+
                 // 크롤링 객체를 전부 담기 위해 리스트에 추가
                 if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                    crawlingList.add(crawling);
+                    crawlingInsertList.add(crawling);
+                }
+                else{
+                    crawlingUpdateList.add(crawling);
                 }
             }
+
+            //crawling_log 테이블에 로그 남기기
+            updateLog("DORM", crawlingAt);
+
             // 크롤링 객체를 담은 리스트를 db에 추가
-            if(!crawlingList.isEmpty())
-                crawlingMapper.addCrawlingData(crawlingList);
+            updateTable(crawlingInsertList, crawlingUpdateList);
         }
         catch (IOException e){
             throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
         }
+    }
+
+    @Override
+    public void portalCrawling() throws Exception {
+
+        // 크롤링한 객체들을 담을 List - 신규 데이터
+        List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
+        // 크롤링한 객체들을 담을 List - 중복된 데이터
+        List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
+        // 크롤링한 시점
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+
+        // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
+        String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
+        // 아우미르 크롤링이랑 로직은 비슷함
+        List<Crawling> crawlingList = new ArrayList<Crawling>();
+        try{
+            for(String boardNumber : boardList) {
+                String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
+
+                Connection conn = Jsoup.connect(portalUrl);
+                Document html = conn.get();
+
+                Elements elements = html.select(".bc-s-tbllist > tbody > tr");
+                for(Element boardUrl : elements){
+                    String title = boardUrl.select("td > div > span").attr("title");
+                    StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
+                    String url = buffer.insert(4,"s").toString();
+                    String createdAt = boardUrl.select(".bc-s-cre_dt").text();
+                    Crawling crawling = new Crawling(title, url, PORTAL, createdAt, crawlingAt);
+
+                    // 크롤링 객체를 전부 담기 위해 리스트에 추가
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingInsertList.add(crawling);
+                    }
+                    else{
+                        crawlingUpdateList.add(crawling);
+                    }
+                }
+            }
+            //crawling_log 테이블에 로그 남기기
+            updateLog("PORTAL", crawlingAt);
+
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            updateTable(crawlingInsertList, crawlingUpdateList);
+        }
+        catch (IOException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
+        }
+
     }
 
     @Override
@@ -105,6 +185,9 @@ public class CrawlingServiceImpl implements CrawlingService {
         Date tmp = new Date();
         String now = format.format(tmp);
         List<Crawling> crawlingList = new ArrayList<Crawling>();
+
+        // 크롤링한 시점
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
                 .queryParam("part", "snippet")
@@ -146,50 +229,17 @@ public class CrawlingServiceImpl implements CrawlingService {
                 String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
                 SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
                 String createdAt = format2.format(format2.parse(map2.get("publishTime")));
-                Crawling crawling = new Crawling(title, url, (short) 2, createdAt);
+                Crawling crawling = new Crawling(title, url, YOUTUBE, createdAt, crawlingAt);
                 if(crawlingMapper.checkDuplicatedData(crawling) == 0){
                     crawlingList.add(crawling);
                 }
             }
-            // 크롤링 객체를 담은 리스트를 db에 추가
-            if(!crawlingList.isEmpty())
-                crawlingMapper.addCrawlingData(crawlingList);
         }
-    }
+        //crawling_log 테이블에 로그 남기기
+        updateLog("YOUTUBE", crawlingAt);
 
-    @Override
-    public void portalCrawling() throws Exception {
-
-        // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
-        String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
-        // 아우미르 크롤링이랑 로직은 비슷함
-        List<Crawling> crawlingList = new ArrayList<Crawling>();
-        try{
-            for(String boardNumber : boardList) {
-                String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
-
-                Connection conn = Jsoup.connect(portalUrl);
-                Document html = conn.get();
-
-                Elements elements = html.select(".bc-s-tbllist > tbody > tr");
-                for(Element boardUrl : elements){
-                    String title = boardUrl.select("td > div > span").attr("title");
-                    StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
-                    String url = buffer.insert(4,"s").toString();
-                    String createdAt = boardUrl.select(".bc-s-cre_dt").text();
-                    Crawling crawling = new Crawling(title, url, (short) 0, createdAt);
-                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                        crawlingList.add(crawling);
-                    }
-                }
-            }
-            // 크롤링 객체를 담은 리스트를 db에 추가
-            if(!crawlingList.isEmpty())
-                crawlingMapper.addCrawlingData(crawlingList);
-        }
-        catch (IOException e){
-            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
-        }
-
+        // 크롤링 객체를 담은 리스트를 db에 추가
+        if(!crawlingList.isEmpty())
+            crawlingMapper.addCrawlingData(crawlingList);
     }
 }

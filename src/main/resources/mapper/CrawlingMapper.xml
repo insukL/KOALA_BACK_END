@@ -10,26 +10,41 @@
         SELECT count(*)
         FROM crawling
         WHERE title = #{title}
-            AND url = #{url}
-            AND site = #{site}
-            AND created_at = #{createdAt}
+          AND url = #{url}
+          AND site = #{site}
+          AND created_at = #{createdAt}
     </select>
 
+    <insert id="updateLog">
+        INSERT INTO crawling_log(site, crawling_at)
+        VALUES (#{site}, #{crawling_at})
+    </insert>
+
     <insert id="addCrawlingData">
-        INSERT INTO crawling(title, url, site, created_at)
+        INSERT INTO crawling(title, url, site, created_at, crawling_at)
         VALUES
         <foreach item="crawling" separator=" , " collection="list">
             (
-             #{crawling.title},
-             #{crawling.url},
-             #{crawling.site},
-             #{crawling.createdAt}
+            #{crawling.title},
+            #{crawling.url},
+            #{crawling.site},
+            #{crawling.createdAt},
+            #{crawling.crawlingAt}
             )
         </foreach>
     </insert>
-    <!--<insert id="addCrawlingData" parameterType="in.koala.domain.Crawling">
-        INSERT INTO crawling(title, url, site, created_at)
-        VALUES (#{title}, #{url}, #{site}, #{createdAt});
-    </insert>-->
+
+    <update id="updateCrawlingData" parameterType="in.koala.domain.Crawling">
+        <foreach item="crawling" separator=";" collection="list" index="index" open="" close="">
+            UPDATE crawling
+            <set>
+                updated_at = #{crawling.crawlingAt}
+            </set>
+            WHERE title = #{crawling.title}
+                AND url = #{crawling.url}
+                AND site = #{crawling.site}
+                AND created_at = #{crawling.createdAt}
+        </foreach>
+    </update>
 
 </mapper>
