@@ -334,7 +334,7 @@ public class UserServiceImpl implements UserService {
     public Boolean checkAccount(String account) {
         User user = userMapper.getUserByAccount(account);
 
-        if(user != null){
+        if(user == null){
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
 
