@@ -9,18 +9,21 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 public class Crawling {
+
     private Long id;
     private String title;
     private String url;
     private short site;
-    private Short isDeleted;
     private String createdAt;
-    private String updatedAt;
+    private Timestamp crawlingAt;
+    private Timestamp updatedAt;
+    private Short isDeleted;
 
-    public Crawling(String title, String url, Short site, String createdAt){
+    public Crawling(String title, String url, Short site, String createdAt, Timestamp crawlingAt){
         this.title = title;
         this.url = url;
         this.site = site;
         this.createdAt = createdAt;
+        this.crawlingAt = crawlingAt;
     }
 }
