@@ -1,7 +1,8 @@
 package in.koala.serviceImpl;
 
-import in.koala.domain.Crawling;
 import in.koala.domain.fcm.TokenMessage;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.KeywordPushException;
 import in.koala.mapper.KeywordPushMapper;
 import in.koala.service.KeywordPushService;
 import in.koala.service.UserService;
@@ -21,23 +22,21 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private final KeywordPushMapper keywordPushMapper;
 
     @Override
-    public List<Crawling> pushKeyword(String deviceToken) {
+    public void pushKeyword(String deviceToken) {
+
+        Long userId = userService.getLoginUserInfo().getId();
+        List<Map<String, String>> tmp = keywordPushMapper.pushKeyword(userId);
 
         try{
-            Long userId = userService.getLoginUserInfo().getId();
-            System.out.println("user Id : " + userId);
-            List<Map<String, String>> tmp = keywordPushMapper.pushKeyword(userId);
-            System.out.println(tmp);
             for(Map<String, String> map : tmp){
                 String title = map.get("title");
                 String url = map.get("url");
-                System.out.println(title + " " + url);
                 fcmSender.sendMessage(new TokenMessage(title, url, deviceToken));
             }
         }
         catch (Exception e){
-            e.printStackTrace();
+            throw new KeywordPushException(ErrorMessage.FAILED_TO_SEND_NOTIFICATION);
         }
-        return null;
     }
+
 }

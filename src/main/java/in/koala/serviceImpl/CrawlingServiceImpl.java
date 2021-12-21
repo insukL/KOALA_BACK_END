@@ -124,7 +124,7 @@ public class CrawlingServiceImpl implements CrawlingService {
             updateTable(crawlingInsertList, crawlingUpdateList);
         }
         catch (IOException e){
-            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_PORTAL);
         }
     }
 
@@ -173,7 +173,7 @@ public class CrawlingServiceImpl implements CrawlingService {
             updateTable(crawlingInsertList, crawlingUpdateList);
         }
         catch (IOException e){
-            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_URL);
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_DORM);
         }
 
     }
@@ -206,35 +206,41 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         RestTemplate rt = new RestTemplate(factory);
 
-        ResponseEntity<String> youtube = rt.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                new HttpEntity<String>(headers),
-                String.class
-        );
+        try{
+            ResponseEntity<String> youtube = rt.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    new HttpEntity<String>(headers),
+                    String.class
+            );
 
-        JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(youtube.getBody());
-        JSONArray jsonArray = (JSONArray) jsonObject.get("items");
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(youtube.getBody());
+            JSONArray jsonArray = (JSONArray) jsonObject.get("items");
 
-        if(!jsonArray.isEmpty()){
-            for(int i=0;i<jsonArray.size();i++){
+            if(!jsonArray.isEmpty()){
+                for(int i=0;i<jsonArray.size();i++){
 
-                JSONObject jsonObj = (JSONObject)jsonArray.get(i);
+                    JSONObject jsonObj = (JSONObject)jsonArray.get(i);
 
-                Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
-                Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
+                    Map<String, String> map1 = new ObjectMapper().readValue(jsonObj.get("id").toString(), Map.class);
+                    Map<String, String> map2 = new ObjectMapper().readValue(jsonObj.get("snippet").toString(), Map.class);
 
-                String title = map2.get("title");
-                String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
-                SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
-                String createdAt = format2.format(format2.parse(map2.get("publishTime")));
-                Crawling crawling = new Crawling(title, url, YOUTUBE, createdAt, crawlingAt);
-                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                    crawlingList.add(crawling);
+                    String title = map2.get("title");
+                    String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
+                    SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+                    String createdAt = format2.format(format2.parse(map2.get("publishTime")));
+                    Crawling crawling = new Crawling(title, url, YOUTUBE, createdAt, crawlingAt);
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingList.add(crawling);
+                    }
                 }
             }
         }
+        catch (IllegalStateException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_YOUTUBE);
+        }
+
         //crawling_log 테이블에 로그 남기기
         updateLog("YOUTUBE", crawlingAt);
 

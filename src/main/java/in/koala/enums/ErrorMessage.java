@@ -66,7 +66,14 @@ public enum ErrorMessage {
 	/**
 	 * Crawling
 	 */
-	UNABLE_CONNECT_TO_URL(300, "해당 웹 사이트에 접속할 수 없습니다.")
+	UNABLE_CONNECT_TO_PORTAL(300, "아우누리 웹 사이트에 접속할 수 없습니다."),
+	UNABLE_CONNECT_TO_DORM(301, "아우미르 웹 사이트에 접속할 수 없습니다."),
+	UNABLE_CONNECT_TO_YOUTUBE(302, "유튜브 API 호출이 불가 합니다."),
+
+	/**
+	 * FCM Push Notification
+	 */
+	FAILED_TO_SEND_NOTIFICATION(400, "알림 발송에 실패하였습니다.")
 	;
 
 
