@@ -2,12 +2,15 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.Keyword;
 import in.koala.domain.User;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
 import in.koala.service.KeywordService;
 import in.koala.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,19 +29,30 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void registerKeyword(String keyword, short site, boolean isImportant) {
-        Keyword tmp = new Keyword(keyword, site);
-        keywordMapper.insertKeyword(tmp);
-        System.out.println("방금 들어간 데이터 id(pk) : " + tmp.getId());
+    public void registerKeyword(Keyword keyword) {
+
         Long userId = userService.getLoginUserInfo().getId();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("user_id", userId);
-        map.put("keyword_id", tmp.getId());
-        map.put("is_important", isImportant);
-        if(1 == keywordMapper.insertUsersKeyword(map))
-            System.out.println("성공");
-        else
-            System.out.println("실패");
+        keyword.setUserId(userId);
+
+        Long keywordId = keywordMapper.checkDuplicateKeyword(keyword);
+        if(keywordId == null) {
+            keywordMapper.insertKeyword(keyword);
+        }
+        else{
+            keyword.setKeywordId(keywordId);
+        }
+
+        keyword.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+
+        if(keywordMapper.checkDuplicateUsersKeyword(keyword) != null){
+            throw new KeywordException(ErrorMessage.DUPLICATED_KEYWORD_EXCEPTION);
+        }
+        else{
+            if(1 == keywordMapper.insertUsersKeyword(keyword))
+                System.out.println("성공");
+            else
+                System.out.println("실패");
+        }
     }
 
     @Override

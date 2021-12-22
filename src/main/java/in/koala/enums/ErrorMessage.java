@@ -73,7 +73,12 @@ public enum ErrorMessage {
 	/**
 	 * FCM Push Notification
 	 */
-	FAILED_TO_SEND_NOTIFICATION(400, "알림 발송에 실패하였습니다.")
+	FAILED_TO_SEND_NOTIFICATION(400, "알림 발송에 실패하였습니다."),
+
+	/**
+	 * Keyword
+	 */
+	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다.")
 	;
 
 

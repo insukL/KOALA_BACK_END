@@ -9,17 +9,29 @@
         WHERE uk.user_id = #{userId}
     </select>
 
-    <insert id="insertKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (name, site)
-        VALUES (#{keyword}, #{site})
-        <selectKey keyProperty="id" resultType="Long">
+    <select id="checkDuplicateKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
+        SELECT id
+        FROM keyword
+        WHERE name = #{keywordName}
+    </select>
+
+    <insert id="insertKeyword" parameterType="string">
+        INSERT INTO keyword (name)
+        VALUES (#{keywordName})
+        <selectKey keyProperty="keywordId" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
 
-    <insert id="insertUsersKeyword" useGeneratedKeys="true" parameterType="java.util.Map" keyProperty="id">
-        INSERT INTO user_keyword (user_id, keyword_id, is_important)
-        VALUES (#{user_id}, #{keyword_id}, #{is_important})
+    <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
+        SELECT id
+        FROM user_keyword
+        WHERE user_id = #{userId} AND keyword_id = #{keywordId}
+    </select>
+
+    <insert id="insertUsersKeyword" useGeneratedKeys="true" parameterType="in.koala.domain.Keyword" keyProperty="id">
+        INSERT INTO user_keyword (user_id, keyword_id, is_important, alarm_mode, alarm_cycle, created_at)
+        VALUES (#{userId}, #{keywordId}, #{isImportant}, #{alarmMode}, #{alarmCycle}, #{createdAt})
     </insert>
 
     <update id="deleteKeyword" parameterType="java.util.Map">
