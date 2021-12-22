@@ -8,5 +8,5 @@ public interface KeywordService {
     List<Keyword> myKeywordList();
     void registerKeyword(Keyword keyword);
     void deleteKeyword(String keywordId);
-    void modifyKeyword(String keywordId, String keywordName);
+    void modifyKeyword(String keywordName, Keyword keyword);
 }

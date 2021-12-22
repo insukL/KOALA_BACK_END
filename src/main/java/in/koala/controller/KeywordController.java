@@ -28,7 +28,6 @@ public class KeywordController {
 //        return new ResponseEntity(keywordService.myKeywordList(), HttpStatus.OK);
 //    }
 
-
     @Xss
     @Auth
     @ApiOperation(value ="키워드 추가" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
@@ -37,20 +36,21 @@ public class KeywordController {
         keywordService.registerKeyword(keyword);
     }
 
-//    @Xss
-//    @Auth
-//    @ApiOperation(value = "키워드 삭제", notes = "사용자가 지정한 키워드를 삭제한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-//    @PatchMapping(value = "/keyword")
-//    public void deleteKeyword(@RequestParam(name = "keyword-id") String keywordId){
-//        keywordService.deleteKeyword(keywordId);
-//    }
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 삭제", notes = "사용자가 지정한 키워드를 삭제한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PatchMapping(value = "/keyword")
+    public void deleteKeyword(@RequestParam(name = "keyword-name") String keywordName){
+        keywordService.deleteKeyword(keywordName);
+    }
 
-//    @Xss
-//    @Auth
-//    @ApiOperation(value = "키워드 수정", notes = "사용자가 지정한 키워드를 수정한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-//    @PutMapping(value = "/keyword")
-//    public void modifyKeyword(@RequestParam(name = "keyword-id") String keywordId,
-//                              @RequestParam(name = "keyword-name") String keywordName){
-//        keywordService.modifyKeyword(keywordId, keywordName);
-//    }
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 수정", notes = "사용자가 지정한 키워드를 수정한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PutMapping(value = "/keyword")
+    public void modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
+                              @RequestBody Keyword keyword){
+        keywordService.modifyKeyword(keywordName, keyword);
+    }
+
 }

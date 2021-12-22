@@ -9,42 +9,50 @@
         WHERE uk.user_id = #{userId}
     </select>
 
-    <select id="checkDuplicateKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
+    <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
         SELECT id
         FROM keyword
-        WHERE name = #{keywordName}
+        WHERE user_id = #{userId} AND name = #{name}
     </select>
 
-    <insert id="insertKeyword" parameterType="string">
-        INSERT INTO keyword (name)
-        VALUES (#{keywordName})
-        <selectKey keyProperty="keywordId" resultType="Long" order="AFTER">
+    <insert id="insertUsersKeyword" parameterType="in.koala.domain.Keyword">
+        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle, created_at)
+        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle}, #{createdAt})
+        <selectKey keyProperty="id" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
 
-    <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
-        SELECT id
-        FROM user_keyword
-        WHERE user_id = #{userId} AND keyword_id = #{keywordId}
-    </select>
-
-    <insert id="insertUsersKeyword" useGeneratedKeys="true" parameterType="in.koala.domain.Keyword" keyProperty="id">
-        INSERT INTO user_keyword (user_id, keyword_id, is_important, alarm_mode, alarm_cycle, created_at)
-        VALUES (#{userId}, #{keywordId}, #{isImportant}, #{alarmMode}, #{alarmCycle}, #{createdAt})
+    <insert id="insertUsersKeywordSite" parameterType="java.util.Map">
+        INSERT INTO keyword_site(keyword_id, site_name, created_at)
+        VALUES
+        <foreach item="site" separator=" , " collection="siteList">
+            (
+            #{keywordId},
+            #{site, jdbcType=VARCHAR},
+            #{createdAt}
+            )
+        </foreach>;
     </insert>
 
     <update id="deleteKeyword" parameterType="java.util.Map">
-        UPDATE user_keyword
+        UPDATE keyword
         SET is_deleted = 1
-        WHERE user_id = #{user_id}
-            AND keyword_id = #{keyword_id}
+        WHERE user_id = #{userId}
+            AND name = #{name};
+
+        UPDATE keyword_site
+        SET is_deleted = 1
+        WHERE keyword_id = (
+                SELECT id
+                FROM keyword
+                WHERE user_id = #{userId}
+                  AND name = #{name}
+            );
     </update>
 
     <update id="modifyKeyword" parameterType="java.util.Map">
-        UPDATE keyword
-        SET name = #{keyword_name}
-        WHERE id = #{keyword_id}
+
     </update>
 
 </mapper>

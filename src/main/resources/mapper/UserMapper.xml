@@ -107,4 +107,5 @@
         ${alias}created_at,
         ${alias}updated_at
     </sql>
+
 </mapper>

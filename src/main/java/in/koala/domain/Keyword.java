@@ -18,10 +18,7 @@ public class Keyword {
     @ApiModelProperty(hidden = true)
     private Long userId;
 
-    @ApiModelProperty(hidden = true)
-    private Long keywordId;
-
-    private String keywordName;
+    private String name;
     private List<String> siteList;
     private short isImportant;
     private short alarmMode;
@@ -34,5 +31,5 @@ public class Keyword {
     private Timestamp updatedAt;
 
     @ApiModelProperty(hidden = true)
-    private short is_deleted;
+    private short isDeleted;
 }
