@@ -10,7 +10,6 @@ import in.koala.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -40,6 +39,12 @@ public class UserController {
         }
     }
 
+    @PostMapping(value="/oauth2/{snsType}")
+    @ApiOperation(value ="sns 로그인 API" , notes = "각 클라이언트에서 발급받은 sns 의 accessToken 을 이용하여 로그인을 진행합니다. \n 헤더의 Sns-Token 에 accessToken 을 넣고 path 에는 요청하는 sns 의 type 을 넣으면 됩니다")
+    public ResponseEntity snsSignIn(@PathVariable(name="snsType") SnsType snsType){
+        return new ResponseEntity<>(userService.snsSingIn(snsType), HttpStatus.OK);
+    }
+
     @Xss
     @Auth
     @GetMapping(value="/my")
@@ -48,7 +53,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getLoginUserInfo(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "sns 로그인 요청", notes = "sns 로그인을 요청하는 api 입니다. 원하는 sns 를 path 에 넣으시면 됩니다. swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
+    @ApiOperation(value = "sns 로그인 테스트", notes = "자동으로 해당 sns 로그인창으로 redirect 됩니다. swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
     @GetMapping(value="/{snsType}")
     public void requestSnsLogin(@PathVariable(name = "snsType") SnsType snsType) throws Exception {
         userService.requestSnsLogin(snsType);
@@ -56,7 +61,7 @@ public class UserController {
 
     @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
-    public ResponseEntity signUp(@RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
+    public ResponseEntity signIn(@RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
         return new ResponseEntity(userService.signUp(user), HttpStatus.CREATED);
     }
 
@@ -134,7 +139,7 @@ public class UserController {
     }
 
     @GetMapping(value="/account-find")
-    @ApiOperation(value="계정 찾기", notes="계정을 조회하는 API, 이메일 인증이 선행되어야 합니다.")
+    @ApiOperation(value="계정 찾기", notes="계정을 조회하는 API, 이메일 인증이 선행되어야 합니다. 파라미터로 찾기용 이메일을 받습니다")
     public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
         return new ResponseEntity(userService.findAccount(email), HttpStatus.OK);
     }

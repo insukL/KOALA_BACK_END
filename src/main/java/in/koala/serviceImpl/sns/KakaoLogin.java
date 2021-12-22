@@ -34,6 +34,15 @@ public class KakaoLogin extends AbstractSnsLogin {
     @Value("${kakao.login-request-uri}")
     private String loginRequestUri;
 
+    @Override
+    public Map requestUserProfileByAccessToken(String accessToken) {
+        try {
+            return this.requestUserProfile(accessToken, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.KAKAO_LOGIN_ERROR);
+        }
+    }
 
     @Override
     public Map requestUserProfile(String code) throws Exception {

@@ -70,6 +70,16 @@ public class NaverLogin extends AbstractSnsLogin {
     }
 
     @Override
+    public Map requestUserProfileByAccessToken(String accessToken) {
+        try {
+            return this.requestUserProfileByAccessToken(accessToken, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.NAVER_LOGIN_ERROR);
+        }
+    }
+
+    @Override
     public HttpEntity getRequestAccessTokenHttpEntity(String code) {
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();

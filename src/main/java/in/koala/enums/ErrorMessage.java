@@ -51,6 +51,7 @@ public enum ErrorMessage {
 	SAME_PASSWORD_EXCEPTION(145, "변경하고자 하는 비밀번호와 기존 비밀번호가 같습니다."),
 	EMAIL_NOT_AUTHORIZE_EXCEPTION(146, "이메일 인증이 완료되지 않았습니다"),
 	EMAIL_SEND_FAILED(147, "ses 이메일 전송 실패"),
+	SNS_TOKEN_NOT_EXIST(148, "sns 로그인용 token 이 존재하지 않습니다"),
 
 
 	/*

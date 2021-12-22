@@ -48,6 +48,16 @@ public class GoogleLogin extends AbstractSnsLogin {
     }
 
     @Override
+    public Map requestUserProfileByAccessToken(String accessToken) {
+        try {
+            return this.requestUserProfile(accessToken, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
+        }
+    }
+
+    @Override
     public String getRedirectUri() {
         Map<String, String> map = new HashMap<>();
 
