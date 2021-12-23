@@ -3,10 +3,10 @@
 <mapper namespace="in.koala.mapper.KeywordMapper">
 
     <select id = "myKeywordList" parameterType="java.lang.Long" resultType="in.koala.domain.Keyword">
-        SELECT k.id, k.name as keyword, k.site, uk.is_important as isImportant
-        FROM keyword as k
-            INNER JOIN user_keyword as uk ON uk.keyword_id = k.id
-        WHERE uk.user_id = #{userId}
+        SELECT id, name
+        FROM keyword
+        WHERE user_id = #{userId}
+        ORDER BY created_at;
     </select>
 
     <!--키워드 등록 (1. 유저별로 기존에 등록한 키워드와 지금 등록하려는 키워드가 중복되는지 확인)-->

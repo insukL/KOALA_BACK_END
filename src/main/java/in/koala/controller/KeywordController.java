@@ -20,13 +20,13 @@ public class KeywordController {
 
     private final KeywordService keywordService;
     
-//    @Xss
-//    @Auth
-//    @ApiOperation(value ="키워드 조회" , notes = "사용자가 지정한 키워드를 조회한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
-//    @GetMapping(value = "/keyword")
-//    public ResponseEntity<List<Keyword>> myKeywordList(){
-//        return new ResponseEntity(keywordService.myKeywordList(), HttpStatus.OK);
-//    }
+    @Xss
+    @Auth
+    @ApiOperation(value ="키워드 조회" , notes = "사용자가 지정한 키워드를 조회한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword")
+    public ResponseEntity<List<Keyword>> myKeywordList(){
+        return new ResponseEntity(keywordService.myKeywordList(), HttpStatus.OK);
+    }
 
     @Xss
     @Auth
