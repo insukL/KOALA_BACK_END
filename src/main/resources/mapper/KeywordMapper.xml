@@ -3,36 +3,99 @@
 <mapper namespace="in.koala.mapper.KeywordMapper">
 
     <select id = "myKeywordList" parameterType="java.lang.Long" resultType="in.koala.domain.Keyword">
-        SELECT k.id, k.name as keyword, k.site, uk.is_important as isImportant
-        FROM keyword as k
-            INNER JOIN user_keyword as uk ON uk.keyword_id = k.id
-        WHERE uk.user_id = #{userId}
+        SELECT id, name
+        FROM keyword
+        WHERE user_id = #{userId}
+        ORDER BY created_at;
     </select>
 
-    <insert id="insertKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (name, site)
-        VALUES (#{keyword}, #{site})
-        <selectKey keyProperty="id" resultType="Long">
+    <!--키워드 등록 (1. 유저별로 기존에 등록한 키워드와 지금 등록하려는 키워드가 중복되는지 확인)-->
+    <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
+        SELECT id
+        FROM keyword
+        WHERE user_id = #{userId} AND name = #{name}
+    </select>
+
+    <!--키워드 등록 (2. 키워드 등록)-->
+    <insert id="insertUsersKeyword" parameterType="in.koala.domain.Keyword">
+        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle, created_at)
+        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle}, #{createdAt})
+        <selectKey keyProperty="id" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
 
-    <insert id="insertUsersKeyword" useGeneratedKeys="true" parameterType="java.util.Map" keyProperty="id">
-        INSERT INTO user_keyword (user_id, keyword_id, is_important)
-        VALUES (#{user_id}, #{keyword_id}, #{is_important})
+    <!--키워드 등록 (3. 키워드 별로 구독하는 사이트에 등록)-->
+    <insert id="insertUsersKeywordSite" parameterType="java.util.Map">
+        INSERT INTO keyword_site(keyword_id, site_name, created_at)
+        VALUES
+        <foreach item="site" separator=" , " collection="siteList">
+            (
+            #{keywordId},
+            #{site, jdbcType=VARCHAR},
+            #{createdAt}
+            )
+        </foreach>;
     </insert>
 
+    <!--키워드 삭제 (지금은 멀티쿼리 사용중이나, join문 활용하여 삭제할수 있게 리팩토링 필요)-->
     <update id="deleteKeyword" parameterType="java.util.Map">
-        UPDATE user_keyword
+        UPDATE keyword
         SET is_deleted = 1
-        WHERE user_id = #{user_id}
-            AND keyword_id = #{keyword_id}
+        WHERE user_id = #{userId}
+            AND name = #{name};
+
+        UPDATE keyword_site
+        SET is_deleted = 1
+        WHERE keyword_id = (
+                SELECT id
+                FROM keyword
+                WHERE user_id = #{userId}
+                  AND name = #{name}
+            );
+    </update>
+
+    <select id="getKeywordSite" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT ks.site_name
+        FROM keyword_site as ks
+        INNER JOIN keyword as k
+        ON k.id = ks.keyword_id
+            AND k.user_id = #{userId}
+            AND k.name = #{name};
+    </select>
+
+    <select id="getKeywordId" parameterType="java.util.Map" resultType="java.lang.Long">
+        SELECT id
+        FROM keyword
+        WHERE user_id = #{userId}
+            AND name = #{name};
+    </select>
+
+    <update id="modifyKeywordSite" parameterType="java.util.Map">
+        <foreach item="site" separator=";" index="index" collection="existingList">
+            UPDATE keyword_site
+            <set>
+                is_deleted = 1
+            </set>
+            WHERE keyword_id = #{keywordId}
+            AND site_name = #{site}
+        </foreach>;
     </update>
 
     <update id="modifyKeyword" parameterType="java.util.Map">
         UPDATE keyword
-        SET name = #{keyword_name}
-        WHERE id = #{keyword_id}
+        SET name = #{modifiedKeyword.name}, is_important = #{modifiedKeyword.isImportant},
+            alarm_mode = #{modifiedKeyword.alarmMode}, alarm_cycle = #{modifiedKeyword.alarmCycle},
+            updated_at = #{createdAt}
+        WHERE id = (
+            SELECT id
+            FROM (
+                SELECT id
+                FROM keyword
+                WHERE user_id = #{userId}
+                AND name = #{name}
+            ) AS sub_table
+        );
     </update>
 
 </mapper>
