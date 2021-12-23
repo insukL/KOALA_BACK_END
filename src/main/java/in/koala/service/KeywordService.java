@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface KeywordService {
     List<Keyword> myKeywordList();
-    void registerKeyword(String keyword, short site, boolean isImportant);
+    void registerKeyword(Keyword keyword);
     void deleteKeyword(String keywordId);
-    void modifyKeyword(String keywordId, String keywordName);
+    void modifyKeyword(String keywordName, Keyword keyword);
 }

@@ -1,27 +1,39 @@
 package in.koala.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Keyword {
 
+    @ApiModelProperty(hidden = true)
     private Long id;
-    private String keyword;
-    private short site;
+
+    @ApiModelProperty(hidden = true)
+    private Long userId;
+
+    private String name;
+    private List<String> siteList;
+
     private short isImportant;
+    private short alarmMode;
+    private int alarmCycle;
 
-    public Keyword(String keyword, short site){
-        this.keyword = keyword;
-        this.site = site;
-    }
+    @ApiModelProperty(hidden = true)
+    private Timestamp createdAt;
 
-    public Keyword(Long id, String keyword, short site, short isImportant){
-        this.id = id;
-        this.keyword = keyword;
-        this.site = site;
-    }
+    @ApiModelProperty(hidden = true)
+    private Timestamp updatedAt;
 
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private short isDeleted;
 }
