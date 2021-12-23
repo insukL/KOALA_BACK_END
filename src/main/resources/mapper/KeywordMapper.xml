@@ -6,6 +6,7 @@
         SELECT id, name
         FROM keyword
         WHERE user_id = #{userId}
+            AND is_deleted IS NULL
         ORDER BY created_at;
     </select>
 
