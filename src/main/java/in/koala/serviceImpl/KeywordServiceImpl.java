@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -64,14 +62,59 @@ public class KeywordServiceImpl implements KeywordService {
     @Override
     public void modifyKeyword(String keywordName, Keyword keyword) {
         Long userId = userService.getLoginUserInfo().getId();
-        Timestamp updatedAt = new Timestamp(System.currentTimeMillis());
-        keyword.setUpdatedAt(updatedAt);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("user_id", userId);
-        map.put("keyword_name", keywordName);
-        map.put("modifiedKeyword", keyword);
+        map.put("userId", userId);
+        map.put("name", keywordName);
 
+        Set<String> addingList = new HashSet<>(keyword.getSiteList());
+        Set<String> addingListCopy = new HashSet<>();
+        addingListCopy.addAll(addingList);
+        Set<String> existingList = new HashSet<>(keywordMapper.getKeywordSite(map));
+
+        System.out.println("추가한 키워드 사이트 크기 : " + addingList.size());
+        System.out.println("카피한 키워드 사이트 크기 : " + addingListCopy.size());
+        System.out.println("기존의 키워드 사이트 크기 : " + existingList.size());
+
+        addingList.removeAll(existingList);
+        existingList.removeAll(addingListCopy);
+
+        System.out.println("뺀 후 추가할 키워드 사이트 : "); // insert
+        for(String site : addingList){
+            System.out.println(site);
+        }
+
+        System.out.println("기존의 키워드 사이트 : "); // delete
+        for(String site : existingList) {
+            System.out.println(site);
+        }
+
+        Long keywordId = keywordMapper.getKeywordId(map);
+
+        map.put("keywordId", keywordId);
+        map.put("createdAt", new Timestamp(System.currentTimeMillis()));
+
+        if(!addingList.isEmpty()) {
+            map.put("siteList", addingList);
+            if(keywordMapper.insertUsersKeywordSite(map) > 0){
+                System.out.println("키워드 추가 성공");
+            }
+            else {
+                System.out.println("키워드 추가 실패");
+            }
+        }
+
+        if(!existingList.isEmpty()){
+            map.put("existingList", existingList);
+            if(keywordMapper.modifyKeywordSite(map) > 0){
+                System.out.println("키워드 업데이트 성공");
+            }
+            else {
+                System.out.println("키워드 업데이트 실패");
+            }
+        }
+
+        map.put("modifiedKeyword", keyword);
         keywordMapper.modifyKeyword(map);
     }
 }

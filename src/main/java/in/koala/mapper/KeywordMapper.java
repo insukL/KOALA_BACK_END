@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 public interface KeywordMapper {
@@ -13,11 +14,14 @@ public interface KeywordMapper {
 
     Long checkDuplicateUsersKeyword(Keyword keyword);
     int insertUsersKeyword(Keyword keyword);
-    void insertUsersKeywordSite(Map map);
+    int insertUsersKeywordSite(Map map);
 
     List<Keyword> myKeywordList(Long userId);
 
     int deleteKeyword(Map map);
 
+    Set getKeywordSite(Map map);
+    Long getKeywordId(Map map);
+    int modifyKeywordSite(Map map);
     int modifyKeyword(Map map);
 }
