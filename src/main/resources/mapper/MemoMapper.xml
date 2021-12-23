@@ -8,7 +8,7 @@
     </insert>
 
     <select id="getMemo" resultType="String">
-        SELECT memo FROM koala.memo WHERE user_scrap_id = #{userScrapId};
+        SELECT memo FROM koala.memo WHERE user_scrap_id = #{userScrapId} AND is_deleted = 0;
     </select>
 
     <update id="updateMemo" parameterType="in.koala.domain.Memo">
@@ -16,7 +16,7 @@
     </update>
 
     <select id="checkMemoExist" resultType="Boolean">
-        SELECT EXISTS (SELECT user_scrap_id FROM koala.memo WHERE user_scrap_id = #{userScrapId})
+        SELECT EXISTS (SELECT user_scrap_id FROM koala.memo WHERE user_scrap_id = #{userScrapId} AND is_deleted = 0);
     </select>
 
 </mapper>

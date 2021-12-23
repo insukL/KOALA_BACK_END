@@ -3,9 +3,9 @@
 <mapper namespace="in.koala.mapper.ScrapMapper">
 
     <select id="getScrapList" resultType="in.koala.domain.Crawling">
-        SELECT b.title, b.url, b.site, b.updated_at
-        FROM koala.crawling AS b JOIN koala.scrap AS s
-        ON s.board_id = b.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
+        SELECT c.title, c.url, c.site, c.created_at, c.crawling_at
+        FROM koala.crawling AS c JOIN koala.scrap AS s
+        ON s.board_id = c.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
     </select>
 
     <insert id="scrapBoard" parameterType="in.koala.domain.Scrap">
@@ -16,12 +16,8 @@
         UPDATE scrap SET is_deleted = 1 WHERE board_id = #{boardId};
     </update>
 
-    <update id="deleteAllScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE user_id = #{userId}
-    </update>
-
     <select id="checkBoardExist" resultType="Boolean">
-        SELECT EXISTS (SELECT id FROM koala.board WHERE id = #{id})
+        SELECT EXISTS (SELECT id FROM koala.crawling WHERE id = #{id})
     </select>
 
     <select id="checkAlreadyScraped" resultType="Long">
@@ -31,6 +27,5 @@
     <select id="getScrapId" resultType="Long">
         SELECT id FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
     </select>
-
 
 </mapper>

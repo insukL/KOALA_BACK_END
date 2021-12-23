@@ -29,4 +29,6 @@ public final class ValidationGroups {
     public interface Email extends Default{}
     public interface Password extends Default{}
 
+    // Memo
+    public interface createMemo extends Default{}
 }

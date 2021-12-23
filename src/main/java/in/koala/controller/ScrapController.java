@@ -41,13 +41,5 @@ public class ScrapController {
         return new ResponseEntity("선택 삭제되었습니다.", HttpStatus.OK);
     }
 
-    @Auth
-    @ApiOperation(value = "보관함 전체 삭제", notes = "보관함 전체 삭제 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @DeleteMapping(value = "/scrap")
-    public ResponseEntity deleteAllScrap(Long userId) throws Exception {
-        scrapService.deleteAllScrap(userId);
-        return new ResponseEntity("전체 삭제되었습니다.", HttpStatus.OK);
-    }
-
 
 }

@@ -10,5 +10,4 @@ public interface ScrapService {
     void Scrap(Scrap scrap) throws Exception;
     List<Crawling> getScrap() throws Exception;
     void deleteScrap(Long boardId) throws Exception;
-    void deleteAllScrap(Long userId) throws Exception;
 }
