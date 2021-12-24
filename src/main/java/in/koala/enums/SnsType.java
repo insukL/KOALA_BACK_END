@@ -1,5 +1,5 @@
 package in.koala.enums;
 
 public enum SnsType {
-    GOOGLE, NAVER, KAKAO;
+    GOOGLE, NAVER, KAKAO, APPLE;
 }

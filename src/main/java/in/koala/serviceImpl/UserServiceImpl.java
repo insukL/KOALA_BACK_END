@@ -5,13 +5,12 @@ import in.koala.domain.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
-import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
-import in.koala.util.Jwt;
+import in.koala.util.JwtUtil;
 import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -36,7 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
-    private final Jwt jwt;
+    private final JwtUtil jwt;
     // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
     private final SesSender sesSender;
@@ -50,7 +49,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, String> snsLogin(String code, SnsType snsType) throws Exception {
         // sns 별 인터페이스 구현체 변경
-        SnsLogin snsLogin = initSnsService(snsType);
+        SnsLogin snsLogin = this.initSnsService(snsType);
 
         // snsLogin 에 유저 정보요청
         Map<String, String> userProfile = snsLogin.requestUserProfile(code);
@@ -61,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type((short) 1)
+                .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
@@ -70,6 +69,43 @@ public class UserServiceImpl implements UserService {
         if(id == null) {
             System.out.println(snsUser.getUser_type());
             userMapper.snsSignUp(snsUser);
+        }
+
+        return this.generateAccessAndRefreshToken(id);
+    }
+
+    @Override
+    public Map<String, String> snsSingIn(SnsType snsType) {
+        // sns 별 인터페이스 구현체 변경
+        SnsLogin snsLogin = this.initSnsService(snsType);
+
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String snsToken = request.getHeader("Authorization");
+
+        if(snsToken == null){
+            throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
+        }
+
+        // snsLogin 에 유저 정보요청
+        Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
+
+        // 받은 정보를 이용하여 User domain 생성
+        User user = User.builder()
+                .account(userProfile.get("account"))
+                .sns_email(userProfile.get("sns_email"))
+                .profile(userProfile.get("profile"))
+                .nickname(userProfile.get("nickname"))
+                .user_type(Short.valueOf(userProfile.get("user_type")))
+                .build();
+
+        Long id = userMapper.getIdByAccount(user.getAccount());
+
+        // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
+        if(id == null) {
+            System.out.println(user.getUser_type());
+            userMapper.snsSignUp(user);
+            user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
+            userMapper.updateNickname(user);
         }
 
         return generateAccessAndRefreshToken(id);
@@ -213,13 +249,10 @@ public class UserServiceImpl implements UserService {
 
         authEmail.setUser_id(user.getId());
 
-        /*
-        // 당일 전송한 이메일의 횟수가 5를 초과했는지 확인
+        // 10분에 최대 5개 전송가능
         if(isEmailSentNumExceed(authEmail)){
             throw new NonCriticalException(ErrorMessage.EMAIL_SEND_EXCEED_EXCEPTION);
         }
-        */
-
 
         String secret = "";
         Random random = new Random();
@@ -283,7 +316,7 @@ public class UserServiceImpl implements UserService {
         // 만약 delete 되지 않은 이메일이 하나보다 많다면 예외 발생, 없겠지만 혹시나...
         if(authEmailList.size() > 1){
             authEmailMapper.expirePastAuthEmail(authEmail);
-            throw new CriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
+            throw new NonCriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
         }
 
         // 이메일 전송이 전행되어야 함
@@ -309,7 +342,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 인증 완료하였으니 체크
-        authEmailMapper.setIsAuth(authEmail.getId());
+        authEmailMapper.setIsAuth(selectedAuthEmail.getId());
 
         // 만약 학교 인증이거나 계정 찾기면 만료
         if(authEmail.getType() == 1 || authEmail.getType() == 2) {
@@ -350,7 +383,7 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
 
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId()) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), 0) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
         
@@ -378,6 +411,10 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), 2) <= 0){
+            throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
+        }
+
         String account = user.getAccount();
         account = account.substring(0, account.length() - 2);
         account += "**";
@@ -399,21 +436,15 @@ public class UserServiceImpl implements UserService {
         userMapper.softDeleteUser(user);
     }
 
-    // 5회 전송 이후 10분간 전송 불가.....?
     private boolean isEmailSentNumExceed(AuthEmail authEmail){
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.set(year,month,day,0,0 ,0); // 해당 날짜의 00시 00분 00초
-        Timestamp start =  new Timestamp(calendar.getTimeInMillis());
-        calendar.set(year,month,day,23,59 ,59); // 해당 날짜의 23시 59분 59초
-        Timestamp end =  new Timestamp(calendar.getTimeInMillis());
+        calendar.add(Calendar.SECOND, -601);
+        Timestamp start = new Timestamp(calendar.getTimeInMillis());
 
-        //
-        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start, end) >= 5){
+        // 최근 10분안에 전송한 이메일 개수확인
+        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start) >= 5){
             return true;
         }
 
@@ -426,7 +457,7 @@ public class UserServiceImpl implements UserService {
 
         jwt.isValid(token, tokenType);
 
-        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwtToken(token, tokenType).get("id")));
+        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwt(token, tokenType).get("id")));
     }
 
     private Map<String, String> generateAccessAndRefreshToken(Long id){

@@ -20,11 +20,40 @@ import java.util.Map;
 // 인터페이스 구현의 중복을 제거하기 위해 생성한 SnsLogin 인터페이스를 상속받는 abstract 클래스
 public abstract class AbstractSnsLogin implements SnsLogin {
 
+    protected Map requestUserProfileByAccessToken(String accessToken, String profileUri) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        RestTemplate rt = new RestTemplate();
+
+
+        if(accessToken.charAt(0) == '"'){
+            accessToken = accessToken.substring(1, accessToken.length() - 1);
+        }
+        System.out.println(accessToken);
+
+        headers.add("Authorization", "Bearer " + accessToken);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = rt.exchange(
+                profileUri,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        Map parsedProfile = this.profileParsing(response);
+
+        if(parsedProfile.get("account") == null || parsedProfile.get("sns_email") == null || parsedProfile.get("profile") == null || parsedProfile.get("nickname") == null){
+            throw new NonCriticalException(ErrorMessage.PROFILE_SCOPE_ERROR);
+        }
+
+        return parsedProfile;
+    }
+
     protected Map requestUserProfile(String code, String profileUri) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
 
-        headers.add("Authorization", "Bearer " + requestAccessToken(code));
+        headers.add("Authorization", "Bearer " + this.requestAccessToken(code));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = rt.exchange(
@@ -62,14 +91,15 @@ public abstract class AbstractSnsLogin implements SnsLogin {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
 
             accessToken = jsonObject.get("access_token").toString();
-
+            System.out.println(accessToken);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
+        System.out.println(accessToken);
         return accessToken;
     }
 
     abstract Map profileParsing(ResponseEntity<String> response) throws Exception;
     abstract HttpEntity getRequestAccessTokenHttpEntity(String code);
+    abstract String requestAccessToken(String code);
 }

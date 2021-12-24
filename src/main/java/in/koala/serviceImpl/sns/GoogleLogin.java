@@ -48,6 +48,16 @@ public class GoogleLogin extends AbstractSnsLogin {
     }
 
     @Override
+    public Map requestUserProfileBySnsToken(String accessToken) {
+        try {
+            return this.requestUserProfile(accessToken, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
+        }
+    }
+
+    @Override
     public String getRedirectUri() {
         Map<String, String> map = new HashMap<>();
 
@@ -84,7 +94,6 @@ public class GoogleLogin extends AbstractSnsLogin {
 
     @Override
     public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
-        System.out.println(response);
         Map<String, String> parsedProfile = new HashMap<>();
 
         try{
@@ -95,6 +104,7 @@ public class GoogleLogin extends AbstractSnsLogin {
             parsedProfile.put("sns_email", (String) jsonObject.get("email"));
             parsedProfile.put("profile", (String) jsonObject.get("picture"));
             parsedProfile.put("nickname", this.getSnsType() + "_" + (String) jsonObject.get("id"));
+            parsedProfile.put("user_type", "2");
 
         } catch (ParseException e) {
             e.printStackTrace();

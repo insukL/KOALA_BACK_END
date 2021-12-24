@@ -9,6 +9,7 @@ import java.util.Map;
 public interface UserService {
     String test();
     Map<String, String> snsLogin(String code, SnsType snsType) throws Exception;
+    Map<String, String> snsSingIn(SnsType snsType);
     Map<String, String> login(User user);
     User signUp(User user);
     void requestSnsLogin(SnsType snsType) throws Exception;
@@ -24,4 +25,5 @@ public interface UserService {
     String findAccount(String email);
     void softDeleteUser();
     Boolean checkFindEmail(String email);
+
 }
