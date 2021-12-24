@@ -85,7 +85,6 @@ public class UserServiceImpl implements UserService {
         if(snsToken == null){
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
         }
-
         // snsLogin 에 유저 정보요청
         Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
 
@@ -102,7 +101,6 @@ public class UserServiceImpl implements UserService {
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
         if(id == null) {
-            System.out.println(user.getUser_type());
             userMapper.snsSignUp(user);
             user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
             userMapper.updateNickname(user);

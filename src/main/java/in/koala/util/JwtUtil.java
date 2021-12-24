@@ -1,13 +1,17 @@
 package in.koala.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.*;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.PublicKey;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +21,20 @@ public class JwtUtil {
     @Value("${spring.jwt.secret}")
     private String key;
 
-    public Header getHeaderFromJwt(String token){
-        return Jwts.parser().parse(token).getHeader();
+    public Map getHeaderFromJwt(String token){
+        Base64.Decoder decoder = Base64.getDecoder();
+        String[] chunks = token.split("\\.");
+        String header = new String(decoder.decode(chunks[0]));
+
+        HashMap<String,String> jsonMap = null;
+
+        try{
+            jsonMap = new ObjectMapper().readValue(header, HashMap.class);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return jsonMap;
     }
 
     public String generateToken(Long id, TokenType tokenType){
