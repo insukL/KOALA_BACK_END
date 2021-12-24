@@ -1,5 +1,6 @@
 package in.koala.serviceImpl.sns;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.sns.AppleLogin.Key;
 import in.koala.domain.sns.AppleLogin.ApplePublicKeys;
 import in.koala.enums.ErrorMessage;
@@ -27,6 +28,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +46,10 @@ public class AppleLogin implements SnsLogin {
     @Override
     public Map requestUserProfileBySnsToken(String identityToken) {
 
-        Map<String, String> profile = null;
+        Map<String, String> profile = new HashMap<>();
 
         try {
-            Key key = this.selectAppropriateKey(requestApplePublicKey(), identityToken);
+            Key key = this.selectAppropriateKey(this.requestApplePublicKey(), identityToken);
 
             byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
             byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
@@ -65,7 +67,7 @@ public class AppleLogin implements SnsLogin {
             profile.put("sns_email", claims.get("email").toString());
             profile.put("nickname", claims.get("sub").toString());
             profile.put("user_type", "4");
-            profile.put("profile", "");
+            profile.put("profile", null);
 
         } catch(NoSuchAlgorithmException e){
         } catch (InvalidKeySpecException e){
@@ -94,23 +96,31 @@ public class AppleLogin implements SnsLogin {
         RestTemplate rt = new RestTemplate();
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        ResponseEntity<ApplePublicKeys> response = rt.exchange(
+        ResponseEntity<String> response = null;
+
+        response = rt.getForEntity(
                 "https://appleid.apple.com/auth/keys",
-                HttpMethod.GET,
-                request,
-                ApplePublicKeys.class
+                String.class
         );
 
-        return response.getBody();
+        ApplePublicKeys keys = null;
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            keys = objectMapper.readValue(response.getBody(), ApplePublicKeys.class);
+        } catch (Exception e){
+        }
+
+        return keys;
     }
 
     private Key selectAppropriateKey(ApplePublicKeys keys, String token){
         List<Key> keyList = keys.getKeys();
 
-        Header header = jwtUtil.getHeaderFromJwt(token);
+        Map header = jwtUtil.getHeaderFromJwt(token);
 
-        if(header.get("kid") == null){
-            throw new NonCriticalException(ErrorMessage.APPLE_PUBLIC_KEY_EXCEPTION);
+        if(header == null || header.get("kid") == null){
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
         }
 
         String kid = header.get("kid").toString();

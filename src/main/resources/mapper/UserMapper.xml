@@ -13,7 +13,7 @@
 
     <insert id="snsSignUp" parameterType="in.koala.domain.User">
         INSERT INTO user(nickname, account, sns_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, 1, DEFAULT, DEFAULT, DEFAULT)
+        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, #{user_type}, DEFAULT, DEFAULT, DEFAULT)
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
         </selectKey>
