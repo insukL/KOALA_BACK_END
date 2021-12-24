@@ -4,8 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.Map;
-
 @Controller
 public class SnsLoginTestController {
 
@@ -19,16 +17,16 @@ public class SnsLoginTestController {
         model.addAttribute("redirect_uri", APPLE_WEBSITE_URL);
         model.addAttribute("nonce", "asd");
 
-        return "appleLogin";
+        return "test/appleLogin";
     }
 
     @GetMapping(value="/naverlogin")
     public String appleLoginPage(){
-        return "naverlogin";
+        return "test/naverlogin";
     }
 
     @GetMapping(value = "/callback")
     public String naverCallBack(){
-        return "callback";
+        return "test/callback";
     }
 }

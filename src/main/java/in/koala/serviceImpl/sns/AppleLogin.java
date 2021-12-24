@@ -65,7 +65,7 @@ public class AppleLogin implements SnsLogin {
             profile.put("sns_email", claims.get("email").toString());
             profile.put("nickname", claims.get("sub").toString());
             profile.put("user_type", "4");
-            profile.put("profile", null);
+            profile.put("profile", "");
 
         } catch(NoSuchAlgorithmException e){
         } catch (InvalidKeySpecException e){
