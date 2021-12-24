@@ -40,6 +40,4 @@ src/main/resources*/*.properties
 /.mvn/
 src/main/resources/*.json
 src/main/resources/static/*.p8
-src/main/resources/templates/appleLogin.html
-src/main/resources/templates/naverlogin.html
-src/main/resources/templates/callback.html
+
