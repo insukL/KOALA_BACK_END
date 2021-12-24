@@ -3,7 +3,7 @@
 <mapper namespace="in.koala.mapper.AuthEmailMapper">
 
     <select id="getAuthEmailNumByUserIdAndType" resultType="Integer">
-        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND type=#{type} AND created_at BETWEEN #{start} AND #{end};
+        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND type=#{type} AND created_at BETWEEN #{start} AND CURRENT_TIMESTAMP;
     </select>
 
     <select id="getUndeletedAuthEmailByUserIdAndType" resultType="in.koala.domain.AuthEmail">
@@ -11,7 +11,7 @@
     </select>
 
     <select id="getUndeletedIsAuthNumByUserId" resultType="Integer">
-        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND is_deleted=0 AND type=0;
+        SELECT COUNT(*) FROM auth_email WHERE user_id=#{userId} AND is_deleted=0 AND type=#{type};
     </select>
 
     <update id="expirePastAuthEmail">

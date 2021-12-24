@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public enum TokenType {
-    ACCESS(12), REFRESH(24*14);
+    ACCESS(12), REFRESH(24*14), SNS(0);
 
     private final Date tokenExp;
 

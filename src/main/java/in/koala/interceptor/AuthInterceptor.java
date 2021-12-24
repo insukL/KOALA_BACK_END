@@ -2,7 +2,7 @@ package in.koala.interceptor;
 
 import in.koala.annotation.Auth;
 import in.koala.enums.TokenType;
-import in.koala.util.Jwt;
+import in.koala.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 
-    private final Jwt jwt;
+    private final JwtUtil jwt;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

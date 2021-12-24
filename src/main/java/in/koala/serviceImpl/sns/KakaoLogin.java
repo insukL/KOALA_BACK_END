@@ -34,6 +34,15 @@ public class KakaoLogin extends AbstractSnsLogin {
     @Value("${kakao.login-request-uri}")
     private String loginRequestUri;
 
+    @Override
+    public Map requestUserProfileBySnsToken(String accessToken) {
+        try {
+            return this.requestUserProfile(accessToken, profileUri);
+
+        } catch(Exception e){
+            throw new NonCriticalException(ErrorMessage.KAKAO_LOGIN_ERROR);
+        }
+    }
 
     @Override
     public Map requestUserProfile(String code) throws Exception {
@@ -82,6 +91,7 @@ public class KakaoLogin extends AbstractSnsLogin {
             parsedProfile.put("sns_email", (String) kakaoAccount.get("email"));
             parsedProfile.put("profile", (String) profile.get("profile_image_url"));
             parsedProfile.put("nickname", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
+            parsedProfile.put("user_type", "3");
 
         } catch (ParseException e) {
             e.printStackTrace();
