@@ -1,11 +1,13 @@
 package in.koala.controller.sample;
 
+import in.koala.domain.sns.AppleLogin.AppleResponse;
 import in.koala.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -37,7 +39,7 @@ public class SnsLoginTestController {
 
     @PostMapping(value = "/applecallback")
     @ResponseBody
-    public String appleCallBack(String idToken){
-        return idToken;
+    public AppleResponse appleCallBack(AppleResponse appleResponse){
+        return appleResponse;
     }
 }
