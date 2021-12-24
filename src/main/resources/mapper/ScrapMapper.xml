@@ -14,10 +14,15 @@
 
     <update id="deleteScrap" parameterType="in.koala.domain.Scrap">
         UPDATE scrap SET is_deleted = 1 WHERE board_id = #{boardId};
+        UPDATE memo SET is_deleted = 1 WHERE user_scrap_id = #{boardId};
     </update>
 
     <select id="checkBoardExist" resultType="Boolean">
-        SELECT EXISTS (SELECT id FROM koala.crawling WHERE id = #{id})
+        SELECT EXISTS (SELECT id FROM koala.crawling WHERE id = #{boardId} AND is_deleted = 0)
+    </select>
+
+    <select id="checkScrapExist" resultType="Boolean">
+        SELECT EXISTS (SELECT board_id FROM koala.scrap WHERE board_id = #{boardId} AND is_deleted = 0)
     </select>
 
     <select id="checkAlreadyScraped" resultType="Long">

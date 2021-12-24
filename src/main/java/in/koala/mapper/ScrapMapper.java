@@ -12,5 +12,7 @@ public interface ScrapMapper {
     Long getScrapId(Long userId, Long boardId);
     void deleteScrap(Long boardId);
     Boolean checkBoardExist(Long boardId);
+    Boolean checkScrapExist(Long boardId);
     Long checkAlreadyScraped(Long userId, Long boardId);
+
 }

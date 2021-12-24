@@ -63,7 +63,9 @@ public class ScrapServiceImpl implements ScrapService {
         if(!scrapMapper.checkBoardExist(boardId)) {
             throw new NonCriticalException(ErrorMessage.BOARD_NOT_EXIST);
         }
-
+        if(!scrapMapper.checkScrapExist(boardId)) {
+            throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
+        }
         scrapMapper.deleteScrap(boardId);
     }
 
