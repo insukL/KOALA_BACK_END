@@ -101,4 +101,5 @@ public abstract class AbstractSnsLogin implements SnsLogin {
 
     abstract Map profileParsing(ResponseEntity<String> response) throws Exception;
     abstract HttpEntity getRequestAccessTokenHttpEntity(String code);
+    abstract String requestAccessToken(String code);
 }

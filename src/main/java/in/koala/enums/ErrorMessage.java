@@ -52,6 +52,9 @@ public enum ErrorMessage {
 	EMAIL_NOT_AUTHORIZE_EXCEPTION(146, "이메일 인증이 완료되지 않았습니다"),
 	EMAIL_SEND_FAILED(147, "ses 이메일 전송 실패"),
 	SNS_TOKEN_NOT_EXIST(148, "sns 로그인용 token 이 존재하지 않습니다"),
+	IDENTITY_TOKEN_EXPIRED_EXCEPTION(149, "identity token 유효 기간 만료되었습니다"),
+	IDENTITY_TOKEN_INVALID_EXCEPTION(150, "유효하지 않은 identity token 입니다"),
+	APPLE_PUBLIC_KEY_EXCEPTION(151, "apple server 에서 public key 가져오는 것 실패했습니다"),
 
 
 	/*

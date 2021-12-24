@@ -10,7 +10,7 @@ import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
-import in.koala.util.Jwt;
+import in.koala.util.JwtUtil;
 import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
-    private final Jwt jwt;
+    private final JwtUtil jwt;
     // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
     private final SesSender sesSender;
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type((short) 1)
+                .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
             userMapper.snsSignUp(snsUser);
         }
 
-        return generateAccessAndRefreshToken(id);
+        return this.generateAccessAndRefreshToken(id);
     }
 
     @Override
@@ -80,14 +80,14 @@ public class UserServiceImpl implements UserService {
         SnsLogin snsLogin = this.initSnsService(snsType);
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String accessToken = request.getHeader("Sns-Token");
+        String snsToken = request.getHeader("Sns-Token");
 
-        if(accessToken == null){
+        if(snsToken == null){
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
         }
 
         // snsLogin 에 유저 정보요청
-        Map<String, String> userProfile = snsLogin.requestUserProfileByAccessToken(accessToken);
+        Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
 
         // 받은 정보를 이용하여 User domain 생성
         User user = User.builder()
@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type((short) 1)
+                .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
 
         Long id = userMapper.getIdByAccount(user.getAccount());
@@ -104,6 +104,8 @@ public class UserServiceImpl implements UserService {
         if(id == null) {
             System.out.println(user.getUser_type());
             userMapper.snsSignUp(user);
+            user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
+            userMapper.updateNickname(user);
         }
 
         return generateAccessAndRefreshToken(id);
@@ -455,7 +457,7 @@ public class UserServiceImpl implements UserService {
 
         jwt.isValid(token, tokenType);
 
-        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwtToken(token, tokenType).get("id")));
+        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwt(token, tokenType).get("id")));
     }
 
     private Map<String, String> generateAccessAndRefreshToken(Long id){

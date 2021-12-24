@@ -7,16 +7,19 @@ import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class Jwt {
+public class JwtUtil {
 
     @Value("${spring.jwt.secret}")
     private String key;
 
+    public Header getHeaderFromJwt(String token){
+        return Jwts.parser().parse(token).getHeader();
+    }
 
     public String generateToken(Long id, TokenType tokenType){
 
@@ -36,7 +39,7 @@ public class Jwt {
         if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
 
-        Claims claims = this.getClaimsFromJwtToken(token, tokenType);
+        Claims claims = this.getClaimsFromJwt(token, tokenType);
 
         String sub = String.valueOf(claims.get("sub"));
 
@@ -45,7 +48,7 @@ public class Jwt {
                 // access token 에 refresh token 이 들어간 경우
                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
-            } else {
+            } else if(tokenType.equals(TokenType.REFRESH)){
                 // refresh token 에 access token 이 들어간 경우
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
             }
@@ -54,10 +57,9 @@ public class Jwt {
         return true;
     }
 
-    public Claims getClaimsFromJwtToken(String token, TokenType tokenType){
+    public Claims getClaimsFromJwt(String token, TokenType tokenType){
         //System.out.println(token);
         Claims claims = null;
-        String sub = null;
         token = token.substring(7);
 
         try{
@@ -70,7 +72,7 @@ public class Jwt {
             if(tokenType.equals(TokenType.ACCESS)) {
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_EXPIRED_EXCEPTION);
 
-            } else {
+            } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_EXPIRED_EXCEPTION);
             }
 
@@ -78,7 +80,7 @@ public class Jwt {
             if(tokenType.equals(TokenType.ACCESS)) {
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
-            } else {
+            } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
             }
         }
@@ -87,9 +89,29 @@ public class Jwt {
             if(tokenType.equals(TokenType.ACCESS)){
                 throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
-            } else{
+            } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
             }
+        }
+
+        return claims;
+    }
+
+    public Claims getClaimsFromJwt(String token, PublicKey key) {
+        //System.out.println(token);
+        Claims claims = null;
+
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+        } catch (ExpiredJwtException e) {
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_EXPIRED_EXCEPTION);
+
+        } catch (Exception e) {
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
         }
 
         return claims;

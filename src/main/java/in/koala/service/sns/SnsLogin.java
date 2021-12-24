@@ -6,8 +6,7 @@ import java.util.Map;
 
 public interface SnsLogin {
     Map requestUserProfile(String code) throws Exception;
-    Map requestUserProfileByAccessToken(String accessToken);
-    String getRedirectUri();
+    Map requestUserProfileBySnsToken(String accessToken);
     SnsType getSnsType();
-    String requestAccessToken(String code);
+    String getRedirectUri();
 }

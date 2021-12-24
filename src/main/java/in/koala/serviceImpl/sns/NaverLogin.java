@@ -70,7 +70,7 @@ public class NaverLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map requestUserProfileByAccessToken(String accessToken) {
+    public Map requestUserProfileBySnsToken(String accessToken) {
         try {
             return this.requestUserProfileByAccessToken(accessToken, profileUri);
 
@@ -125,6 +125,7 @@ public class NaverLogin extends AbstractSnsLogin {
         parsedProfile.put("sns_email", naverUser.getEmail());
         parsedProfile.put("profile", naverUser.getProfile_image());
         parsedProfile.put("nickname", this.getSnsType() + "_" + naverUser.getId());
+        parsedProfile.put("user_type", "1");
 
         return parsedProfile;
     }

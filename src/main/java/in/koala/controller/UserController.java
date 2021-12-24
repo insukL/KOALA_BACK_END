@@ -53,7 +53,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getLoginUserInfo(), HttpStatus.OK);
     }
 
-    @ApiOperation(value = "sns 로그인 테스트", notes = "자동으로 해당 sns 로그인창으로 redirect 됩니다. swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
+    @ApiOperation(value = "sns 로그인", notes = "자동으로 해당 sns 로그인창으로 redirect 후 로그인 완료되면 access, refresh token 반환합니다. \n swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
     @GetMapping(value="/{snsType}")
     public void requestSnsLogin(@PathVariable(name = "snsType") SnsType snsType) throws Exception {
         userService.requestSnsLogin(snsType);
