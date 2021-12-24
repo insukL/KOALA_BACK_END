@@ -13,7 +13,7 @@
         url: "/user/oauth2/naver",
         type: 'POST',
         dataType: 'json',
-        headers: { 'Sns-Token':naver_id_login.oauthParams.access_token},
+        headers: { 'Authorization':naver_id_login.oauthParams.access_token},
         contentType: 'application/json',
         mimeType: 'application/json',
         success: function (xhr) {

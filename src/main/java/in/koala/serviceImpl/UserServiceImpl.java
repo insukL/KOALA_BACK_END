@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
         SnsLogin snsLogin = this.initSnsService(snsType);
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String snsToken = request.getHeader("Sns-Token");
+        String snsToken = request.getHeader("Authorization");
 
         if(snsToken == null){
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
