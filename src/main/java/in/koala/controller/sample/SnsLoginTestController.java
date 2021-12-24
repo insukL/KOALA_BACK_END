@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class SnsLoginTestController {
 
     private final String AUD = "com.koala.services";
-    private final String APPLE_WEBSITE_URL = "https://koala.im";
+    private final String REDIRECT_URI = "https://api.stage.koala.im/applecallback";
 
     @GetMapping(value = "/applelogin")
     public String appleLoginPage(ModelMap model) {
 
         model.addAttribute("client_id", AUD);
-        model.addAttribute("redirect_uri", APPLE_WEBSITE_URL);
+        model.addAttribute("redirect_uri", REDIRECT_URI);
         model.addAttribute("nonce", "asd");
 
         return "test/appleLogin";
@@ -35,7 +35,7 @@ public class SnsLoginTestController {
         return "test/callback";
     }
 
-    @GetMapping(value = "/applecallback")
+    @PostMapping(value = "/applecallback")
     @ResponseBody
     public String appleCallBack(String idToken){
         return idToken;
