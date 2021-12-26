@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.Crawling;
+import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.CrawlingException;
 import in.koala.mapper.CrawlingMapper;
@@ -40,10 +41,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CrawlingServiceImpl implements CrawlingService {
 
-    private static final short PORTAL  = 0; // 아우누리
-    private static final short DORM = 1; // 아우미르
-    private static final short YOUTUBE = 2; // 유튜브
-
    @Value("${dorm.url}")
     private String dormUrl;
 
@@ -65,7 +62,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void updateLog(String site, Timestamp crawlingAt) {
+    public void updateLog(Short site, Timestamp crawlingAt) {
         crawlingMapper.updateLog(site, crawlingAt);
     }
 
@@ -80,55 +77,6 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void dormCrawling() throws Exception {
-
-        // 크롤링한 객체들을 담을 List - 신규 데이터
-        List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
-        // 크롤링한 객체들을 담을 List - 중복된 데이터
-        List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        // 크롤링한 시점
-        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
-
-        try{
-            //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
-            Connection conn = Jsoup.connect(dormUrl);
-            Document html = conn.get();
-
-            //제목, url이 boadList 클래스 아래의 tobdy > tr 태그 내부에만 있기에 tr 태그 이하의 하위 태그들 다 긁어오기
-            Elements elements = html.select(".boardList > tbody > tr");
-            
-            //tr 태그 이하의 하위 태그들에 대하여 제목과 url 추출
-            for(Element element : elements) {
-                // td 태그 하위 a태그에 있는 text = 제목
-                String title = element.select("td > a").text();
-                // 제목을 클릭했을 때 넘어가는 url을 절대 경로로 받기 위해서 child(1)=td / child(1).child(a) = a 이므로 absUrl()을 사용해서 절대 경로의 url 추출
-                String url = element.child(1).child(0).absUrl("href");
-                // td 태그 중에서 center 클래스로 지정되었는 태그들이 많은데 3번째로 존재하는 td 태그에 작성일이 담겨있음
-                String createdAt = element.select(".center").get(2).text();
-
-                Crawling crawling = new Crawling(title, url, DORM, createdAt, crawlingAt);
-
-                // 크롤링 객체를 전부 담기 위해 리스트에 추가
-                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
-                    crawlingInsertList.add(crawling);
-                }
-                else{
-                    crawlingUpdateList.add(crawling);
-                }
-            }
-
-            //crawling_log 테이블에 로그 남기기
-            updateLog("DORM", crawlingAt);
-
-            // 크롤링 객체를 담은 리스트를 db에 추가
-            updateTable(crawlingInsertList, crawlingUpdateList);
-        }
-        catch (IOException e){
-            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_PORTAL);
-        }
-    }
-
-    @Override
     public void portalCrawling() throws Exception {
 
         // 크롤링한 객체들을 담을 List - 신규 데이터
@@ -137,6 +85,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
         // 크롤링한 시점
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        Short site = (short)CrawlingSite.PORTAL.ordinal();
 
         // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
@@ -155,7 +104,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                     StringBuffer buffer = new StringBuffer(boardUrl.absUrl("data-url"));
                     String url = buffer.insert(4,"s").toString();
                     String createdAt = boardUrl.select(".bc-s-cre_dt").text();
-                    Crawling crawling = new Crawling(title, url, PORTAL, createdAt, crawlingAt);
+                    Crawling crawling = new Crawling(title, url, site, createdAt, crawlingAt);
 
                     // 크롤링 객체를 전부 담기 위해 리스트에 추가
                     if(crawlingMapper.checkDuplicatedData(crawling) == 0){
@@ -167,7 +116,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                 }
             }
             //crawling_log 테이블에 로그 남기기
-            updateLog("PORTAL", crawlingAt);
+            updateLog(site, crawlingAt);
 
             // 크롤링 객체를 담은 리스트를 db에 추가
             updateTable(crawlingInsertList, crawlingUpdateList);
@@ -179,6 +128,58 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
+    public void dormCrawling() throws Exception {
+
+        // 크롤링한 객체들을 담을 List - 신규 데이터
+        List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
+        // 크롤링한 객체들을 담을 List - 중복된 데이터
+        List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
+        // 크롤링한 시점
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        Short site = (short) CrawlingSite.DORM.ordinal();
+
+        try{
+            //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
+            Connection conn = Jsoup.connect(dormUrl);
+            Document html = conn.get();
+
+            //제목, url이 boadList 클래스 아래의 tobdy > tr 태그 내부에만 있기에 tr 태그 이하의 하위 태그들 다 긁어오기
+            Elements elements = html.select(".boardList > tbody > tr");
+            
+            //tr 태그 이하의 하위 태그들에 대하여 제목과 url 추출
+            for(Element element : elements) {
+                // td 태그 하위 a태그에 있는 text = 제목
+                String title = element.select("td > a").text();
+                // 제목을 클릭했을 때 넘어가는 url을 절대 경로로 받기 위해서 child(1)=td / child(1).child(a) = a 이므로 absUrl()을 사용해서 절대 경로의 url 추출
+                String url = element.child(1).child(0).absUrl("href");
+                // td 태그 중에서 center 클래스로 지정되었는 태그들이 많은데 3번째로 존재하는 td 태그에 작성일이 담겨있음
+                String createdAt = element.select(".center").get(2).text();
+
+                Crawling crawling = new Crawling(title, url, site, createdAt, crawlingAt);
+
+                // 크롤링 객체를 전부 담기 위해 리스트에 추가
+                if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                    crawlingInsertList.add(crawling);
+                }
+                else{
+                    crawlingUpdateList.add(crawling);
+                }
+            }
+
+            //crawling_log 테이블에 로그 남기기
+            updateLog(site, crawlingAt);
+
+            // 크롤링 객체를 담은 리스트를 db에 추가
+            updateTable(crawlingInsertList, crawlingUpdateList);
+        }
+        catch (IOException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_PORTAL);
+        }
+    }
+
+
+
+    @Override
     public void youtubeCrawling() throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -188,6 +189,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         // 크롤링한 시점
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        Short site = (short) CrawlingSite.YOUTUBE.ordinal();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
                 .queryParam("part", "snippet")
@@ -230,7 +232,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                     String url = "https://www.youtube.com/watch?v=" + map1.get("videoId");
                     SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
                     String createdAt = format2.format(format2.parse(map2.get("publishTime")));
-                    Crawling crawling = new Crawling(title, url, YOUTUBE, createdAt, crawlingAt);
+                    Crawling crawling = new Crawling(title, url, site, createdAt, crawlingAt);
                     if(crawlingMapper.checkDuplicatedData(crawling) == 0){
                         crawlingList.add(crawling);
                     }
@@ -242,7 +244,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         }
 
         //crawling_log 테이블에 로그 남기기
-        updateLog("YOUTUBE", crawlingAt);
+        updateLog(site, crawlingAt);
 
         // 크롤링 객체를 담은 리스트를 db에 추가
         if(!crawlingList.isEmpty())

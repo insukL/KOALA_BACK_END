@@ -8,7 +8,7 @@ import java.util.List;
 public interface CrawlingService {
 
     String test();
-    void updateLog(String site, Timestamp crawlingAt);
+    void updateLog(Short site, Timestamp crawlingAt);
     void updateTable(List<Crawling> crawlingInsertList, List<Crawling> crawlingUpdateList);
     void dormCrawling() throws Exception;
     void portalCrawling() throws Exception;

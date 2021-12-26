@@ -2,6 +2,7 @@ package in.koala.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import in.koala.enums.CrawlingSite;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,7 @@ public class Keyword {
     private Long userId;
 
     private String name;
-    private List<String> siteList;
+    private List<CrawlingSite> siteList;
 
     private short isImportant;
     private short alarmMode;
