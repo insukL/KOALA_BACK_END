@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -475,5 +476,26 @@ public class UserServiceImpl implements UserService {
         }
 
         throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
+    }
+
+    @Override
+    public User createNonMemberUserAndDeviceToken(String token) {
+        Date from = new Date();
+        SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        String date = transFormat.format(from);
+        String tokenSlice = token.substring(token.length()-5, token.length());
+        String userUnique = date+tokenSlice;
+        User user = new User();
+        user.setAccount(userUnique);
+        user.setPassword(userUnique);
+        user.setNickname(userUnique);
+        user.setProfile(userUnique);
+        user.setIs_member((short) 0);
+
+        userMapper.createNonMemberUser(user);
+        Long userId = userMapper.getIdByAccount(userUnique);
+        userMapper.createDeviceToken(userId, token);
+
+        return userMapper.getUserById(userId);
     }
 }

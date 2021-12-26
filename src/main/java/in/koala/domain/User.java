@@ -44,6 +44,8 @@ public class User {
     private Timestamp created_at;
     @ApiModelProperty(hidden = true)
     private Timestamp updated_at;
+    @ApiModelProperty(hidden = true)
+    private Short is_member;
 
     @Builder
     public User(String account, String sns_email, String nickname, String profile, Short user_type) {

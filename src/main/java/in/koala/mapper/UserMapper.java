@@ -18,4 +18,6 @@ public interface UserMapper {
     void updateIsAuth(Long id);
     void updatePassword(User user);
     void softDeleteUser(User user);
+    Long createNonMemberUser(User user);
+    void createDeviceToken(Long userId, String token);
 }
