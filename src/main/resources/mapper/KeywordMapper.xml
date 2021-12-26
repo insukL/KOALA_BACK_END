@@ -56,11 +56,12 @@
             );
     </update>
 
-    <select id="getKeywordSite" parameterType="java.util.Map" resultType="java.lang.String">
+    <select id="getKeywordSite" parameterType="java.util.Map" resultType="java.lang.Integer">
         SELECT ks.site_name
         FROM keyword_site as ks
         INNER JOIN keyword as k
         ON k.id = ks.keyword_id
+            AND ks.is_deleted IS NULL
             AND k.user_id = #{userId}
             AND k.name = #{name};
     </select>

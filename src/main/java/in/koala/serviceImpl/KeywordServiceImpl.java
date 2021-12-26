@@ -1,7 +1,9 @@
 package in.koala.serviceImpl;
 
+import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.domain.User;
+import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
@@ -29,6 +31,22 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public List<Integer> convertSiteList(List<CrawlingSite> siteList) {
+
+        List<Integer> convertSiteList = new ArrayList<>();
+
+        for(CrawlingSite site : siteList){
+            for(CrawlingSite value : CrawlingSite.values()){
+                if(value.equals(site)){
+                    convertSiteList.add(value.ordinal());
+                }
+            }
+        }
+
+        return convertSiteList;
+    }
+
+    @Override
     public void registerKeyword(Keyword keyword) {
 
         Long userId = userService.getLoginUserInfo().getId();
@@ -44,7 +62,7 @@ public class KeywordServiceImpl implements KeywordService {
             keywordMapper.insertUsersKeyword(keyword);
             Map<String, Object> map = new HashMap<>();
             map.put("keywordId", keyword.getId());
-            map.put("siteList", keyword.getSiteList());
+            map.put("siteList", convertSiteList(keyword.getSiteList()));
             map.put("createdAt", keyword.getCreatedAt());
             keywordMapper.insertUsersKeywordSite(map);
         }
@@ -67,27 +85,13 @@ public class KeywordServiceImpl implements KeywordService {
         map.put("userId", userId);
         map.put("name", keywordName);
 
-        Set<String> addingList = new HashSet<>(keyword.getSiteList());
-        Set<String> addingListCopy = new HashSet<>();
+        Set<Integer> addingList = new HashSet<>(convertSiteList(keyword.getSiteList()));
+        Set<Integer> addingListCopy = new HashSet<>();
         addingListCopy.addAll(addingList);
-        Set<String> existingList = new HashSet<>(keywordMapper.getKeywordSite(map));
-
-        System.out.println("추가한 키워드 사이트 크기 : " + addingList.size());
-        System.out.println("카피한 키워드 사이트 크기 : " + addingListCopy.size());
-        System.out.println("기존의 키워드 사이트 크기 : " + existingList.size());
+        Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(map));
 
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
-
-        System.out.println("뺀 후 추가할 키워드 사이트 : "); // insert
-        for(String site : addingList){
-            System.out.println(site);
-        }
-
-        System.out.println("기존의 키워드 사이트 : "); // delete
-        for(String site : existingList) {
-            System.out.println(site);
-        }
 
         Long keywordId = keywordMapper.getKeywordId(map);
 

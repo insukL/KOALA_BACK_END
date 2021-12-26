@@ -15,7 +15,7 @@ public interface CrawlingMapper {
 
     int checkDuplicatedData(Crawling crawling);
 
-    int updateLog(@Param("site") String site,
+    int updateLog(@Param("site") Short site,
                   @Param("crawling_at") Timestamp crawlingAt);
 
     void addCrawlingData(List<Crawling> crawlingInsertList);

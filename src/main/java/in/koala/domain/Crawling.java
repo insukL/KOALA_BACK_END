@@ -13,7 +13,7 @@ public class Crawling {
     private Long id;
     private String title;
     private String url;
-    private short site;
+    private Short site;
     private String createdAt;
     private Timestamp crawlingAt;
     private Timestamp updatedAt;
