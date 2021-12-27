@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConditionMessage extends FcmMessage{
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("condition")
     private String condition;
 
