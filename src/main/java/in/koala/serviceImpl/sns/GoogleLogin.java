@@ -50,7 +50,7 @@ public class GoogleLogin extends AbstractSnsLogin {
     @Override
     public Map requestUserProfileBySnsToken(String accessToken) {
         try {
-            return this.requestUserProfile(accessToken, profileUri);
+            return this.requestUserProfileByAccessToken(accessToken, profileUri);
 
         } catch(Exception e){
             throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
