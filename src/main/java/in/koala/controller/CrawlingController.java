@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Timestamp;
+
 @RestController
 @RequiredArgsConstructor
 public class CrawlingController {
@@ -18,17 +20,20 @@ public class CrawlingController {
 
     @GetMapping(value="/crawling/portal")
     public void portalCrawling() throws Exception{
-        crawlingService.portalCrawling();
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        crawlingService.portalCrawling(crawlingAt);
     }
 
     @GetMapping(value = "/crawling/dorm")
     public void dormCrawling() throws Exception{
-        crawlingService.dormCrawling();
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        crawlingService.dormCrawling(crawlingAt);
     }
 
     @GetMapping(value="/crawling/youtube")
     public void youtubeCrawling() throws Exception{
-        crawlingService.youtubeCrawling();
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+        crawlingService.youtubeCrawling(crawlingAt);
     }
 
 }

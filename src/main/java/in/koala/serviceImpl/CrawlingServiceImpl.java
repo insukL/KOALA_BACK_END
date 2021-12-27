@@ -77,14 +77,12 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void portalCrawling() throws Exception {
+    public void portalCrawling(Timestamp crawlingAt) throws Exception {
 
         // 크롤링한 객체들을 담을 List - 신규 데이터
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        // 크롤링한 시점
-        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         Short site = (short)CrawlingSite.PORTAL.ordinal();
 
         // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
@@ -128,14 +126,12 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void dormCrawling() throws Exception {
+    public void dormCrawling(Timestamp crawlingAt) throws Exception {
 
         // 크롤링한 객체들을 담을 List - 신규 데이터
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        // 크롤링한 시점
-        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         Short site = (short) CrawlingSite.DORM.ordinal();
 
         try{
@@ -180,15 +176,13 @@ public class CrawlingServiceImpl implements CrawlingService {
 
 
     @Override
-    public void youtubeCrawling() throws Exception {
+    public void youtubeCrawling(Timestamp crawlingAt) throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         Date tmp = new Date();
         String now = format.format(tmp);
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
-        // 크롤링한 시점
-        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         Short site = (short) CrawlingSite.YOUTUBE.ordinal();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
@@ -249,5 +243,21 @@ public class CrawlingServiceImpl implements CrawlingService {
         // 크롤링 객체를 담은 리스트를 db에 추가
         if(!crawlingList.isEmpty())
             crawlingMapper.addCrawlingData(crawlingList);
+    }
+
+    @Override
+    public void executeAll() throws Exception {
+
+        Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
+
+        this.portalCrawling(crawlingAt);
+        this.dormCrawling(crawlingAt);
+        this.youtubeCrawling(crawlingAt);
+
+    }
+
+    @Override
+    public Timestamp getLatelyCrawlingTime() {
+        return crawlingMapper.getLatelyCrawlingTime();
     }
 }
