@@ -94,6 +94,17 @@
         SELECT nickname from user where id=1;
     </select>
 
+    <insert id="createNonMemberUser" parameterType="in.koala.domain.User">
+        INSERT INTO user(nickname, account, password, find_email, profile, is_member)
+        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{profile}, #{is_member})
+        <selectKey keyProperty="id" resultType="Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <insert id="createDeviceToken">
+        INSERT INTO device_token(user_id, token) VALUES(#{userId}, #{token})
+    </insert>
 
     <sql id="userInfo">
         ${alias}id, 

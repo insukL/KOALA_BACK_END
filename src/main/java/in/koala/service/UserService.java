@@ -25,5 +25,6 @@ public interface UserService {
     String findAccount(String email);
     void softDeleteUser();
     Boolean checkFindEmail(String email);
+    User createNonMemberUserAndDeviceToken(String token);
 
 }

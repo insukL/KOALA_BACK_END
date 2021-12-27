@@ -4,6 +4,7 @@ import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
 import in.koala.annotation.Xss;
 import in.koala.domain.AuthEmail;
+import in.koala.domain.DeviceToken;
 import in.koala.domain.User;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @RestController
 @RequestMapping(value = "/user")
@@ -25,6 +28,11 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
+
+    @PostMapping(value = "/non-member/{deviceToken}")
+    public ResponseEntity createNonMemberUserAndDeviceToken(@PathVariable(name = "deviceToken") String deviceToken){
+        return new ResponseEntity(userService.createNonMemberUserAndDeviceToken(deviceToken), HttpStatus.OK);
+    }
 
     @GetMapping(value = "/oauth2/authorization/{snsType}")
     public ResponseEntity snsLogin(
