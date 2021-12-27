@@ -6,8 +6,6 @@ import in.koala.annotation.Xss;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.domain.response.CustomBody;
-import in.koala.domain.response.CustomResponse;
-import in.koala.domain.response.CustomResponse2;
 import in.koala.enums.SnsType;
 import in.koala.service.UserService;
 import io.swagger.annotations.ApiOperation;
