@@ -32,8 +32,7 @@ public class MemoServiceImpl implements MemoService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        Long scrapId = scrapMapper.getScrapId(user.getId(), memo.getUser_scrap_id());
-        if(scrapId == null){
+        if(!scrapMapper.checkScrapExistByMemo(user.getId(), memo.getUser_scrap_id())){
             throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
         }
 
@@ -50,10 +49,11 @@ public class MemoServiceImpl implements MemoService {
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
-        Long scrapId = scrapMapper.getScrapId(user.getId(), userScrapId);
-        if(scrapId == null){
+
+        if(!scrapMapper.checkScrapExistByMemo(user.getId(), userScrapId)){
             throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
         }
+
         return memoMapper.getMemo(userScrapId);
     }
 
@@ -64,8 +64,7 @@ public class MemoServiceImpl implements MemoService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        Long scrapId = scrapMapper.getScrapId(user.getId(), memo.getUser_scrap_id());
-        if(scrapId == null){
+        if(!scrapMapper.checkScrapExistByMemo(user.getId(), memo.getUser_scrap_id())){
             throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
         }
 
@@ -75,6 +74,5 @@ public class MemoServiceImpl implements MemoService {
 
         memoMapper.updateMemo(memo);
     }
-
 
 }
