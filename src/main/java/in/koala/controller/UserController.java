@@ -155,7 +155,7 @@ public class UserController {
 
     @Auth
     @GetMapping(value="/auth-check")
-    @ApiOperation(value="이메일 인증 여부 확인", notes="해당 계정의 학교 인증 여부를 확인하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="학교 인증 여부 확인", notes="해당 계정의 학교 인증 여부를 확인하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity checkAuth(){
         userService.isEmailCertification();
         return new ResponseEntity(CustomBody.of("인증 완료", HttpStatus.OK), HttpStatus.OK);
