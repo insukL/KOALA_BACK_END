@@ -54,20 +54,21 @@ public class ScrapServiceImpl implements ScrapService {
 
     // 보관함 선택 삭제
     @Override
-    public void deleteScrap(Long boardId) throws Exception {
+    public void deleteScrap(List<Long> boardId) throws Exception {
         User user = userService.getLoginUserInfo();
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        if(!scrapMapper.checkBoardExist(boardId)) {
-            throw new NonCriticalException(ErrorMessage.BOARD_NOT_EXIST);
-        }
-        if(!scrapMapper.checkScrapExist(boardId)) {
-            throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
+        for(int i=0; i<boardId.size(); i++ ){
+            if(!scrapMapper.checkBoardExist(boardId.get(i))) {
+                throw new NonCriticalException(ErrorMessage.BOARD_NOT_EXIST);
+            }
+            if(!scrapMapper.checkScrapExist(boardId.get(i))) {
+                throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
+            }
         }
         scrapMapper.deleteScrap(boardId);
     }
-
 
 }

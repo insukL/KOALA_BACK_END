@@ -9,5 +9,5 @@ import java.util.List;
 public interface ScrapService {
     void Scrap(Scrap scrap) throws Exception;
     List<Crawling> getScrap() throws Exception;
-    void deleteScrap(Long boardId) throws Exception;
+    void deleteScrap(List<Long> boardId) throws Exception;
 }
