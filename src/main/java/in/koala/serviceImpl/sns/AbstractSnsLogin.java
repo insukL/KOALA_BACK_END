@@ -24,7 +24,6 @@ public abstract class AbstractSnsLogin implements SnsLogin {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
 
-
         if(accessToken.charAt(0) == '"'){
             accessToken = accessToken.substring(1, accessToken.length() - 1);
         }
