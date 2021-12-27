@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 public class ScrapController {
@@ -34,9 +35,9 @@ public class ScrapController {
     }
 
     @Auth
-    @ApiOperation(value = "보관함 선택 삭제", notes = "보관함 선택 삭제 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @DeleteMapping(value = "/scrap/{boardId}")
-    public ResponseEntity deleteScrap(@RequestParam Long boardId) throws Exception {
+    @ApiOperation(value = "보관함 선택 삭제", notes = "보관함 삭제 api 입니다.\nList 형태로 입력 받습니다.\nex) [1, 11, 111]\n메모도 함께 삭제됩니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @DeleteMapping(value = "/scrap")
+    public ResponseEntity deleteScrap(@RequestBody List<Long> boardId) throws Exception {
         scrapService.deleteScrap(boardId);
         return new ResponseEntity("선택 삭제되었습니다.", HttpStatus.OK);
     }

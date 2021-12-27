@@ -1,9 +1,9 @@
 package in.koala.mapper;
 
 import in.koala.domain.Memo;
-import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
-@Mapper
+@Repository
 public interface MemoMapper {
     void addMemo(Memo memo);
     void updateMemo(Memo memo);

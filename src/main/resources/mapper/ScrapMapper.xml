@@ -13,8 +13,15 @@
     </insert>
 
     <update id="deleteScrap" parameterType="in.koala.domain.Scrap">
-        UPDATE scrap SET is_deleted = 1 WHERE board_id = #{boardId};
-        UPDATE memo SET is_deleted = 1 WHERE user_scrap_id = #{boardId};
+        UPDATE koala.scrap SET is_deleted = 1 WHERE
+        <foreach collection="boardId" item="boardId" open="(" close=")" separator="or">
+            board_id = #{boardId}
+        </foreach>;
+
+        UPDATE koala.memo SET is_deleted = 1 WHERE
+        <foreach collection="boardId" item="boardId" open="(" close=")" separator="or">
+            user_scrap_id = #{boardId}
+        </foreach>;
     </update>
 
     <select id="checkBoardExist" resultType="Boolean">
