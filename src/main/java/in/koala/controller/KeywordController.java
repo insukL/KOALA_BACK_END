@@ -3,6 +3,7 @@ package in.koala.controller;
 import in.koala.annotation.Auth;
 import in.koala.annotation.Xss;
 import in.koala.domain.Keyword;
+import in.koala.domain.response.CustomBody;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordService;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +26,7 @@ public class KeywordController {
     @ApiOperation(value ="키워드 조회" , notes = "사용자가 지정한 키워드를 조회한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword")
     public ResponseEntity<List<Keyword>> myKeywordList(){
-        return new ResponseEntity(keywordService.myKeywordList(), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(keywordService.myKeywordList(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss

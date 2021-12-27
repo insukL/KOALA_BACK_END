@@ -23,7 +23,6 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private final UserService userService;
     private final FcmSender fcmSender;
     private final KeywordPushMapper keywordPushMapper;
-    private final KeywordService keywordService;
     private final CrawlingService crawlingService;
 
     @Override

@@ -1,7 +1,10 @@
 package in.koala.controller;
 
+import in.koala.domain.response.CustomBody;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,21 +22,30 @@ public class CrawlingController {
     }
 
     @GetMapping(value="/crawling/portal")
-    public void portalCrawling() throws Exception{
+    public ResponseEntity portalCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
-        crawlingService.portalCrawling(crawlingAt);
+        if (crawlingService.portalCrawling(crawlingAt))
+            return new ResponseEntity(CustomBody.of("아우누리 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity("아우누리 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "/crawling/dorm")
-    public void dormCrawling() throws Exception{
+    public ResponseEntity dormCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
-        crawlingService.dormCrawling(crawlingAt);
+        if (crawlingService.dormCrawling(crawlingAt))
+            return new ResponseEntity(CustomBody.of("아우미르 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity("아우미르 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/youtube")
-    public void youtubeCrawling() throws Exception{
+    public ResponseEntity youtubeCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
-        crawlingService.youtubeCrawling(crawlingAt);
+        if (crawlingService.youtubeCrawling(crawlingAt))
+            return new ResponseEntity(CustomBody.of("유튜브 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
 
 }

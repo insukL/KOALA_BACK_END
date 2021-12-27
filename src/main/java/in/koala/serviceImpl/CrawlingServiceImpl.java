@@ -77,7 +77,12 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void portalCrawling(Timestamp crawlingAt) throws Exception {
+    public Timestamp getLatelyCrawlingTime() {
+        return crawlingMapper.getLatelyCrawlingTime();
+    }
+
+    @Override
+    public Boolean portalCrawling(Timestamp crawlingAt) throws Exception {
 
         // 크롤링한 객체들을 담을 List - 신규 데이터
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
@@ -118,6 +123,8 @@ public class CrawlingServiceImpl implements CrawlingService {
 
             // 크롤링 객체를 담은 리스트를 db에 추가
             updateTable(crawlingInsertList, crawlingUpdateList);
+
+            return true;
         }
         catch (IOException e){
             throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_DORM);
@@ -126,7 +133,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void dormCrawling(Timestamp crawlingAt) throws Exception {
+    public Boolean dormCrawling(Timestamp crawlingAt) throws Exception {
 
         // 크롤링한 객체들을 담을 List - 신규 데이터
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
@@ -167,6 +174,8 @@ public class CrawlingServiceImpl implements CrawlingService {
 
             // 크롤링 객체를 담은 리스트를 db에 추가
             updateTable(crawlingInsertList, crawlingUpdateList);
+
+            return true;
         }
         catch (IOException e){
             throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_PORTAL);
@@ -176,7 +185,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
 
     @Override
-    public void youtubeCrawling(Timestamp crawlingAt) throws Exception {
+    public Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         Date tmp = new Date();
@@ -243,21 +252,20 @@ public class CrawlingServiceImpl implements CrawlingService {
         // 크롤링 객체를 담은 리스트를 db에 추가
         if(!crawlingList.isEmpty())
             crawlingMapper.addCrawlingData(crawlingList);
+
+        return true;
     }
 
     @Override
-    public void executeAll() throws Exception {
+    public Boolean executeAll() throws Exception {
+
 
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
 
-        this.portalCrawling(crawlingAt);
-        this.dormCrawling(crawlingAt);
-        this.youtubeCrawling(crawlingAt);
-
+        if(this.portalCrawling(crawlingAt) && this.dormCrawling(crawlingAt) && this.youtubeCrawling(crawlingAt))
+            return true;
+        else
+            return false;
     }
 
-    @Override
-    public Timestamp getLatelyCrawlingTime() {
-        return crawlingMapper.getLatelyCrawlingTime();
-    }
 }
