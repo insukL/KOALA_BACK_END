@@ -51,7 +51,7 @@ public class UserController {
     @GetMapping(value="/my")
     @ApiOperation(value ="유저의 현재정보" , notes = "로그인된 유저의 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getMyInfo(){
-        return new ResponseEntity(CustomBody.of(HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.getLoginUserInfo(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @ApiOperation(value = "sns 로그인", notes = "자동으로 해당 sns 로그인창으로 redirect 후 로그인 완료되면 access, refresh token 반환합니다. \n swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
