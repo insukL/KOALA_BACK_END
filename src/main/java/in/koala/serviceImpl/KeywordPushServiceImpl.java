@@ -4,6 +4,7 @@ import in.koala.domain.fcm.TokenMessage;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordPushException;
 import in.koala.mapper.KeywordPushMapper;
+import in.koala.mapper.NoticeMapper;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordPushService;
 import in.koala.service.KeywordService;
@@ -24,6 +25,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private final FcmSender fcmSender;
     private final KeywordPushMapper keywordPushMapper;
     private final CrawlingService crawlingService;
+    private final NoticeMapper noticeMapper;
 
     @Override
     public void pushKeywordAtOnce(String deviceToken) throws Exception {
@@ -61,8 +63,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
             for(Map<String, String> map : tmp){
                 String title = map.get("title");
                 String url = map.get("url");
-                System.out.println("제목 : " + title);
-                System.out.println("url : " + url);
+                noticeMapper.insertNotice(map);
                 fcmSender.sendMessage(new TokenMessage(title, url, deviceToken));
             }
         }

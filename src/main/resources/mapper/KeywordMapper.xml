@@ -3,11 +3,17 @@
 <mapper namespace="in.koala.mapper.KeywordMapper">
 
     <select id = "myKeywordList" parameterType="java.lang.Long" resultType="in.koala.domain.Keyword">
-        SELECT id, name
-        FROM keyword
-        WHERE user_id = #{userId}
-            AND is_deleted IS NULL
-        ORDER BY created_at;
+        SELECT k.id, k.name, count(n.crawling_id) as noticeNum
+        FROM keyword AS k
+                 INNER JOIN user AS u
+                            ON u.id = k.user_id
+                 INNER JOIN notice AS n
+                            ON k.id = n.keyword_id
+        WHERE user_id = 32
+          AND n.is_deleted = 0
+          AND n.is_read = 0
+          AND k.is_deleted = 0
+        ORDER BY k.created_at;
     </select>
 
     <!--키워드 등록 (1. 유저별로 기존에 등록한 키워드와 지금 등록하려는 키워드가 중복되는지 확인)-->
