@@ -33,7 +33,7 @@
     </insert>
 
     <!--키워드 등록 (3. 키워드 별로 구독하는 사이트에 등록)-->
-    <insert id="insertUsersKeywordSite" parameterType="java.util.Map">
+    <insert id="insertUsersKeywordSite">
         INSERT INTO keyword_site(keyword_id, site_name, created_at)
         VALUES
         <foreach item="site" separator=" , " collection="siteList">
@@ -46,11 +46,11 @@
     </insert>
 
     <!--키워드 삭제 (지금은 멀티쿼리 사용중이나, join문 활용하여 삭제할수 있게 리팩토링 필요)-->
-    <update id="deleteKeyword" parameterType="java.util.Map">
+    <update id="deleteKeyword">
         UPDATE keyword
         SET is_deleted = 1
         WHERE user_id = #{userId}
-            AND name = #{name};
+            AND name = #{keywordName};
 
         UPDATE keyword_site
         SET is_deleted = 1
@@ -58,28 +58,28 @@
                 SELECT id
                 FROM keyword
                 WHERE user_id = #{userId}
-                  AND name = #{name}
+                  AND name = #{keywordName}
             );
     </update>
 
-    <select id="getKeywordSite" parameterType="java.util.Map" resultType="java.lang.Integer">
+    <select id="getKeywordSite" resultType="java.lang.Integer">
         SELECT ks.site_name
         FROM keyword_site as ks
         INNER JOIN keyword as k
         ON k.id = ks.keyword_id
             AND ks.is_deleted IS NULL
             AND k.user_id = #{userId}
-            AND k.name = #{name};
+            AND k.name = #{keywordName};
     </select>
 
-    <select id="getKeywordId" parameterType="java.util.Map" resultType="java.lang.Long">
+    <select id="getKeywordId" resultType="java.lang.Long">
         SELECT id
         FROM keyword
         WHERE user_id = #{userId}
-            AND name = #{name};
+            AND name = #{keywordName};
     </select>
 
-    <update id="modifyKeywordSite" parameterType="java.util.Map">
+    <update id="modifyKeywordSite">
         <foreach item="site" separator=";" index="index" collection="existingList">
             UPDATE keyword_site
             <set>
@@ -90,7 +90,7 @@
         </foreach>;
     </update>
 
-    <update id="modifyKeyword" parameterType="java.util.Map">
+    <update id="modifyKeyword">
         UPDATE keyword
         SET name = #{modifiedKeyword.name}, is_important = #{modifiedKeyword.isImportant},
             alarm_mode = #{modifiedKeyword.alarmMode}, alarm_cycle = #{modifiedKeyword.alarmCycle},
@@ -108,17 +108,18 @@
 
     <select id="getKeywordNotice" resultType = "in.koala.domain.Notice">
 
-        SELECT n.id, c.site, c.title, c.url, c.created_at AS createdAt
+        SELECT n.id, n.is_read as isRead, c.site, c.title, c.url, c.created_at AS createdAt
         FROM notice AS n
         INNER JOIN crawling AS c
         ON c.id = n.crawling_id
         INNER JOIN keyword AS k
         ON k.id = n.keyword_id
-        WHERE k.name = #{map.keywordName}
-        AND k.user_id = #{map.userId}
+        WHERE k.name = #{keywordName}
+        AND k.user_id = #{userId}
         <if test="site != null">
             AND site = #{site}
         </if>
+
     </select>
 
 </mapper>

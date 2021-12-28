@@ -12,6 +12,7 @@ public class Notice{
     private String title;
     private String url;
     private String createdAt;
+    private Boolean isRead;
 
     public Notice(Long id, String site, String title, String url, String createdAt){
         this.id = id;
