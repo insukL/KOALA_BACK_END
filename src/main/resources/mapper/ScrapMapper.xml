@@ -17,11 +17,6 @@
         <foreach collection="boardId" item="boardId" open="(" close=")" separator="or">
             board_id = #{boardId}
         </foreach>;
-
-        UPDATE koala.memo SET is_deleted = 1 WHERE
-        <foreach collection="boardId" item="boardId" open="(" close=")" separator="or">
-            user_scrap_id = #{boardId}
-        </foreach>;
     </update>
 
     <select id="checkBoardExist" resultType="Boolean">
@@ -36,8 +31,8 @@
         SELECT count(*) FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
     </select>
 
-    <select id="getScrapId" resultType="Long">
-        SELECT id FROM koala.scrap WHERE user_id = #{userId} AND board_id = #{boardId} AND is_deleted = 0;
+    <select id="checkScrapExistByMemo" resultType="Boolean">
+        SELECT ExISTS (SELECT id FROM koala.scrap WHERE user_id = #{userId} AND id = #{userScrapId} AND is_deleted = 0)
     </select>
 
 </mapper>

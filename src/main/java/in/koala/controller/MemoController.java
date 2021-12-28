@@ -3,6 +3,7 @@ package in.koala.controller;
 import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
 import in.koala.domain.Memo;
+import in.koala.domain.response.CustomBody;
 import in.koala.service.MemoService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -20,26 +21,26 @@ public class MemoController {
     MemoService memoService;
 
     @Auth
-    @ApiOperation(value = "메모 작성", notes = "보관함 메모 작성 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "보관함 메모 작성", notes = "보관함 메모 작성입니다.\n스크랩 id와 1~100자의 메모가 필요합니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/memo")
     public ResponseEntity AddMemo(@Validated(ValidationGroups.createMemo.class) @RequestBody Memo memo) throws Exception {
         memoService.addMemo(memo);
-        return new ResponseEntity("메모가 작성되었습니다.", HttpStatus.CREATED);
+        return new ResponseEntity(CustomBody.of("메모가 작성되었습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
-    @ApiOperation(value = "메모 조회", notes = "보관함 메모 조회 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "보관함 메모 조회", notes = "보관함 메모 조회입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/memo/{userScrapId}")
     public ResponseEntity getMemo(@RequestParam Long userScrapId) throws Exception {
-        return new ResponseEntity(memoService.getMemo(userScrapId), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(memoService.getMemo(userScrapId), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
-    @ApiOperation(value = "메모 수정", notes = "보관함 메모 수정 api 입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "보관함 메모 수정", notes = "보관함 메모 수정입니다.\n스크랩 id와 변경 메모가 필요합니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/memo")
     public ResponseEntity updateMemo(@Validated(ValidationGroups.createMemo.class) @RequestBody Memo memo) throws Exception {
         memoService.updateMemo(memo);
-        return new ResponseEntity("메모가 수정되었습니다.", HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of("메모가 수정되었습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
 }

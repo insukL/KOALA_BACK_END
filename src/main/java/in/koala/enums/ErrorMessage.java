@@ -60,11 +60,11 @@ public enum ErrorMessage {
 	/*
 	 * Scrap, Memo
 	 */
-	BOARD_NOT_EXIST(200, "글이 존재하지 않습니다"),
-	ALREADY_SCRAP_BOARD(201, "이미 보관함에 존재합니다"),
-	SCRAP_NOT_EXIST(202, "보관함에 존재하지 않습니다."),
-	ALREADY_MEMO_EXIST(203, "이미 메모가 존재합니다."),
-	MEMO_NOT_EXIST(204, "메모가 존재하지 않습니다."),
+	BOARD_NOT_EXIST(250, "글이 존재하지 않습니다"),
+	ALREADY_SCRAP_BOARD(251, "이미 보관함에 존재합니다"),
+	SCRAP_NOT_EXIST(252, "보관함에 존재하지 않습니다."),
+	ALREADY_MEMO_EXIST(253, "이미 메모가 존재합니다."),
+	MEMO_NOT_EXIST(254, "메모가 존재하지 않습니다."),
 
 
 	/**
