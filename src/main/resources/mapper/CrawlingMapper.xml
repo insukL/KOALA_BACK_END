@@ -17,7 +17,7 @@
 
     <insert id="updateLog">
         INSERT INTO crawling_log(site, crawling_at)
-        VALUES (#{site}, #{crawling_at})
+        VALUES (#{site}, #{crawlingAt})
     </insert>
 
     <insert id="addCrawlingData">

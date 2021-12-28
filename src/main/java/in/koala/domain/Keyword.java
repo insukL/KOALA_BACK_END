@@ -24,9 +24,12 @@ public class Keyword {
     private String name;
     private List<CrawlingSite> siteList;
 
-    private short isImportant;
-    private short alarmMode;
+    private Short isImportant;
+    private Short alarmMode;
     private int alarmCycle;
+
+    @ApiModelProperty(hidden = true)
+    private Long noticeNum;
 
     @ApiModelProperty(hidden = true)
     private Timestamp createdAt;
@@ -36,5 +39,5 @@ public class Keyword {
 
     @JsonIgnore
     @ApiModelProperty(hidden = true)
-    private short isDeleted;
+    private Short isDeleted;
 }

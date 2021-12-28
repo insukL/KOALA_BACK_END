@@ -11,12 +11,11 @@ public interface CrawlingService {
     String test();
     void updateLog(Short site, Timestamp crawlingAt);
     void updateTable(List<Crawling> crawlingInsertList, List<Crawling> crawlingUpdateList);
-
-    void dormCrawling(Timestamp crawlingAt) throws Exception;
-    void portalCrawling(Timestamp crawlingAt) throws Exception;
-    void youtubeCrawling(Timestamp crawlingAt) throws Exception;
-
-    void executeAll() throws Exception;
     Timestamp getLatelyCrawlingTime();
 
+    Boolean dormCrawling(Timestamp crawlingAt) throws Exception;
+    Boolean portalCrawling(Timestamp crawlingAt) throws Exception;
+    Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception;
+
+    Boolean executeAll() throws Exception;
 }

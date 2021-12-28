@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
+import in.koala.domain.Notice;
 import in.koala.domain.User;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
@@ -60,47 +61,33 @@ public class KeywordServiceImpl implements KeywordService {
         }
         else{
             keywordMapper.insertUsersKeyword(keyword);
-            Map<String, Object> map = new HashMap<>();
-            map.put("keywordId", keyword.getId());
-            map.put("siteList", convertSiteList(keyword.getSiteList()));
-            map.put("createdAt", keyword.getCreatedAt());
-            keywordMapper.insertUsersKeywordSite(map);
+            keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getCreatedAt(), convertSiteList(keyword.getSiteList()));
         }
     }
 
     @Override
     public void deleteKeyword(String keywordName) {
         Long userId = userService.getLoginUserInfo().getId();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userId", userId);
-        map.put("name", keywordName);
-        keywordMapper.deleteKeyword(map);
+        keywordMapper.deleteKeyword(userId, keywordName);
     }
 
     @Override
     public void modifyKeyword(String keywordName, Keyword keyword) {
         Long userId = userService.getLoginUserInfo().getId();
 
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userId", userId);
-        map.put("name", keywordName);
-
         Set<Integer> addingList = new HashSet<>(convertSiteList(keyword.getSiteList()));
         Set<Integer> addingListCopy = new HashSet<>();
         addingListCopy.addAll(addingList);
-        Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(map));
+        Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(userId, keywordName));
 
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
 
-        Long keywordId = keywordMapper.getKeywordId(map);
-
-        map.put("keywordId", keywordId);
-        map.put("createdAt", new Timestamp(System.currentTimeMillis()));
+        Long keywordId = keywordMapper.getKeywordId(userId, keywordName);
+        Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
         if(!addingList.isEmpty()) {
-            map.put("siteList", addingList);
-            if(keywordMapper.insertUsersKeywordSite(map) > 0){
+            if(keywordMapper.insertUsersKeywordSite(keywordId, createdAt, new ArrayList<>(addingList)) > 0){
                 System.out.println("키워드 추가 성공");
             }
             else {
@@ -109,8 +96,7 @@ public class KeywordServiceImpl implements KeywordService {
         }
 
         if(!existingList.isEmpty()){
-            map.put("existingList", existingList);
-            if(keywordMapper.modifyKeywordSite(map) > 0){
+            if(keywordMapper.modifyKeywordSite(existingList, keywordId) > 0){
                 System.out.println("키워드 업데이트 성공");
             }
             else {
@@ -118,7 +104,13 @@ public class KeywordServiceImpl implements KeywordService {
             }
         }
 
-        map.put("modifiedKeyword", keyword);
-        keywordMapper.modifyKeyword(map);
+        keywordMapper.modifyKeyword(userId, keywordName, createdAt, keyword);
+    }
+
+    @Override
+    public List<Notice> getKeywordNotice(String keywordName, String site) {
+
+        Long userId = userService.getLoginUserInfo().getId();
+        return keywordMapper.getKeywordNotice(keywordName, site, userId);
     }
 }
