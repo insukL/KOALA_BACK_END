@@ -1,6 +1,7 @@
 package in.koala.mapper;
 
 import in.koala.domain.Keyword;
+import in.koala.domain.Notice;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,8 @@ public interface KeywordMapper {
     int insertUsersKeywordSite(Map map);
 
     List<Keyword> myKeywordList(Long userId);
+    List<Notice> getKeywordNotice(@Param("site") String site,
+                                  @Param("map") Map map);
 
     int deleteKeyword(Map map);
 

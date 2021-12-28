@@ -106,4 +106,19 @@
         );
     </update>
 
+    <select id="getKeywordNotice" resultType = "in.koala.domain.Notice">
+
+        SELECT n.id, c.site, c.title, c.url, c.created_at AS createdAt
+        FROM notice AS n
+        INNER JOIN crawling AS c
+        ON c.id = n.crawling_id
+        INNER JOIN keyword AS k
+        ON k.id = n.keyword_id
+        WHERE k.name = #{map.keywordName}
+        AND k.user_id = #{map.userId}
+        <if test="site != null">
+            AND site = #{site}
+        </if>
+    </select>
+
 </mapper>

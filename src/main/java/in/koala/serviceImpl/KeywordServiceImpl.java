@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
+import in.koala.domain.Notice;
 import in.koala.domain.User;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
@@ -120,5 +121,15 @@ public class KeywordServiceImpl implements KeywordService {
 
         map.put("modifiedKeyword", keyword);
         keywordMapper.modifyKeyword(map);
+    }
+
+    @Override
+    public List<Notice> getKeywordNotice(String keywordName, String site) {
+
+        Long userId = userService.getLoginUserInfo().getId();
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+        map.put("keywordName", keywordName);
+        return keywordMapper.getKeywordNotice(site, map);
     }
 }
