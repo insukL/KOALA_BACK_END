@@ -5,6 +5,7 @@ import in.koala.annotation.ValidationGroups;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import java.sql.Timestamp;
 
 @Getter
 @Setter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthEmail {
     private Long id;

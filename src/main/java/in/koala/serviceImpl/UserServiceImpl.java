@@ -1,5 +1,6 @@
 package in.koala.serviceImpl;
 
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.EmailType;
@@ -16,6 +17,7 @@ import in.koala.util.JwtUtil;
 import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.var;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -287,9 +289,6 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.EMAIL_SEND_FAILED);
         }
 
-        // 이전에 보냈던 이메일들은 전부 무효화
-        authEmailMapper.expirePastAuthEmail(authEmail);
-
         // 이메일 유효 기간 설정
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Timestamp(System.currentTimeMillis()));
@@ -298,6 +297,9 @@ public class UserServiceImpl implements UserService {
 
         authEmail.setSecret(secret);
         authEmail.setType((short) emailType.getEmailType());
+
+        // 이전에 보냈던 이메일들은 전부 무효화
+        authEmailMapper.expirePastAuthEmail(authEmail);
 
         // 이번에 보낸 이메일 삽입
         authEmailMapper.insertAuthEmail(authEmail);
@@ -318,11 +320,10 @@ public class UserServiceImpl implements UserService {
 
         // 만약 delete 되지 않은 이메일이 하나보다 많다면 예외 발생, 발생하면 논리 오류
         if(authEmailList.size() > 1){
-            authEmailMapper.expirePastAuthEmail(authEmail);
             throw new CriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
         }
 
-        // 이메일 전송이 전행되어야 함
+        // 이메일 전송이 선행되어야 함
         if(authEmailList.size() <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_AUTHORIZE_ORDER_EXCEPTION);
         }
@@ -342,6 +343,7 @@ public class UserServiceImpl implements UserService {
         // 만약 학교 인증이라면 인증했다는 사실을 User 에 기록
         if(emailType.equals(EmailType.UNIVERSITY)){
             userMapper.updateIsAuth(selectedAuthEmail.getUser_id());
+            // 학교 인증 메일 만료
             authEmailMapper.expirePastAuthEmail(authEmail);
         }
 
