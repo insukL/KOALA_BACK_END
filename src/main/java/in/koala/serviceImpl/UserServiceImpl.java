@@ -6,10 +6,10 @@ import in.koala.enums.EmailType;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
+import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
-import in.koala.service.email.EmailService;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
@@ -41,7 +41,6 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwt;
     // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
-    private final List<EmailService> emailServices;
     private final SesSender sesSender;
     private final SpringTemplateEngine springTemplateEngine;
 
@@ -64,7 +63,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type((short) 1)
+                .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
@@ -98,7 +97,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type((short) 1)
+                .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
 
         Long id = userMapper.getIdByAccount(user.getAccount());
@@ -130,7 +129,7 @@ public class UserServiceImpl implements UserService {
         userMapper.insertNonMemberUser(user);
         Long userId = userMapper.getIdByAccount(userUnique);
         userMapper.insertDeviceToken(userId, token);
-        createRUserAndDeviceToken(userId, token);
+        createRelationUserAndDeviceToken(userId, token);
         return userMapper.getUserById(userId);
     }
 
@@ -239,35 +238,25 @@ public class UserServiceImpl implements UserService {
         return this.generateAccessAndRefreshToken(id);
     }
 
-    // 각 경우에 따라 분리 예정
     @Override
     public void sendEmail(AuthEmail authEmail, EmailType emailType) {
 
-        User user = null;
-
-        if(authEmail.getType() == 2){
-            user = userMapper.getUserByFindEmail(authEmail.getEmail());
-
-        } else {
-            user = userMapper.getUserByAccount(authEmail.getAccount());
-        }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
+        // email 전송 종류에 따른 유저 초기화
+        User user = initEmailUser(authEmail, emailType);
 
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
-        if(user.getUser_type() != 0 && (authEmail.getType() == 0 || authEmail.getType() == 2)){
-            throw new NonCriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
+        if(user.getUser_type() != 0 && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
+            throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
-        if(authEmail.getType() == 0 && !user.getFind_email().equals(authEmail.getEmail())){
+        // 비밀번호 찾기의 경우 가입할 때 설정한 이메일과 일치하는 지 확인
+        if(emailType.equals(EmailType.PASSWORD) && !user.getFind_email().equals(authEmail.getEmail())){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_MATCH);
         }
 
-        // 이미 이메일 인증을 끝낸 계정이 채팅 인증 이메일 전송을 요청하면 예외 발생
-        if(authEmail.getType() == 1 && user.getIs_auth() == 1){
-            throw new NonCriticalException(ErrorMessage.EMAIL_ALREADY_CERTIFICATE);
+        // 이미 이메일 인증을 끝낸 계정이 학교 인증 이메일 전송을 요청하면 예외 발생
+        if(emailType.equals(EmailType.UNIVERSITY) && user.getIs_auth() == 1){
+            throw new NonCriticalException(ErrorMessage.USER_ALREADY_CERTIFICATE);
         }
 
         authEmail.setUser_id(user.getId());
@@ -308,38 +297,29 @@ public class UserServiceImpl implements UserService {
         authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
 
         authEmail.setSecret(secret);
+        authEmail.setType((short) emailType.getEmailType());
 
         // 이번에 보낸 이메일 삽입
         authEmailMapper.insertAuthEmail(authEmail);
 
         return;
     }
-
-    // 각 경우에 따라 분리예정
+    
     @Override
     public void certificateEmail(AuthEmail authEmail, EmailType emailType) {
 
-        User user = null;
-
-        if(authEmail.getType() == 2){
-            user = userMapper.getUserByFindEmail(authEmail.getEmail());
-
-        } else {
-            user = userMapper.getUserByAccount(authEmail.getAccount());
-        }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
+        // email 전송 종류에 따른 유저 초기화
+        User user = initEmailUser(authEmail, emailType);
 
         authEmail.setUser_id(user.getId());
+        authEmail.setType((short) emailType.getEmailType());
 
         List<AuthEmail> authEmailList = authEmailMapper.getUndeletedAuthEmailByUserIdAndType(authEmail);
 
-        // 만약 delete 되지 않은 이메일이 하나보다 많다면 예외 발생, 없겠지만 혹시나...
+        // 만약 delete 되지 않은 이메일이 하나보다 많다면 예외 발생, 발생하면 논리 오류
         if(authEmailList.size() > 1){
             authEmailMapper.expirePastAuthEmail(authEmail);
-            throw new NonCriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
+            throw new CriticalException(ErrorMessage.UNEXPECTED_EMAIL_CERTIFICATE_ERROR);
         }
 
         // 이메일 전송이 전행되어야 함
@@ -359,18 +339,14 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.EMAIL_SECRET_NOT_MATCH);
         }
 
-        // 만약 채팅 인증이라면 인증했다는 사실을 User 에 기록
-        if(authEmail.getType() == 1){
+        // 만약 학교 인증이라면 인증했다는 사실을 User 에 기록
+        if(emailType.equals(EmailType.UNIVERSITY)){
             userMapper.updateIsAuth(selectedAuthEmail.getUser_id());
-        }
-
-        // 인증 완료하였으니 체크
-        authEmailMapper.setIsAuth(selectedAuthEmail.getId());
-
-        // 만약 학교 인증이거나 계정 찾기면 만료
-        if(authEmail.getType() == 1 || authEmail.getType() == 2) {
             authEmailMapper.expirePastAuthEmail(authEmail);
         }
+
+        // 인증 완료하였으니, 해당 메일 인증 성공했다고 auth_email 테이블에 체크
+        authEmailMapper.setIsAuth(selectedAuthEmail.getId());
 
         return;
     }
@@ -407,7 +383,8 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
 
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), 0) <= 0){
+        // 이메일 인증이 선행되지 않은 경우
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD.getEmailType()) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
         
@@ -422,23 +399,32 @@ public class UserServiceImpl implements UserService {
 
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(selectedUser.getId());
-        authEmail.setType((short)0);
+        authEmail.setType((short) EmailType.PASSWORD.getEmailType());
 
+        // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
     }
 
     @Override
     public String findAccount(String email) {
         User user = userMapper.getUserByFindEmail(email);
-
+        System.out.println("0000");
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), 2) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT.getEmailType()) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
+        System.out.println("1111");
+        AuthEmail authEmail = new AuthEmail();
+        authEmail.setUser_id(user.getId());
+        authEmail.setType((short) EmailType.ACCOUNT.getEmailType());
 
+        // 해당 이메일 인증 만료
+        authEmailMapper.expirePastAuthEmail(authEmail);
+
+        System.out.println("2222");
         String account = user.getAccount();
         account = account.substring(0, account.length() - 2);
         account += "**";
@@ -480,6 +466,10 @@ public class UserServiceImpl implements UserService {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
+        if(token == null){
+            throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
+        }
+
         jwt.isValid(token, tokenType);
 
         return Long.valueOf(String.valueOf(jwt.getClaimsFromJwt(token, tokenType).get("id")));
@@ -504,16 +494,26 @@ public class UserServiceImpl implements UserService {
         throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
     }
 
-    private EmailService initEmailService(EmailType emailType){
-
-        for(val emailService : emailServices){
-            if(emailService.getEmailType().equals(emailType)) return emailService;
-        }
-
-        throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
-    }
-
     private void createRelationUserAndDeviceToken(Long id, String deviceToken){
 
+    }
+
+    private User initEmailUser(AuthEmail authEmail, EmailType emailType) {
+        User user = null;
+
+        if(emailType.equals(EmailType.ACCOUNT)){
+            user = userMapper.getUserByFindEmail(authEmail.getEmail());
+
+        } else if(emailType.equals(EmailType.UNIVERSITY)){
+            user = this.getLoginUserInfo();
+
+        } else {
+            user = userMapper.getUserByAccount(authEmail.getAccount());
+        }
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+        return user;
     }
 }

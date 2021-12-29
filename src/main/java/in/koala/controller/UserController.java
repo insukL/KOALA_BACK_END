@@ -49,8 +49,7 @@ public class UserController {
     @PostMapping(value="/oauth2/{snsType}")
     @ApiOperation(value ="sns 로그인 API" , notes = "각 클라이언트에서 발급받은 sns 의 accessToken 을 이용하여 로그인을 진행합니다. \n 헤더의 Authorization 에 accessToken 을 넣고 path 에는 요청하는 sns 의 type 을 넣으면 됩니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity snsSignIn(
-            @PathVariable(name="snsType") SnsType snsType,
-            @RequestParam(name="deviceToken") String deviceToken){
+            @PathVariable(name="snsType") SnsType snsType){
 
         return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType), HttpStatus.OK), HttpStatus.OK);
     }
@@ -78,8 +77,7 @@ public class UserController {
     @PostMapping(value="/login")
     @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
     public ResponseEntity login(
-            @RequestBody @Validated({ValidationGroups.Login.class}) User user,
-            @RequestParam("deviceToken") String deviceToken){
+            @RequestBody @Validated({ValidationGroups.Login.class}) User user){
 
         return new ResponseEntity(CustomBody.of(userService.login(user), HttpStatus.OK), HttpStatus.OK);
     }
@@ -114,21 +112,24 @@ public class UserController {
     }
 
     @PostMapping(value="/email-send/{emailType}")
-    @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 헤더에 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity sendEmail(@RequestBody @Validated AuthEmail authEmail, @PathVariable EmailType emailType){
         userService.sendEmail(authEmail, emailType);
         return new ResponseEntity(CustomBody.of("전송 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
-    @PostMapping(value="/email/certification")
-    @ApiOperation(value="이메일 전송 인증", notes="전송 이메일 인증 API 입니다. account 와 email, type 이 필요합니다. \n type 2 계정 찾기의 경우 account 는 없어도 됩니다.")
-    public ResponseEntity certificateEmail(@RequestBody @Validated AuthEmail authEmail){
-        userService.certificateEmail(authEmail);
+    @PostMapping(value="/email/certification/{emailType}")
+    @ApiOperation(value="이메일 전송 인증", notes="전송 이메일 인증 API 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 헤더에 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity certificateEmail(
+            @RequestBody @Validated AuthEmail authEmail,
+            @PathVariable(value = "emailType") EmailType emailType){
+
+        userService.certificateEmail(authEmail, emailType);
         return new ResponseEntity(CustomBody.of("인증 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/account-check")
-    @ApiOperation(value="계정이 존재하는지 확인", notes="계정이 존재하는지 확인하는 API 입니다")
+    @ApiOperation(value="계정 존재 확인 API", notes="계정이 존재하는지 확인하는 API 입니다 \n 존재하지 않는다면 예외가 발생합니다")
     public ResponseEntity checkAccount(@RequestParam @NotNull String account){
         userService.checkAccount(account);
         return new ResponseEntity(CustomBody.of("존재하는 계정입니다", HttpStatus.OK), HttpStatus.OK);
@@ -136,7 +137,7 @@ public class UserController {
 
 
     @PostMapping(value="/password-change")
-    @ApiOperation(value="비밀변호 변경", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n 비밀번호와 계정을 body 로 입력받습니다.")
+    @ApiOperation(value="비밀변호 변경 API", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n 비밀번호와 계정을 body 로 입력받습니다.")
     public ResponseEntity changePassword(@RequestBody User user){
         userService.changePassword(user);
         return new ResponseEntity(CustomBody.of("비밀번호 변경 성공", HttpStatus.OK), HttpStatus.OK);
