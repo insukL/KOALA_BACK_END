@@ -3,7 +3,7 @@
 <mapper namespace="in.koala.mapper.ScrapMapper">
 
     <select id="getScrapList" resultType="in.koala.domain.Crawling">
-        SELECT c.title, c.url, c.site, c.created_at, c.crawling_at
+        SELECT c.id, c.title, c.url, c.site, c.created_at, c.crawling_at
         FROM koala.crawling AS c JOIN koala.scrap AS s
         ON s.board_id = c.id WHERE s.user_id = #{userId} AND s.is_deleted = 0;
     </select>
