@@ -2,6 +2,7 @@ package in.koala.service;
 
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
+import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
 
 import java.util.Map;
@@ -18,9 +19,9 @@ public interface UserService {
     Boolean checkNickname(String nickname);
     Boolean checkAccount(String account);
     Map<String, String> refresh();
-    void sendEmail(AuthEmail authEmail);
-    void certificateEmail(AuthEmail authEmail);
-    boolean isEmailCertification();
+    void sendEmail(AuthEmail authEmail, EmailType emailType);
+    void certificateEmail(AuthEmail authEmail, EmailType emailType);
+    boolean isUniversityCertification();
     void changePassword(User user);
     String findAccount(String email);
     void softDeleteUser();

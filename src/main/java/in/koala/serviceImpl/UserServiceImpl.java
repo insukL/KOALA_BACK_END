@@ -2,12 +2,14 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
+import in.koala.enums.EmailType;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
+import in.koala.service.email.EmailService;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwt;
     // list 형식으로 주입받게 되면 해당 인터페이스를 구현하는 모든 클래스를 주입받을 수 있다.
     private final List<SnsLogin> snsLoginList;
+    private final List<EmailService> emailServices;
     private final SesSender sesSender;
     private final SpringTemplateEngine springTemplateEngine;
 
@@ -61,7 +64,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type(Short.valueOf(userProfile.get("user_type")))
+                .user_type((short) 1)
                 .build();
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
@@ -83,8 +86,6 @@ public class UserServiceImpl implements UserService {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String snsToken = request.getHeader("Authorization");
 
-        System.out.println("1111111111111");
-
         if(snsToken == null){
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
         }
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type(Short.valueOf(userProfile.get("user_type")))
+                .user_type((short) 1)
                 .build();
 
         Long id = userMapper.getIdByAccount(user.getAccount());
@@ -110,6 +111,27 @@ public class UserServiceImpl implements UserService {
         }
 
         return generateAccessAndRefreshToken(id);
+    }
+
+    @Override
+    public User createNonMemberUserAndDeviceToken(String token) {
+        Date from = new Date();
+        SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        String date = transFormat.format(from);
+        String tokenSlice = token.substring(token.length()-5, token.length());
+        String userUnique = date + tokenSlice;
+
+        User user = new User();
+
+        user.setAccount(userUnique);
+        user.setNickname(userUnique);
+        user.setIs_member((short) 0);
+
+        userMapper.insertNonMemberUser(user);
+        Long userId = userMapper.getIdByAccount(userUnique);
+        userMapper.insertDeviceToken(userId, token);
+        createRUserAndDeviceToken(userId, token);
+        return userMapper.getUserById(userId);
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
@@ -219,7 +241,7 @@ public class UserServiceImpl implements UserService {
 
     // 각 경우에 따라 분리 예정
     @Override
-    public void sendEmail(AuthEmail authEmail) {
+    public void sendEmail(AuthEmail authEmail, EmailType emailType) {
 
         User user = null;
 
@@ -235,7 +257,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
-        if(user.getUser_type() == 1 && (authEmail.getType() == 0 || authEmail.getType() == 2)){
+        if(user.getUser_type() != 0 && (authEmail.getType() == 0 || authEmail.getType() == 2)){
             throw new NonCriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
@@ -295,7 +317,7 @@ public class UserServiceImpl implements UserService {
 
     // 각 경우에 따라 분리예정
     @Override
-    public void certificateEmail(AuthEmail authEmail) {
+    public void certificateEmail(AuthEmail authEmail, EmailType emailType) {
 
         User user = null;
 
@@ -349,11 +371,12 @@ public class UserServiceImpl implements UserService {
         if(authEmail.getType() == 1 || authEmail.getType() == 2) {
             authEmailMapper.expirePastAuthEmail(authEmail);
         }
+
         return;
     }
 
     @Override
-    public boolean isEmailCertification() {
+    public boolean isUniversityCertification() {
         User user = getLoginUserInfo();
 
         if(user.getIs_auth() == 1){
@@ -437,6 +460,7 @@ public class UserServiceImpl implements UserService {
         userMapper.softDeleteUser(user);
     }
 
+
     private boolean isEmailSentNumExceed(AuthEmail authEmail){
 
         Calendar calendar = Calendar.getInstance();
@@ -480,24 +504,16 @@ public class UserServiceImpl implements UserService {
         throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
     }
 
-    @Override
-    public User createNonMemberUserAndDeviceToken(String token) {
-        Date from = new Date();
-        SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        String date = transFormat.format(from);
-        String tokenSlice = token.substring(token.length()-5, token.length());
-        String userUnique = date+tokenSlice;
-        User user = new User();
-        user.setAccount(userUnique);
-        user.setPassword(userUnique);
-        user.setNickname(userUnique);
-        user.setProfile(userUnique);
-        user.setIs_member((short) 0);
+    private EmailService initEmailService(EmailType emailType){
 
-        userMapper.createNonMemberUser(user);
-        Long userId = userMapper.getIdByAccount(userUnique);
-        userMapper.createDeviceToken(userId, token);
+        for(val emailService : emailServices){
+            if(emailService.getEmailType().equals(emailType)) return emailService;
+        }
 
-        return userMapper.getUserById(userId);
+        throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
+    }
+
+    private void createRelationUserAndDeviceToken(Long id, String deviceToken){
+
     }
 }

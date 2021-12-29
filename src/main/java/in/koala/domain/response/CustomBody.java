@@ -13,8 +13,6 @@ public class CustomBody {
     private Object body;
     private Integer code;
 
-    private static CustomBody responseBody = null;
-
     public static CustomBody of(HttpStatus  code){
         return of(null, code);
     }
