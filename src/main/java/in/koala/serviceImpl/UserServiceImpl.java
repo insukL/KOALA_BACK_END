@@ -1,6 +1,5 @@
 package in.koala.serviceImpl;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.EmailType;
@@ -17,7 +16,6 @@ import in.koala.util.JwtUtil;
 import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import lombok.var;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -244,7 +242,7 @@ public class UserServiceImpl implements UserService {
     public void sendEmail(AuthEmail authEmail, EmailType emailType) {
 
         // email 전송 종류에 따른 유저 초기화
-        User user = initEmailUser(authEmail, emailType);
+        User user = getEmailUser(authEmail, emailType);
 
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
         if(user.getUser_type() != 0 && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
@@ -311,7 +309,7 @@ public class UserServiceImpl implements UserService {
     public void certificateEmail(AuthEmail authEmail, EmailType emailType) {
 
         // email 전송 종류에 따른 유저 초기화
-        User user = initEmailUser(authEmail, emailType);
+        User user = getEmailUser(authEmail, emailType);
 
         authEmail.setUser_id(user.getId());
         authEmail.setType((short) emailType.getEmailType());
@@ -410,7 +408,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String findAccount(String email) {
         User user = userMapper.getUserByFindEmail(email);
-        System.out.println("0000");
+
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
@@ -418,7 +416,7 @@ public class UserServiceImpl implements UserService {
         if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT.getEmailType()) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
-        System.out.println("1111");
+
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(user.getId());
         authEmail.setType((short) EmailType.ACCOUNT.getEmailType());
@@ -426,7 +424,6 @@ public class UserServiceImpl implements UserService {
         // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
 
-        System.out.println("2222");
         String account = user.getAccount();
         account = account.substring(0, account.length() - 2);
         account += "**";
@@ -500,7 +497,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private User initEmailUser(AuthEmail authEmail, EmailType emailType) {
+    private User getEmailUser(AuthEmail authEmail, EmailType emailType) {
         User user = null;
 
         if(emailType.equals(EmailType.ACCOUNT)){
