@@ -53,6 +53,18 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Value("${youtube.api.call.url}")
     private String youtubeApiUrl;
 
+    @Value("${facebook.api.call.url}")
+    private String facebookApiUrl;
+
+    @Value("${facebook.access.token}")
+    private String facebookAccessToken;
+
+    @Value("${instagram.api.call.url}")
+    private String instagramApiUrl;
+
+    @Value("${instagram.access.token}")
+    private String instagramAccessToken;
+
     private final CrawlingMapper crawlingMapper;
 
 
@@ -244,6 +256,171 @@ public class CrawlingServiceImpl implements CrawlingService {
         }
         catch (IllegalStateException e){
             throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_YOUTUBE);
+        }
+
+        //crawling_log 테이블에 로그 남기기
+        updateLog(site, crawlingAt);
+
+        // 크롤링 객체를 담은 리스트를 db에 추가
+        if(!crawlingList.isEmpty())
+            crawlingMapper.addCrawlingData(crawlingList);
+
+        return true;
+    }
+
+
+    @Override
+    public Boolean facebookCrawling(Timestamp crawlingAt) throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'+0000'");
+
+        format.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+        parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        List<Crawling> crawlingList = new ArrayList<Crawling>();
+
+        Short site = (short) CrawlingSite.FACEBOOK.ordinal();
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(facebookApiUrl)
+                .path("/me/posts")
+                .queryParam("access_token", facebookAccessToken);
+
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
+
+        RestTemplate rt = new RestTemplate(factory);
+        HttpHeaders headers = new HttpHeaders();
+
+        try {
+            Boolean next = true;
+
+            while(next) {
+                Map<String, Object> responseBody = rt.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        new HttpEntity<String>(headers),
+                        Map.class
+                ).getBody();
+
+                ArrayList postList = (ArrayList)responseBody.get("data");
+
+                for(int i=0;i<postList.size();i++) {
+                    Map<String, String> data = (Map)postList.get(i);
+
+                    String title = data.get("message");
+                    String url = "https://www.facebook.com/" + data.get("id");
+
+                    Date postDate = parseFormat.parse(data.get("created_time"));
+                    String createdAt = format.format(postDate);
+
+                    Crawling crawling = new Crawling(title, url, site, createdAt, crawlingAt);
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingList.add(crawling);
+                    }
+                    else {
+                        next = false;
+                        break;
+                    }
+                }
+
+                // Next page check
+                Map<String, Object> paging = (Map)responseBody.get("paging");
+                Map<String, Object> cursor = (Map)paging.get("cursors");
+
+                if(next && paging.containsKey("next")) {
+                    builder.replaceQueryParam("after", cursor.get("after"));
+                }
+                else {
+                    next = false;
+                }
+            }
+        }
+        catch (IllegalStateException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_FACEBOOK);
+        }
+
+        //crawling_log 테이블에 로그 남기기
+        updateLog(site, crawlingAt);
+
+        // 크롤링 객체를 담은 리스트를 db에 추가
+        if(!crawlingList.isEmpty())
+            crawlingMapper.addCrawlingData(crawlingList);
+
+        return true;
+    }
+
+    @Override
+    public Boolean instagramCrawling(Timestamp crawlingAt) throws Exception {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'+0000'");
+
+        format.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+        parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        List<Crawling> crawlingList = new ArrayList<Crawling>();
+
+        Short site = (short) CrawlingSite.INSTAGRAM.ordinal();
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(instagramApiUrl)
+                .path("/me/media")
+                .queryParam("fields", "caption,permalink,timestamp")
+                .queryParam("access_token", instagramAccessToken);
+
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
+
+        RestTemplate rt = new RestTemplate(factory);
+        HttpHeaders headers = new HttpHeaders();
+
+        try {
+            Boolean next = true;
+
+            while(next) {
+                Map<String, Object> responseBody = rt.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        new HttpEntity<String>(headers),
+                        Map.class
+                ).getBody();
+
+                ArrayList postList = (ArrayList)responseBody.get("data");
+
+                for(int i=0;i<postList.size();i++) {
+                    Map<String, String> data = (Map)postList.get(i);
+
+                    String title = data.get("caption");
+                    String url = data.get("permalink");
+
+                    Date postDate = parseFormat.parse(data.get("timestamp"));
+                    String createdAt = format.format(postDate);
+
+                    Crawling crawling = new Crawling(title, url, site, createdAt, crawlingAt);
+
+                    if(crawlingMapper.checkDuplicatedData(crawling) == 0){
+                        crawlingList.add(crawling);
+                    }
+                    else {
+                        next = false;
+                        break;
+                    }
+                }
+
+                // Next page check
+                Map<String, Object> paging = (Map)responseBody.get("paging");
+                Map<String, Object> cursor = (Map)paging.get("cursors");
+
+                if(next && paging.containsKey("next")) {
+                    builder.replaceQueryParam("after", cursor.get("after"));
+                }
+                else {
+                    next = false;
+                }
+            }
+        }
+        catch (IllegalStateException e){
+            throw new CrawlingException(ErrorMessage.UNABLE_CONNECT_TO_INSTAGRAM);
         }
 
         //crawling_log 테이블에 로그 남기기
