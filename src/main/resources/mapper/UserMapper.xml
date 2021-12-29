@@ -5,17 +5,17 @@
 
     <insert id="signUp" parameterType="in.koala.domain.User">
         INSERT INTO user(nickname, account, password, find_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{profile}, DEFAULT, DEFAULT , DEFAULT, DEFAULT)
+        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{profile}, DEFAULT, DEFAULT , DEFAULT, DEFAULT);
         <selectKey keyProperty="id" resultType="Long">
-            SELECT LAST_INSERT_ID()
+            SELECT LAST_INSERT_ID();
         </selectKey>
     </insert>
 
     <insert id="snsSignUp" parameterType="in.koala.domain.User">
         INSERT INTO user(nickname, account, sns_email, profile, user_type, is_auth, created_at, updated_at)
-        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, #{user_type}, DEFAULT, DEFAULT, DEFAULT)
+        VALUES(#{nickname}, #{account}, #{sns_email}, #{profile}, #{user_type}, DEFAULT, DEFAULT, DEFAULT);
         <selectKey keyProperty="id" resultType="Long">
-            SELECT LAST_INSERT_ID()
+            SELECT LAST_INSERT_ID();
         </selectKey>
     </insert>
 
@@ -94,16 +94,16 @@
         SELECT nickname from user where id=1;
     </select>
 
-    <insert id="createNonMemberUser" parameterType="in.koala.domain.User">
-        INSERT INTO user(nickname, account, password, find_email, profile, is_member)
-        VALUES(#{nickname}, #{account}, #{password}, #{find_email}, #{profile}, #{is_member})
+    <insert id="insertNonMemberUser" parameterType="in.koala.domain.User">
+        INSERT INTO user(nickname, account, is_member)
+        VALUES(#{nickname}, #{account}, #{is_member})
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
 
-    <insert id="createDeviceToken">
-        INSERT INTO device_token(user_id, token) VALUES(#{userId}, #{token})
+    <insert id="insertDeviceToken">
+        INSERT INTO device_token(token) VALUES(#{token})
     </insert>
 
     <sql id="userInfo">
