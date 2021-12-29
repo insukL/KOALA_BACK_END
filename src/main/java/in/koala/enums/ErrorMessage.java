@@ -73,6 +73,8 @@ public enum ErrorMessage {
 	UNABLE_CONNECT_TO_PORTAL(300, "아우누리 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_DORM(301, "아우미르 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_YOUTUBE(302, "유튜브 API 호출이 불가 합니다."),
+	UNABLE_CONNECT_TO_FACEBOOK(303, "페이스북 API 호출이 불가 합니다."),
+	UNABLE_CONNECT_TO_INSTAGRAM(304, "인스타그램 API 호출이 불가 합니다."),
 
 	/**
 	 * FCM Push Notification

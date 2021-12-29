@@ -17,5 +17,8 @@ public interface CrawlingService {
     Boolean portalCrawling(Timestamp crawlingAt) throws Exception;
     Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception;
 
+    Boolean facebookCrawling(Timestamp crawlingAt) throws Exception;
+    Boolean instagramCrawling(Timestamp crawlingAt) throws Exception;
+
     Boolean executeAll() throws Exception;
 }
