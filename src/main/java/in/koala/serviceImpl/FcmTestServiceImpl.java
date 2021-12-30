@@ -21,14 +21,14 @@ public class FcmTestServiceImpl implements FcmTestService {
      */
     public String sendTokenTest(String token) throws Exception{
         fcmSender.sendMessage(
-                new TokenMessage("test", "TokenTest", "www.naver.com", token)
+                new TokenMessage("test", "TokenTest", "https://www.naver.com", token)
         );
         return "success";
     }
 
     public String sendTopicTest(String topic) throws Exception{
         fcmSender.sendMessage(
-                new TopicMessage("test", "TopicTest", "www.naver.com", topic)
+                new TopicMessage("test", "TopicTest", "https://www.naver.com", topic)
         );
         return "success";
     }
