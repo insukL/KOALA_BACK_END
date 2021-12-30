@@ -15,5 +15,5 @@ public interface AuthEmailMapper {
     void insertAuthEmail(AuthEmail authEmail);
     List<AuthEmail> getUndeletedAuthEmailByUserIdAndType(AuthEmail authEmail);
     void setIsAuth(Long id);
-    int getUndeletedIsAuthNumByUserId(Long UserId, Integer type);
+    int getUndeletedIsAuthNumByUserId(Long userId, Integer type);
 }

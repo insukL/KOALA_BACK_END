@@ -17,7 +17,7 @@
 
     <insert id="updateLog">
         INSERT INTO crawling_log(site, crawling_at)
-        VALUES (#{site}, #{crawling_at})
+        VALUES (#{site}, #{crawlingAt})
     </insert>
 
     <insert id="addCrawlingData">
@@ -46,5 +46,12 @@
                 AND created_at = #{crawling.createdAt}
         </foreach>
     </update>
+
+    <select id="getLatelyCrawlingTime" resultType="java.sql.Timestamp">
+        SELECT crawling_at
+        FROM crawling_log
+        ORDER BY crawling_at DESC
+        LIMIT 1;
+    </select>
 
 </mapper>

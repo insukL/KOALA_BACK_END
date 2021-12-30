@@ -5,8 +5,6 @@ import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.*;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +50,7 @@ public class JwtUtil {
 
     public boolean isValid(String token, TokenType tokenType){
 
-        if(token == null) throw new NonCriticalException(ErrorMessage.JWT_NOT_EXIST);
+        if(token == null) throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
 
         Claims claims = this.getClaimsFromJwt(token, tokenType);

@@ -31,7 +31,7 @@ public enum ErrorMessage {
 	WRONG_PASSWORD_EXCEPTION(127, "틀린 비밀번호입니다."),
 	USER_NOT_EXIST(128, "존재하지 않는 계정입니다"),
 	JWT_NOT_START_BEARER(127, "jwt 가 Bearer 로 시작하지 않습니다"),
-	JWT_NOT_EXIST(128, "jwt 이 존재하지 않습니다"),
+	ACCESS_TOKEN_NOT_EXIST(128, "access token 이 존재하지 않습니다"),
 	SNSTYPE_NOT_VALID(129, "적절하지 않은 sns 타입입니다"),
 	ACCESSTOKEN_EXPIRED_EXCEPTION(130, "access token 만료"),
 	REFRESHTOKEN_EXPIRED_EXCEPTION(131, "refresh token 만료"),
@@ -44,8 +44,8 @@ public enum ErrorMessage {
 	UNEXPECTED_EMAIL_CERTIFICATE_ERROR(138, "이메일 인증 중 예상치 못한 오류 발생"),
 	EMAIL_EXPIRED_AUTH_EXCEPTION(139, "이메일 인증 유효 기간 만료되었습니다."),
 	EMAIL_SECRET_NOT_MATCH(140, "secret 이 일치하지 않습니다"),
-	EMAIL_ALREADY_CERTIFICATE(141, "이미 이메일 인증을 완료하였습니다"),
-	USER_TYPE_NOT_VALID_EXCEPTION(142, "sns 로 가입하신 경우 비밀번호 찾기 불가합니다"),
+	USER_ALREADY_CERTIFICATE(141, "이미 학교 인증을 완료하였습니다"),
+	USER_TYPE_NOT_VALID_EXCEPTION(142, "sns 로 가입한 경우 비밀번호 찾기 불가합니다"),
 	EMAIL_NOT_MATCH(143, "가입할 때 설정한 찾기용 이메일과 일치하지 않습니다."),
 	EMAIL_AUTHORIZE_ORDER_EXCEPTION(144, "먼저 이메일을 전송해 주세요"),
 	SAME_PASSWORD_EXCEPTION(145, "변경하고자 하는 비밀번호와 기존 비밀번호가 같습니다."),
@@ -60,11 +60,11 @@ public enum ErrorMessage {
 	/*
 	 * Scrap, Memo
 	 */
-	BOARD_NOT_EXIST(200, "글이 존재하지 않습니다"),
-	ALREADY_SCRAP_BOARD(201, "이미 보관함에 존재합니다"),
-	SCRAP_NOT_EXIST(202, "보관함에 존재하지 않습니다."),
-	ALREADY_MEMO_EXIST(203, "이미 메모가 존재합니다."),
-	MEMO_NOT_EXIST(204, "메모가 존재하지 않습니다."),
+	BOARD_NOT_EXIST(250, "글이 존재하지 않습니다"),
+	ALREADY_SCRAP_BOARD(251, "이미 보관함에 존재합니다"),
+	SCRAP_NOT_EXIST(252, "보관함에 존재하지 않습니다."),
+	ALREADY_MEMO_EXIST(253, "이미 메모가 존재합니다."),
+	MEMO_NOT_EXIST(254, "메모가 존재하지 않습니다."),
 
 
 	/**
@@ -73,6 +73,8 @@ public enum ErrorMessage {
 	UNABLE_CONNECT_TO_PORTAL(300, "아우누리 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_DORM(301, "아우미르 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_YOUTUBE(302, "유튜브 API 호출이 불가 합니다."),
+	UNABLE_CONNECT_TO_FACEBOOK(303, "페이스북 API 호출이 불가 합니다."),
+	UNABLE_CONNECT_TO_INSTAGRAM(304, "인스타그램 API 호출이 불가 합니다."),
 
 	/**
 	 * FCM Push Notification

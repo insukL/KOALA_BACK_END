@@ -3,6 +3,8 @@ package in.koala.controller;
 import in.koala.annotation.Auth;
 import in.koala.annotation.Xss;
 import in.koala.domain.Keyword;
+import in.koala.domain.Notice;
+import in.koala.domain.response.CustomBody;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordService;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +27,7 @@ public class KeywordController {
     @ApiOperation(value ="키워드 조회" , notes = "사용자가 지정한 키워드를 조회한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword")
     public ResponseEntity<List<Keyword>> myKeywordList(){
-        return new ResponseEntity(keywordService.myKeywordList(), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(keywordService.myKeywordList(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -51,6 +53,19 @@ public class KeywordController {
     public void modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
                               @RequestBody Keyword keyword){
         keywordService.modifyKeyword(keywordName, keyword);
+    }
+
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 전체", notes = "키워드 목록에서 하나의 키워드를 선택한 후 받은 알람을 본다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/list")
+    public ResponseEntity<List<Notice>> getKeywordNotice(@RequestParam(name = "keyword-name") String keywordName,
+                                                         @RequestParam(name = "site", required = false) String site){
+        List<Notice> result = keywordService.getKeywordNotice(keywordName, site);
+        if(result.isEmpty())
+            return new ResponseEntity(CustomBody.of("받은 알림이 없습니다.", HttpStatus.BAD_REQUEST), HttpStatus.OK);
+        else
+            return new ResponseEntity (CustomBody.of(result,HttpStatus.OK), HttpStatus.OK);
     }
 
 }

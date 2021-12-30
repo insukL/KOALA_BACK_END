@@ -7,7 +7,7 @@
     </select>
 
     <select id="getUndeletedAuthEmailByUserIdAndType" resultType="in.koala.domain.AuthEmail">
-        SELECT * FROM auth_email WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0;
+        SELECT * FROM auth_email WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0 AND is_auth=0;
     </select>
 
     <select id="getUndeletedIsAuthNumByUserId" resultType="Integer">
@@ -20,7 +20,7 @@
     </update>
 
     <update id="setIsAuth">
-        UPDATE auth_email SET is_Auth=1
+        UPDATE auth_email SET is_auth=1
         WHERE id=#{id}
     </update>
 

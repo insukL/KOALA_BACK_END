@@ -3,10 +3,26 @@
 <mapper namespace="in.koala.mapper.KeywordPushMapper">
 
     <select id="pushKeyword" parameterType="java.lang.Long" resultType="java.util.Map">
-        SELECT c.title, c.url
-        FROM crawling as c
-                 INNER JOIN keyword as k ON c.title LIKE CONCAT('%',k.name,'%')
-                 INNER JOIN user_keyword as uk ON uk.keyword_id = k.id
-        WHERE uk.user_id = #{userId};
+        SELECT c.id as crawlingId, k.id as keywordId, c.title, c.url
+        from crawling as c
+                 inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
+                 inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
+        where k.user_id = #{userId}
+          AND ks.is_deleted IS NULL
+          AND c.is_deleted = 0
+          AND k.is_deleted IS NULL;
     </select>
+
+    <select id="pushKeywordByLatelyCrawlingTime" resultType="java.util.Map">
+        SELECT c.id, c.title, c.url
+        from crawling as c
+                 inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
+                 inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
+        where k.user_id = #{userId}
+          AND c.crawling_at = #{latelyCrawlingTime}
+          AND ks.is_deleted IS NULL
+          AND c.is_deleted = 0
+          AND k.is_deleted IS NULL;
+    </select>
+
 </mapper>
