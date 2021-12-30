@@ -38,7 +38,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
             for(Map<String, String> map : tmp){
                 String title = map.get("title");
                 String url = map.get("url");
-                fcmSender.sendMessage(new TokenMessage(title, url, deviceToken));
+                fcmSender.sendMessage(new TokenMessage("키워드의 글이 등록되었습니다", title, url, deviceToken));
             }
         }
         catch (Exception e){
@@ -51,6 +51,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     public void pushKeyword(List<String> keyword, Crawling crawling) throws Exception{
         TopicMessage message = new TopicMessage("키워드의 글이 등록되었습니다.",
                                                     crawling.getTitle(),
+                                                    crawling.getUrl(),
                                                     null );
         for(String word : keyword){
             message.setTopic(enConverter.ktoe(word) + crawling.getSite().toString());

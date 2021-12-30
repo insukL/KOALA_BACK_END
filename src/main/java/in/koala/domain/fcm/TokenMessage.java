@@ -7,13 +7,13 @@ public class TokenMessage extends FcmMessage{
     @JsonProperty("token")
     private String token;
 
-    public TokenMessage(String title, String body, String token){
-        super(title, body);
+    public TokenMessage(String title, String body, String url, String token){
+        super(title, body, url);
         this.token = token;
     }
 
-    public TokenMessage(FcmNotification notification, String token){
-        super(notification);
+    public TokenMessage(FcmNotification notification, String url, String token){
+        super(notification, url);
         this.token = token;
     }
 
