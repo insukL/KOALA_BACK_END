@@ -241,6 +241,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendEmail(AuthEmail authEmail, EmailType emailType) {
 
+        if(emailType.equals(EmailType.UNIVERSITY)){
+            String[] strings = authEmail.getEmail().split("@");
+            if(!strings[1].equals("koreatech.ac.kr")){
+                throw new NonCriticalException(ErrorMessage.EMAIL_NOT_UNIVERSITY);
+            }
+        }
         // email 전송 종류에 따른 유저 초기화
         User user = getEmailUser(authEmail, emailType);
 
@@ -406,7 +412,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String findAccount(String email) {
+    public Map findAccount(String email) {
         User user = userMapper.getUserByFindEmail(email);
 
         if(user == null){
@@ -428,7 +434,10 @@ public class UserServiceImpl implements UserService {
         account = account.substring(0, account.length() - 2);
         account += "**";
 
-        return account;
+        Map<String, String> map = new HashMap<>();
+        map.put("email", account);
+
+        return map;
     }
 
     @Override
