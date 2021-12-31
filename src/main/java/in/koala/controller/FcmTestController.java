@@ -41,11 +41,4 @@ public class FcmTestController {
         fcmSender.unsubscribe(Arrays.asList(name), topic);
         return new ResponseEntity("success", HttpStatus.OK);
     }
-
-    @GetMapping("/register")
-    public ResponseEntity register(@RequestParam String name,
-                                   @RequestParam String token){
-        fcmSender.register(token, name);
-        return new ResponseEntity("success", HttpStatus.OK);
-    }
 }

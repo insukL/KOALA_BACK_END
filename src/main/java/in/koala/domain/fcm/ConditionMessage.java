@@ -4,17 +4,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConditionMessage extends FcmMessage{
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("condition")
     private String condition;
 
-    public ConditionMessage(String title, String body, String condition){
-        super(title, body);
+    public ConditionMessage(String title, String body, String url, String condition){
+        super(title, body, url);
         this.condition = condition;
     }
 
-    public ConditionMessage(FcmNotification notification, String condition){
-        super(notification);
+    public ConditionMessage(FcmNotification notification, String url, String condition){
+        super(notification, url);
         this.condition = condition;
     }
 

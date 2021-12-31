@@ -25,8 +25,6 @@ public class FcmSender {
     @Resource
     RestTemplate restTemplate;
 
-    Map<String, String> tokens = new HashMap<String, String>();
-
     private String getAccessToken() throws Exception {
         GoogleCredentials googleCredentials = GoogleCredentials
                 .fromStream(new FileInputStream(keyPath))
@@ -46,41 +44,36 @@ public class FcmSender {
         restTemplate.postForObject(fcmRequestUrl, request, String.class);
     }
 
-    // 토큰을 유지 및 자바 객체로 전송
-    public void register(String token, String name){
-        tokens.put(name, token);
-    }
-
-    public void cancel(String name){
-        tokens.remove(name);
-    }
-
     //주제 구독
-    public void subscribe(List<String> names, String topic) throws Exception{
-        List<String> targetTokens = new ArrayList<String>();
-        for(String n : names){
-            targetTokens.add(tokens.get(n));
-        }
-        if(targetTokens == null){
-            throw new Exception("token이 없습니다.");
-        }
+    public void subscribe(List<String> tokens, String topic) throws Exception{
         TopicManagementResponse response = FirebaseMessaging
-                .getInstance().subscribeToTopic(targetTokens, topic);
+                .getInstance().subscribeToTopic(tokens, topic);
         System.out.println(response.getSuccessCount() + "회 성공했습니다.");
     }
 
     //주제 구독 취소
-    public void unsubscribe(List<String> names, String topic) throws Exception{
-        List<String> targetTokens = new ArrayList<String>();
-        for(String n : names){
-            targetTokens.add(tokens.get(n));
-        }
-        if(targetTokens == null){
-            throw new Exception("token이 없습니다.");
-        }
+    public void unsubscribe(List<String> tokens, String topic) throws Exception{
         TopicManagementResponse response = FirebaseMessaging
-                .getInstance().unsubscribeFromTopic(targetTokens, topic);
+                .getInstance().unsubscribeFromTopic(tokens, topic);
         System.out.println(response.getSuccessCount() + "회 성공했습니다.");
+    }
+
+    //복수 주제 대상
+    public void subscribe(List<String> tokens, List<String> topic) throws Exception{
+        for(String t : topic) {
+            TopicManagementResponse response = FirebaseMessaging
+                    .getInstance().subscribeToTopic(tokens, t);
+            System.out.println(response.getSuccessCount() + "회 성공했습니다.");
+        }
+    }
+
+    //주제 구독 취소
+    public void unsubscribe(List<String> tokens, List<String> topic) throws Exception{
+        for(String t : topic) {
+            TopicManagementResponse response = FirebaseMessaging
+                    .getInstance().unsubscribeFromTopic(tokens, t);
+            System.out.println(response.getSuccessCount() + "회 성공했습니다.");
+        }
     }
 
 }

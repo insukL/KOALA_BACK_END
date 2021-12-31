@@ -4,17 +4,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TopicMessage extends FcmMessage{
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("topic")
     private String topic;
 
-    public TopicMessage(String title, String body, String topic){
-        super(title, body);
+    public TopicMessage(String title, String body, String url, String topic){
+        super(title, body, url);
         this.topic = topic;
     }
 
-    public TopicMessage(FcmNotification notification, String topic){
-        super(notification);
+    public TopicMessage(FcmNotification notification, String url, String topic){
+        super(notification, url);
         this.topic = topic;
     }
 
