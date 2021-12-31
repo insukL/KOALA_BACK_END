@@ -17,13 +17,20 @@ import java.sql.Timestamp;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthEmail {
     private Long id;
+
     private String account;
+
+    @ApiModelProperty(hidden = true)
     private Long user_id;
-    @NotNull
+
+    @ApiModelProperty(hidden = true)
     private Short type;
+
     @Email
     private String email;
+
     private String secret;
+
     @ApiModelProperty(hidden = true)
     private Timestamp created_at;
     @ApiModelProperty(hidden = true)

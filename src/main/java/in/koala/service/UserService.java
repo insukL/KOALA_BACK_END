@@ -23,7 +23,7 @@ public interface UserService {
     void certificateEmail(AuthEmail authEmail, EmailType emailType);
     boolean isUniversityCertification();
     void changePassword(User user);
-    String findAccount(String email);
+    Map findAccount(String email);
     void softDeleteUser();
     Boolean checkFindEmail(String email);
     User createNonMemberUserAndDeviceToken(String token);

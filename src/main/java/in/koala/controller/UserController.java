@@ -144,7 +144,7 @@ public class UserController {
     }
 
     @GetMapping(value="/account-find")
-    @ApiOperation(value="계정 찾기 API", notes="이메일을 통하여 계정을 찾아 반환해주는 API 입니다, 이메일 인증이 선행되어야 합니다. \n 파라미터로 이메일을 받습니다")
+    @ApiOperation(value="계정 찾기 API", notes="이메일을 통하여 계정을 찾아 반환해주는 API 입니다, 이메일 인증이 선행되어야 합니다. \n query 로 이메일을 받습니다")
     public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
         return new ResponseEntity(CustomBody.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
     }

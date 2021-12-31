@@ -55,7 +55,7 @@ public enum ErrorMessage {
 	IDENTITY_TOKEN_EXPIRED_EXCEPTION(149, "identity token 유효 기간 만료되었습니다"),
 	IDENTITY_TOKEN_INVALID_EXCEPTION(150, "유효하지 않은 identity token 입니다"),
 	APPLE_PUBLIC_KEY_EXCEPTION(151, "apple server 에서 public key 가져오는 것 실패했습니다"),
-
+	EMAIL_NOT_UNIVERSITY(152, "학교인증은 이메일형식이 학교 이메일이여야 합니다"),
 
 	/*
 	 * Scrap, Memo
