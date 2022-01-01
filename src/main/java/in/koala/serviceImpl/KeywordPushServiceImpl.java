@@ -1,14 +1,17 @@
 package in.koala.serviceImpl;
 
 import in.koala.domain.Crawling;
+import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
 import in.koala.domain.fcm.TokenMessage;
 import in.koala.domain.fcm.TopicMessage;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordPushException;
+import in.koala.mapper.DeviceTokenTestMapper;
 import in.koala.mapper.KeywordPushMapper;
 import in.koala.mapper.NoticeMapper;
+import in.koala.mapper.UserMapper;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordPushService;
 import in.koala.service.KeywordService;
@@ -18,12 +21,15 @@ import in.koala.util.FcmSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class KeywordPushServiceImpl implements KeywordPushService {
 
@@ -32,9 +38,11 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private final KeywordPushMapper keywordPushMapper;
     private final CrawlingService crawlingService;
     private final NoticeMapper noticeMapper;
-  
     private final EnConverter enConverter;
+    private final DeviceTokenTestMapper tokenMapper;
 
+
+    //TODO : 아래 메소드 2개 정리
     @Override
     public void pushKeywordAtOnce(String deviceToken) throws Exception {
 
@@ -93,19 +101,41 @@ public class KeywordPushServiceImpl implements KeywordPushService {
         }
     }
 
+    //Crawling Json 파싱 실패에 따른 테스트용 메소드
     @Override
-    public void subscribe(Keyword keyword, String deviceToken) throws Exception{
-        for(CrawlingSite site : keyword.getSiteList()){
-            fcmSender.subscribe(Arrays.asList(deviceToken),
-                    enConverter.ktoe(keyword.getName()) + site.getCode().toString());
+    public void pushKeyword(List<String> keyword, String title, String url, Short site) throws Exception{
+        TopicMessage message = new TopicMessage("키워드의 글이 등록되었습니다.",
+                                                    title,
+                                                    url,
+                                                    null );
+        for(String word : keyword){
+            message.setTopic(enConverter.ktoe(word) + site.toString());
+            System.out.println(message.getTopic());
+            fcmSender.sendMessage(message);
         }
     }
 
     @Override
-    public void unsubscribe(Keyword keyword, String deviceToken) throws Exception{
+    public void subscribe(Keyword keyword, Long id) throws Exception{
+        //UserMapper 임시 사용
+        List<String> tokenList = tokenMapper.getDeviceTokenById(id);
+        System.out.println(tokenList);
         for(CrawlingSite site : keyword.getSiteList()){
-            fcmSender.unsubscribe(Arrays.asList(deviceToken),
+            fcmSender.subscribe(tokenList,
                     enConverter.ktoe(keyword.getName()) + site.getCode().toString());
+            System.out.println(enConverter.ktoe(keyword.getName()) + site.getCode().toString());
+        }
+    }
+
+    @Override
+    public void unsubscribe(Keyword keyword, Long id) throws Exception{
+        //UserMapper 임시 사용
+        List<String> tokenList = tokenMapper.getDeviceTokenById(id);
+        System.out.println(tokenList);
+        for(CrawlingSite site : keyword.getSiteList()){
+            fcmSender.unsubscribe(tokenList,
+                    enConverter.ktoe(keyword.getName()) + site.getCode().toString());
+            System.out.println(enConverter.ktoe(keyword.getName()) + site.getCode().toString());
         }
     }
 }

@@ -3,6 +3,8 @@ package in.koala.mapper;
 import in.koala.domain.User;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserMapper {
     String test();

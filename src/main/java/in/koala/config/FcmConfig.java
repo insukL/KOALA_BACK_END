@@ -19,7 +19,6 @@ public class FcmConfig {
     @Value("${firebase.key_path}")
     private String keyPath;
 
-    /*
     @PostConstruct
     public void initFirebase() throws Exception {
         FileInputStream serviceAccount = new FileInputStream(keyPath);
@@ -29,5 +28,4 @@ public class FcmConfig {
                 .build();
         FirebaseApp.initializeApp(options);
     }
-     */
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.DeviceTokenTestMapper">
+
+    <!-- 테스트를 위한 임시 매퍼 파일 -->
+    <insert id="insertDeviceToken" parameterType="in.koala.domain.DeviceToken">
+        INSERT INTO device_token(token) VALUES(#{token})
+        <selectKey keyProperty="id" resultType="Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <insert id="insertUserDevice">
+        INSERT INTO user_device(user_id, device_token_id)
+        VALUES(#{uid}, #{did})
+    </insert>
+
+    <select id="getDeviceTokenById" parameterType="Long" resultType="String">
+        SELECT token
+        FROM(
+                SELECT ud.user_id AS id, dt.token AS token
+                FROM
+                    user_device AS ud,
+                    device_token AS dt
+                WHERE
+                    ud.device_token_id = dt.id
+            ) t
+        WHERE id = #{id}
+    </select>
+</mapper>
