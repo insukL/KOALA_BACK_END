@@ -300,7 +300,7 @@ public class UserServiceImpl implements UserService {
         authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
 
         authEmail.setSecret(secret);
-        authEmail.setType((short) emailType.getEmailType());
+        authEmail.setType(emailType.toString());
 
         // 이전에 보냈던 이메일들은 전부 무효화
         authEmailMapper.expirePastAuthEmail(authEmail);
@@ -318,7 +318,7 @@ public class UserServiceImpl implements UserService {
         User user = getEmailUser(authEmail, emailType);
 
         authEmail.setUser_id(user.getId());
-        authEmail.setType((short) emailType.getEmailType());
+        authEmail.setType(emailType.toString());
 
         List<AuthEmail> authEmailList = authEmailMapper.getUndeletedAuthEmailByUserIdAndType(authEmail);
 
@@ -390,7 +390,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 이메일 인증이 선행되지 않은 경우
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD.getEmailType()) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD.toString()) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
         
@@ -405,7 +405,7 @@ public class UserServiceImpl implements UserService {
 
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(selectedUser.getId());
-        authEmail.setType((short) EmailType.PASSWORD.getEmailType());
+        authEmail.setType(EmailType.PASSWORD.toString());
 
         // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
@@ -419,13 +419,13 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT.getEmailType()) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT.toString()) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
 
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(user.getId());
-        authEmail.setType((short) EmailType.ACCOUNT.getEmailType());
+        authEmail.setType(EmailType.ACCOUNT.toString());
 
         // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);

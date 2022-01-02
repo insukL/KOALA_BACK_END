@@ -24,7 +24,7 @@ public class AuthEmail {
     private Long user_id;
 
     @ApiModelProperty(hidden = true)
-    private Short type;
+    private String type;
 
     @Email
     private String email;

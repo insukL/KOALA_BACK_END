@@ -10,10 +10,10 @@ import java.util.List;
 @Repository
 public interface AuthEmailMapper {
     // 요청한 당일 전송한 메일의 개수를 반환
-    int getAuthEmailNumByUserIdAndType(Long userId, Short type, Timestamp start);
+    int getAuthEmailNumByUserIdAndType(Long userId, String type, Timestamp start);
     void expirePastAuthEmail(AuthEmail authEmail);
     void insertAuthEmail(AuthEmail authEmail);
     List<AuthEmail> getUndeletedAuthEmailByUserIdAndType(AuthEmail authEmail);
     void setIsAuth(Long id);
-    int getUndeletedIsAuthNumByUserId(Long userId, Integer type);
+    int getUndeletedIsAuthNumByUserId(Long userId, String type);
 }
