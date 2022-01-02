@@ -39,5 +39,6 @@ src/main/resources*/*.properties
 .properties
 /.mvn/
 src/main/resources/*.json
+src/main/resources/static/*.json
 src/main/resources/static/*.p8
 
