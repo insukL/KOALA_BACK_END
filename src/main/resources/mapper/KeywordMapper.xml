@@ -3,17 +3,15 @@
 <mapper namespace="in.koala.mapper.KeywordMapper">
 
     <select id = "myKeywordList" parameterType="java.lang.Long" resultType="in.koala.domain.Keyword">
-        SELECT k.id, k.name, count(n.crawling_id) as noticeNum
+        SELECT k.id, k.name, IFNULL(b.noticeNum, 0) AS noticeNum
         FROM keyword AS k
-                 INNER JOIN user AS u
-                            ON u.id = k.user_id
-                 INNER JOIN notice AS n
-                            ON k.id = n.keyword_id
-        WHERE user_id = 32
-          AND n.is_deleted = 0
-          AND n.is_read = 0
-          AND k.is_deleted = 0
-        ORDER BY k.created_at;
+            LEFT OUTER JOIN (
+                SELECT n.keyword_id, count(n.crawling_id) AS noticeNum
+                FROM notice AS n
+                WHERE n.is_read = 0 AND n.is_deleted = 0
+                GROUP BY n.keyword_id
+        ) AS b ON b.keyword_id = k.id
+        WHERE k.is_deleted = 0;
     </select>
 
     <!--키워드 등록 (1. 유저별로 기존에 등록한 키워드와 지금 등록하려는 키워드가 중복되는지 확인)-->
@@ -92,8 +90,8 @@
 
     <update id="modifyKeyword">
         UPDATE keyword
-        SET name = #{modifiedKeyword.name}, is_important = #{modifiedKeyword.isImportant},
-            alarm_mode = #{modifiedKeyword.alarmMode}, alarm_cycle = #{modifiedKeyword.alarmCycle},
+        SET name = #{keyword.name}, is_important = #{keyword.isImportant},
+            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle},
             updated_at = #{createdAt}
         WHERE id = (
             SELECT id
@@ -101,13 +99,12 @@
                 SELECT id
                 FROM keyword
                 WHERE user_id = #{userId}
-                AND name = #{name}
+                AND name = #{keywordName}
             ) AS sub_table
         );
     </update>
 
     <select id="getKeywordNotice" resultType = "in.koala.domain.Notice">
-
         SELECT n.id, n.is_read as isRead, c.site, c.title, c.url, c.created_at AS createdAt
         FROM notice AS n
         INNER JOIN crawling AS c
@@ -116,10 +113,40 @@
         ON k.id = n.keyword_id
         WHERE k.name = #{keywordName}
         AND k.user_id = #{userId}
+        AND n.is_deleted = 0
         <if test="site != null">
             AND site = #{site}
         </if>
-
     </select>
+
+    <select id="getSearchNotice" resultType="in.koala.domain.Notice">
+        SELECT a.id, a.isRead, a.site, a.title, a.url, a.createdAt
+        FROM (
+                 SELECT n.id, n.is_read AS isRead, c.site, c.title, c.url, c.created_at AS createdAt
+                 FROM notice AS n
+                          INNER JOIN crawling AS c
+                                     ON c.id = n.crawling_id
+                          INNER JOIN keyword AS k
+                                     ON k.id = n.keyword_id
+                 WHERE k.name = #{keywordName}
+                   AND k.user_id = #{userId}
+                   <if test="site != null">
+                        AND site = #{site}
+                   </if>
+        ) AS a
+        WHERE a.title LIKE CONCAT('%',#{word},'%');
+    </select>
+
+    <update id="noticeRead">
+        UPDATE notice
+        SET is_read = 1
+        WHERE id = #{noticeId}
+    </update>
+
+    <update id="deleteNotice">
+        UPDATE notice
+        SET is_deleted = 1
+        WHERE id = #{noticeId}
+    </update>
 
 </mapper>

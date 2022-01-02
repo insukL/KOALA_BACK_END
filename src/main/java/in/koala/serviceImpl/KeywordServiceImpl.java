@@ -39,7 +39,7 @@ public class KeywordServiceImpl implements KeywordService {
         for(CrawlingSite site : siteList){
             for(CrawlingSite value : CrawlingSite.values()){
                 if(value.equals(site)){
-                    convertSiteList.add(value.ordinal());
+                    convertSiteList.add(value.getCode());
                 }
             }
         }
@@ -112,5 +112,26 @@ public class KeywordServiceImpl implements KeywordService {
 
         Long userId = userService.getLoginUserInfo().getId();
         return keywordMapper.getKeywordNotice(keywordName, site, userId);
+    }
+
+    @Override
+    public List<Notice> getSearchNotice(String keywordName, String site, String word) {
+        Long userId = userService.getLoginUserInfo().getId();
+        return keywordMapper.getSearchNotice(keywordName, site, word, userId);
+    }
+
+    @Override
+    public Boolean noticeRead(String noticeId) {
+        if(keywordMapper.noticeRead(noticeId) == 1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    @Override
+    public void deletedNotice(String noticeId) {
+        keywordMapper.deleteNotice(noticeId);
     }
 }

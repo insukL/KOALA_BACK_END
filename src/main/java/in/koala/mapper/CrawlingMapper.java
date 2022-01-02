@@ -16,7 +16,7 @@ public interface CrawlingMapper {
 
     int checkDuplicatedData(Crawling crawling);
 
-    int updateLog(Short site, Timestamp crawlingAt);
+    int updateLog(Integer site, Timestamp crawlingAt);
 
     void addCrawlingData(List<Crawling> crawlingInsertList);
 
