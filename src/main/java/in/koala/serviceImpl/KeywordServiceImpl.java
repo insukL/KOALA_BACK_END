@@ -129,4 +129,9 @@ public class KeywordServiceImpl implements KeywordService {
             return false;
         }
     }
+
+    @Override
+    public void deletedNotice(String noticeId) {
+        keywordMapper.deleteNotice(noticeId);
+    }
 }

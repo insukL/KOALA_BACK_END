@@ -113,6 +113,7 @@
         ON k.id = n.keyword_id
         WHERE k.name = #{keywordName}
         AND k.user_id = #{userId}
+        AND n.is_deleted = 0
         <if test="site != null">
             AND site = #{site}
         </if>
@@ -139,6 +140,12 @@
     <update id="noticeRead">
         UPDATE notice
         SET is_read = 1
+        WHERE id = #{noticeId}
+    </update>
+
+    <update id="deleteNotice">
+        UPDATE notice
+        SET is_deleted = 1
         WHERE id = #{noticeId}
     </update>
 

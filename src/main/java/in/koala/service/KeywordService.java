@@ -12,7 +12,9 @@ public interface KeywordService {
 
     List<Notice> getKeywordNotice(String keywordName, String site);
     List<Notice> getSearchNotice(String keywordName, String site, String word);
+
     Boolean noticeRead(String noticeId);
+    void deletedNotice(String noticeId);
 
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
 

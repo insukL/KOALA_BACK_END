@@ -86,7 +86,7 @@ public class KeywordController {
     @Xss
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @GetMapping(value = "/keyword/list/reading-check")
+    @PatchMapping(value = "/keyword/list/notice/reading-check")
     public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
         if(keywordService.noticeRead(noticeId)){
             return new ResponseEntity(CustomBody.of("알림을 읽었습니다.", HttpStatus.OK), HttpStatus.OK);
@@ -94,5 +94,13 @@ public class KeywordController {
         else{
             return new ResponseEntity(CustomBody.of("알림읽는것을 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PatchMapping(value = "/keyword/list/notice")
+    public void deleteNotice(@RequestParam(name = "notice-id") String noticeId){
+        keywordService.deletedNotice(noticeId);
     }
 }
