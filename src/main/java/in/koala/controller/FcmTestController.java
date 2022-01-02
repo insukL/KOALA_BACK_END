@@ -1,44 +1,65 @@
 package in.koala.controller;
 
-import in.koala.service.FcmTestService;
-import in.koala.util.FcmSender;
+import in.koala.annotation.Auth;
+import in.koala.domain.Crawling;
+import in.koala.domain.DeviceToken;
+import in.koala.domain.Keyword;
+import in.koala.service.UserService;
+import in.koala.serviceImpl.DeviceTokenTestServiceImpl;
+import in.koala.serviceImpl.KeywordPushServiceImpl;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
+import java.sql.Timestamp;
+import java.util.List;
 
 @RestController
-@RequestMapping("/fcm")
+@RequestMapping("/fcm-test")
 public class FcmTestController {
     @Resource
-    FcmTestService fcmTestService;
+    private KeywordPushServiceImpl keywordPushService;
 
     @Resource
-    FcmSender fcmSender;
+    private DeviceTokenTestServiceImpl tokenService;
 
-    @GetMapping("/http")
-    public ResponseEntity sendTest(@RequestParam String token) throws Exception{
-        return new ResponseEntity(fcmTestService.sendTokenTest(token), HttpStatus.OK);
+    @Resource
+    private UserService userService;
+
+    @Auth
+    @PostMapping("/device")
+    @ApiOperation(value ="디바이스 토큰 등록 테스트" , notes = "디바이스 토큰 등록 실사용X" , authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity insertDeviceToken(@RequestBody DeviceToken deviceToken){
+        tokenService.insertDeviceToken(deviceToken, userService.getLoginUserInfo().getId());
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
-    @GetMapping("/http/{topic}")
-    public ResponseEntity sendTestTopic(@PathVariable String topic) throws Exception{
-        return new ResponseEntity(fcmTestService.sendTopicTest(topic), HttpStatus.OK);
+    @Auth
+    @PostMapping("/sub")
+    @ApiOperation(value ="키워드 구독 테스트" , notes = "키워드 구독 실사용X" , authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity subscribeKeyword(@RequestBody Keyword keyword) throws Exception {
+        keywordPushService.subscribe(keyword, userService.getLoginUserInfo().getId());
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
-    @GetMapping("/sub")
-    public ResponseEntity subscribe(@RequestParam String name,
-                                    @RequestParam String topic) throws Exception{
-        fcmSender.subscribe(Arrays.asList(name), topic);
-        return new ResponseEntity("success", HttpStatus.OK);
+    @Auth
+    @PostMapping("/unsub")
+    @ApiOperation(value ="키워드 구독 해제 테스트", notes = "키워드 구독 해제 실사용X", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity unsubscribeKeyword(@RequestBody Keyword keyword) throws Exception{
+        keywordPushService.unsubscribe(keyword, userService.getLoginUserInfo().getId());
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
-    @GetMapping("/unsub")
-    public ResponseEntity unsubscribe(@RequestParam String name,
-                                      @RequestParam String topic) throws Exception{
-        fcmSender.unsubscribe(Arrays.asList(name), topic);
-        return new ResponseEntity("success", HttpStatus.OK);
+    @PostMapping("/keyword")
+    @ApiOperation(value ="키워드 푸시 테스트", notes = "키워드 알람 발송 실사용X")
+    public ResponseEntity pushKeyword(@RequestBody List<String> keywordList,
+                                      @RequestParam String title,
+                                      @RequestParam String url,
+                                      @RequestParam Short site) throws Exception{
+        keywordPushService.pushKeyword(keywordList, title, url, site);
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 }

@@ -16,8 +16,9 @@ import java.util.*;
 
 @Component
 public class FcmSender {
-    @Value("${firebase.key_path}")
-    private String keyPath;
+    //어노테이션 Resource와 이름이 같아서 아래와 같이 패키지 경로까지 명시됨
+    @Value("${firebase.key.path}")
+    private org.springframework.core.io.Resource key;
 
     @Value("${fcmRequestUrl}")
     private String fcmRequestUrl;
@@ -27,7 +28,7 @@ public class FcmSender {
 
     private String getAccessToken() throws Exception {
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new FileInputStream(keyPath))
+                .fromStream(new FileInputStream(key.getFile()))
                 .createScoped(Arrays.asList("https://www.googleapis.com/auth/firebase.messaging"));
         googleCredentials.refreshIfExpired();
 
