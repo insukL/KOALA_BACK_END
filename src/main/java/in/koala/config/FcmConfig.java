@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.PostConstruct;
-import java.io.FileInputStream;
 
 @Configuration
 public class FcmConfig {
@@ -17,10 +16,8 @@ public class FcmConfig {
 
     @PostConstruct
     public void initFirebase() throws Exception {
-        FileInputStream serviceAccount = new FileInputStream(key.getFile());
-
         FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setCredentials(GoogleCredentials.fromStream(key.getInputStream()))
                 .build();
         FirebaseApp.initializeApp(options);
     }
