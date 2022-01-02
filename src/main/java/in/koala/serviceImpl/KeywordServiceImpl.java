@@ -39,7 +39,7 @@ public class KeywordServiceImpl implements KeywordService {
         for(CrawlingSite site : siteList){
             for(CrawlingSite value : CrawlingSite.values()){
                 if(value.equals(site)){
-                    convertSiteList.add(value.ordinal());
+                    convertSiteList.add(value.getCode());
                 }
             }
         }
