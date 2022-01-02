@@ -7,11 +7,15 @@ import in.koala.enums.CrawlingSite;
 import java.util.List;
 
 public interface KeywordService {
+
     List<Keyword> myKeywordList();
 
     List<Notice> getKeywordNotice(String keywordName, String site);
     List<Notice> getSearchNotice(String keywordName, String site, String word);
+    Boolean noticeRead(String noticeId);
+
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
+
     void registerKeyword(Keyword keyword);
     void deleteKeyword(String keywordId);
     void modifyKeyword(String keywordName, Keyword keyword);

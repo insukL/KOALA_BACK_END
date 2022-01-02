@@ -22,6 +22,7 @@ public interface KeywordMapper {
     List<Keyword> myKeywordList(Long userId);
     List<Notice> getKeywordNotice(String keywordName, String site, Long userId);
     List<Notice> getSearchNotice(String keywordName, String site, String word, Long userId);
+    Integer noticeRead(String noticeId);
 
     int deleteKeyword(Long userId, String keywordName);
 

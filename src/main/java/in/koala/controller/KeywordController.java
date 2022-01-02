@@ -72,7 +72,7 @@ public class KeywordController {
     @Xss
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 검색", notes = "키워드 목록에서 하나의 키워드를 선택한 후 검색한 후에 검색 결과에 대한 알림 반환", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @GetMapping(value = "/keyword/search/list")
+    @GetMapping(value = "/keyword/list/search")
     public ResponseEntity<List<Notice>> getSearchNotice(@RequestParam(name = "keyword-name") String keywordName,
                                                         @RequestParam(name = "site", required = false) String site,
                                                         @RequestParam(name = "word") String word){
@@ -83,4 +83,16 @@ public class KeywordController {
             return new ResponseEntity (CustomBody.of(result,HttpStatus.OK), HttpStatus.OK);
     }
 
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/list/reading-check")
+    public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
+        if(keywordService.noticeRead(noticeId)){
+            return new ResponseEntity(CustomBody.of("알림을 읽었습니다.", HttpStatus.OK), HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity(CustomBody.of("알림읽는것을 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
