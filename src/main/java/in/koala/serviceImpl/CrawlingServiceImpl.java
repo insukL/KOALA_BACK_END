@@ -74,7 +74,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void updateLog(Short site, Timestamp crawlingAt) {
+    public void updateLog(Integer site, Timestamp crawlingAt) {
         crawlingMapper.updateLog(site, crawlingAt);
     }
 
@@ -100,7 +100,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        Short site = (short)CrawlingSite.PORTAL.ordinal();
+        Integer site = CrawlingSite.PORTAL.getCode();
 
         // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
@@ -151,7 +151,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        Short site = (short) CrawlingSite.DORM.ordinal();
+        Integer site = CrawlingSite.DORM.getCode();
 
         try{
             //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
@@ -204,7 +204,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         String now = format.format(tmp);
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
-        Short site = (short) CrawlingSite.YOUTUBE.ordinal();
+        Integer site = CrawlingSite.YOUTUBE.getCode();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
                 .queryParam("part", "snippet")
@@ -279,7 +279,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
-        Short site = (short) CrawlingSite.FACEBOOK.ordinal();
+        Integer site  = CrawlingSite.FACEBOOK.getCode();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(facebookApiUrl)
                 .path("/me/posts")
@@ -360,7 +360,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         List<Crawling> crawlingList = new ArrayList<Crawling>();
 
-        Short site = (short) CrawlingSite.INSTAGRAM.ordinal();
+        Integer site = CrawlingSite.INSTAGRAM.getCode();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(instagramApiUrl)
                 .path("/me/media")

@@ -15,13 +15,13 @@ public class Crawling {
     private Long id;
     private String title;
     private String url;
-    private Short site;
+    private Integer site;
     private String createdAt;
     private Timestamp crawlingAt;
     private Timestamp updatedAt;
     private Short isDeleted;
 
-    public Crawling(String title, String url, Short site, String createdAt, Timestamp crawlingAt){
+    public Crawling(String title, String url, Integer site, String createdAt, Timestamp crawlingAt){
         this.title = title;
         this.url = url;
         this.site = site;
@@ -29,7 +29,7 @@ public class Crawling {
         this.crawlingAt = crawlingAt;
     }
 
-    public Crawling(Long id, String title, String url, Short site, String createdAt, Timestamp crawlingAt){
+    public Crawling(Long id, String title, String url, Integer site, String createdAt, Timestamp crawlingAt){
         this.id = id;
         this.title = title;
         this.url = url;

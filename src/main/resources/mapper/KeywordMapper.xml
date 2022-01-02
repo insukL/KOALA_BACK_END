@@ -9,7 +9,7 @@
                             ON u.id = k.user_id
                  INNER JOIN notice AS n
                             ON k.id = n.keyword_id
-        WHERE user_id = 32
+        WHERE user_id = #{user_id}
           AND n.is_deleted = 0
           AND n.is_read = 0
           AND k.is_deleted = 0
@@ -92,8 +92,8 @@
 
     <update id="modifyKeyword">
         UPDATE keyword
-        SET name = #{modifiedKeyword.name}, is_important = #{modifiedKeyword.isImportant},
-            alarm_mode = #{modifiedKeyword.alarmMode}, alarm_cycle = #{modifiedKeyword.alarmCycle},
+        SET name = #{keyword.name}, is_important = #{keyword.isImportant},
+            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle},
             updated_at = #{createdAt}
         WHERE id = (
             SELECT id
@@ -101,7 +101,7 @@
                 SELECT id
                 FROM keyword
                 WHERE user_id = #{userId}
-                AND name = #{name}
+                AND name = #{keywordName}
             ) AS sub_table
         );
     </update>
