@@ -113,4 +113,10 @@ public class KeywordServiceImpl implements KeywordService {
         Long userId = userService.getLoginUserInfo().getId();
         return keywordMapper.getKeywordNotice(keywordName, site, userId);
     }
+
+    @Override
+    public List<Notice> getSearchNotice(String keywordName, String site, String word) {
+        Long userId = userService.getLoginUserInfo().getId();
+        return keywordMapper.getSearchNotice(keywordName, site, word, userId);
+    }
 }

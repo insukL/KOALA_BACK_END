@@ -105,7 +105,6 @@
     </update>
 
     <select id="getKeywordNotice" resultType = "in.koala.domain.Notice">
-
         SELECT n.id, n.is_read as isRead, c.site, c.title, c.url, c.created_at AS createdAt
         FROM notice AS n
         INNER JOIN crawling AS c
@@ -117,7 +116,24 @@
         <if test="site != null">
             AND site = #{site}
         </if>
+    </select>
 
+    <select id="getSearchNotice" resultType="in.koala.domain.Notice">
+        SELECT a.id, a.isRead, a.site, a.title, a.url, a.createdAt
+        FROM (
+                 SELECT n.id, n.is_read AS isRead, c.site, c.title, c.url, c.created_at AS createdAt
+                 FROM notice AS n
+                          INNER JOIN crawling AS c
+                                     ON c.id = n.crawling_id
+                          INNER JOIN keyword AS k
+                                     ON k.id = n.keyword_id
+                 WHERE k.name = #{keywordName}
+                   AND k.user_id = #{userId}
+                   <if test="site != null">
+                        AND site = #{site}
+                   </if>
+        ) AS a
+        WHERE a.title LIKE CONCAT('%',#{word},'%');
     </select>
 
 </mapper>

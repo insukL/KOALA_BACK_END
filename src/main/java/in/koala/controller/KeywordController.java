@@ -7,6 +7,7 @@ import in.koala.domain.Notice;
 import in.koala.domain.response.CustomBody;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,20 @@ public class KeywordController {
     public ResponseEntity<List<Notice>> getKeywordNotice(@RequestParam(name = "keyword-name") String keywordName,
                                                          @RequestParam(name = "site", required = false) String site){
         List<Notice> result = keywordService.getKeywordNotice(keywordName, site);
+        if(result.isEmpty())
+            return new ResponseEntity(CustomBody.of("받은 알림이 없습니다.", HttpStatus.BAD_REQUEST), HttpStatus.OK);
+        else
+            return new ResponseEntity (CustomBody.of(result,HttpStatus.OK), HttpStatus.OK);
+    }
+
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 검색", notes = "키워드 목록에서 하나의 키워드를 선택한 후 검색한 후에 검색 결과에 대한 알림 반환", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/search/list")
+    public ResponseEntity<List<Notice>> getSearchNotice(@RequestParam(name = "keyword-name") String keywordName,
+                                                        @RequestParam(name = "site", required = false) String site,
+                                                        @RequestParam(name = "word") String word){
+        List<Notice> result = keywordService.getSearchNotice(keywordName, site, word);
         if(result.isEmpty())
             return new ResponseEntity(CustomBody.of("받은 알림이 없습니다.", HttpStatus.BAD_REQUEST), HttpStatus.OK);
         else
