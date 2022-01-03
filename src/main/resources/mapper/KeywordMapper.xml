@@ -154,4 +154,17 @@
         FROM keyword
         WHERE name LIKE concat("%", #{keyword}, "%");
     </select>
+
+    <select id="getSiteList" resultType="java.lang.Integer">
+        SELECT site_name
+        FROM keyword_site
+        WHERE is_deleted = 0
+          AND keyword_id = (
+            SELECT id
+            FROM keyword
+            WHERE user_id = 32
+              AND name = "국가장학금"
+        );
+    </select>
+
 </mapper>

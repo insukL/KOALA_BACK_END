@@ -35,7 +35,7 @@ public class KeywordController {
     @Auth
     @ApiOperation(value ="키워드 추가" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/keyword")
-    public void registerKeyword(@RequestBody Keyword keyword){
+    public void registerKeyword(@RequestBody Keyword keyword) throws Exception {
         keywordService.registerKeyword(keyword);
     }
 
@@ -43,7 +43,7 @@ public class KeywordController {
     @Auth
     @ApiOperation(value = "키워드 삭제", notes = "사용자가 지정한 키워드를 삭제한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword")
-    public void deleteKeyword(@RequestParam(name = "keyword-name") String keywordName){
+    public void deleteKeyword(@RequestParam(name = "keyword-name") String keywordName) throws Exception {
         keywordService.deleteKeyword(keywordName);
     }
 
