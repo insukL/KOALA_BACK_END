@@ -6,8 +6,10 @@ import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
+import in.koala.service.KeywordPushService;
 import in.koala.service.KeywordService;
 import in.koala.service.UserService;
+import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     private final KeywordMapper keywordMapper;
     private final UserService userService;
+    private final KeywordPushService keywordPushService;
 
     @Override
     public List<Keyword> myKeywordList() {
@@ -46,7 +49,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void registerKeyword(Keyword keyword) {
+    public void registerKeyword(Keyword keyword) throws Exception {
 
         Long userId = userService.getLoginUserInfo().getId();
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
@@ -60,13 +63,21 @@ public class KeywordServiceImpl implements KeywordService {
         else{
             keywordMapper.insertUsersKeyword(keyword);
             keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getCreatedAt(), convertSiteList(keyword.getSiteList()));
+            
+            // 2022-01-03 FireBase 키워드 등록 추가
+            keywordPushService.subscribe(keyword, userId);
         }
     }
 
     @Override
-    public void deleteKeyword(String keywordName) {
+    public void deleteKeyword(String keywordName) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
+
+        Keyword keyword = new Keyword(keywordName, keywordMapper.getSiteList(userId, keywordName));
         keywordMapper.deleteKeyword(userId, keywordName);
+
+        //2022-01-03 Firebase 키워드 등록 취소
+        keywordPushService.unsubscribe(keyword, userId);
     }
 
     @Override

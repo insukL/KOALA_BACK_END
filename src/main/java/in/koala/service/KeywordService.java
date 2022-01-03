@@ -20,7 +20,7 @@ public interface KeywordService {
 
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
 
-    void registerKeyword(Keyword keyword);
-    void deleteKeyword(String keywordId);
+    void registerKeyword(Keyword keyword) throws Exception;
+    void deleteKeyword(String keywordId) throws Exception;
     void modifyKeyword(String keywordName, Keyword keyword);
 }

@@ -40,4 +40,23 @@ public class Keyword {
     @JsonIgnore
     @ApiModelProperty(hidden = true)
     private Short isDeleted;
+
+    public Keyword(String name, List<CrawlingSite> siteList){
+        this.name = name;
+        this.siteList = siteList;
+    }
+
+    public Keyword(Long id, Long userId, String name, List<CrawlingSite> siteList, Short isImportant, Short alarmMode, int alarmCycle, Long noticeNum, Timestamp createdAt, Timestamp updatedAt, Short isDeleted) {
+        this.id = id;
+        this.userId = userId;
+        this.name = name;
+        this.siteList = siteList;
+        this.isImportant = isImportant;
+        this.alarmMode = alarmMode;
+        this.alarmCycle = alarmCycle;
+        this.noticeNum = noticeNum;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.isDeleted = isDeleted;
+    }
 }
