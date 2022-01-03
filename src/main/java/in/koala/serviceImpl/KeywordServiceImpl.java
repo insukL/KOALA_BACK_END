@@ -1,9 +1,7 @@
 package in.koala.serviceImpl;
 
-import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
-import in.koala.domain.User;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordException;
@@ -133,5 +131,10 @@ public class KeywordServiceImpl implements KeywordService {
     @Override
     public void deletedNotice(String noticeId) {
         keywordMapper.deleteNotice(noticeId);
+    }
+
+    @Override
+    public List<String> searchKeyword(String keyword) {
+        return keywordMapper.searchKeyword(keyword);
     }
 }

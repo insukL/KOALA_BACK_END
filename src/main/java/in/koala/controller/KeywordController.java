@@ -57,6 +57,19 @@ public class KeywordController {
     }
 
     @Xss
+    @ApiOperation(value = "키워드 입력시 검색", notes = "키워드 등록 및 수정 시 추천 키워드를 제공한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/search")
+    public ResponseEntity<List<String>> searchKeyword(@RequestParam(name = "keyword") String keyword){
+
+        List<String> result = keywordService.searchKeyword(keyword);
+
+        if(result.isEmpty())
+            return new ResponseEntity(CustomBody.of("검색 결과가 없습니다.", HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of(result, HttpStatus.OK), HttpStatus.OK);
+    }
+
+    @Xss
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 전체", notes = "키워드 목록에서 하나의 키워드를 선택한 후 받은 알람을 본다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword/list")
@@ -85,6 +98,14 @@ public class KeywordController {
 
     @Xss
     @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PatchMapping(value = "/keyword/list/notice")
+    public void deleteNotice(@RequestParam(name = "notice-id") String noticeId){
+        keywordService.deletedNotice(noticeId);
+    }
+
+    @Xss
+    @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice/reading-check")
     public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
@@ -96,11 +117,4 @@ public class KeywordController {
         }
     }
 
-    @Xss
-    @Auth
-    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @PatchMapping(value = "/keyword/list/notice")
-    public void deleteNotice(@RequestParam(name = "notice-id") String noticeId){
-        keywordService.deletedNotice(noticeId);
-    }
 }

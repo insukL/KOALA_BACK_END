@@ -149,4 +149,9 @@
         WHERE id = #{noticeId}
     </update>
 
+    <select id="searchKeyword" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT name
+        FROM keyword
+        WHERE name LIKE concat("%", #{keyword}, "%");
+    </select>
 </mapper>

@@ -16,6 +16,8 @@ public interface KeywordService {
     Boolean noticeRead(String noticeId);
     void deletedNotice(String noticeId);
 
+    List<String> searchKeyword(String keyword);
+
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
 
     void registerKeyword(Keyword keyword);
