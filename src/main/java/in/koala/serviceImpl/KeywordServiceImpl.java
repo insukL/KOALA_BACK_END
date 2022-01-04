@@ -48,6 +48,21 @@ public class KeywordServiceImpl implements KeywordService {
         return convertSiteList;
     }
 
+    public List<CrawlingSite> reConvertSiteList(List<Integer> siteList) {
+
+        List<CrawlingSite> reConvertSiteList = new ArrayList<>();
+
+        for(Integer site : siteList) {
+            for(CrawlingSite value : CrawlingSite.values()) {
+                if (value.getCode().equals(site)) {
+                    reConvertSiteList.add(value);
+                }
+            }
+        }
+
+        return reConvertSiteList;
+    }
+
     @Override
     public void registerKeyword(Keyword keyword) throws Exception {
 
@@ -73,10 +88,13 @@ public class KeywordServiceImpl implements KeywordService {
     public void deleteKeyword(String keywordName) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
 
-        Keyword keyword = new Keyword(keywordName, keywordMapper.getSiteList(userId, keywordName));
         keywordMapper.deleteKeyword(userId, keywordName);
 
         //2022-01-03 Firebase 키워드 등록 취소
+        Keyword keyword = new Keyword();
+        keyword.setName(keywordName);
+        keyword.setSiteList(reConvertSiteList(keywordMapper.getSiteList(userId, keywordName)));
+        System.out.println(keyword.getSiteList());
         keywordPushService.unsubscribe(keyword, userId);
     }
 
