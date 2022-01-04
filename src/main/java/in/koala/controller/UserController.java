@@ -135,7 +135,6 @@ public class UserController {
         return new ResponseEntity(CustomBody.of("존재하는 계정입니다", HttpStatus.OK), HttpStatus.OK);
     }
 
-
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경 API", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n password 와 account 을 body 로 입력받습니다.")
     public ResponseEntity changePassword(@RequestBody User user){
@@ -164,4 +163,5 @@ public class UserController {
         userService.softDeleteUser();
         return new ResponseEntity(CustomBody.of("탈퇴 완료", HttpStatus.OK), HttpStatus.OK);
     }
+
 }

@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.PublicKey;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtUtil {
@@ -45,7 +43,13 @@ public class JwtUtil {
         payloads.put("id", id );
         payloads.put("sub", tokenType.name());
 
-        return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(tokenType.getTokenExp()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
+        // 토큰 유효기간 설정
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        calendar.add(Calendar.HOUR_OF_DAY, tokenType.getTokenRemainTime());
+
+        return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(calendar.getTime()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
 
     public boolean isValid(String token, TokenType tokenType){
