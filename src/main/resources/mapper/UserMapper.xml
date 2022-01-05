@@ -90,6 +90,13 @@
         WHERE id=#{id}
     </update>
 
+    <update id="updateUserProfile">
+        UPDATE user
+        SET
+            profile=#{url}
+        WHERE id=#{id}
+    </update>
+
     <select id="test" resultType="String">
         SELECT nickname from user where id=1;
     </select>

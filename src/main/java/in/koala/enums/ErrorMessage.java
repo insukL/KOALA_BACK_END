@@ -18,9 +18,9 @@ public enum ErrorMessage {
 	 */
 	VALID_ANNOTATION_INVALID(1100,"@Validation 에러가 발생하였습니다."),
 	PAGENATION_INVALID(1120,"pagenation의 범위를 확인해주세요. 0 < page , 0 < per_count"),
-	
 
-	/*
+
+	/**
 	 * USER
 	 */
 	DUPLICATED_ACCOUNT_EXCEPTION(123, "이미 존재하는 아이디입니다"),
@@ -56,6 +56,7 @@ public enum ErrorMessage {
 	IDENTITY_TOKEN_INVALID_EXCEPTION(150, "유효하지 않은 identity token 입니다"),
 	APPLE_PUBLIC_KEY_EXCEPTION(151, "apple server 에서 public key 가져오는 것 실패했습니다"),
 	EMAIL_NOT_UNIVERSITY(152, "학교인증은 이메일형식이 학교 이메일이여야 합니다"),
+	FILE_UPLOAD_FAIL(153, "amazon s3 file upload failed"),
 
 	/*
 	 * Scrap, Memo

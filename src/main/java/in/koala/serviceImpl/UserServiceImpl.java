@@ -13,6 +13,7 @@ import in.koala.mapper.UserMapper;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
+import in.koala.util.S3Util;
 import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -20,12 +21,14 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -43,6 +46,7 @@ public class UserServiceImpl implements UserService {
     private final List<SnsLogin> snsLoginList;
     private final SesSender sesSender;
     private final SpringTemplateEngine springTemplateEngine;
+    private final S3Util s3Util;
 
     @Override
     public String test() {
@@ -452,6 +456,22 @@ public class UserServiceImpl implements UserService {
         user.setSns_email(deleted + "@deletedUser.deleted");
 
         userMapper.softDeleteUser(user);
+    }
+
+    @Override
+    public String editProfile(MultipartFile multipartFile){
+        User selectedUser = this.getLoginUserInfo();
+
+        String profileUrl = selectedUser.getProfile();
+
+        if(profileUrl != null){
+            s3Util.deleteFile(profileUrl);
+        }
+
+        profileUrl = s3Util.uploader(multipartFile);
+        userMapper.updateUserProfile(profileUrl, selectedUser.getId());
+
+        return profileUrl;
     }
 
 
