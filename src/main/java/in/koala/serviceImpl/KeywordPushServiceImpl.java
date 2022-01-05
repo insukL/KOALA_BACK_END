@@ -22,11 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
+import java.util.*;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional
@@ -119,7 +116,6 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     public void subscribe(Keyword keyword, Long id) throws Exception{
         //UserMapper 임시 사용
         List<String> tokenList = tokenMapper.getDeviceTokenById(id);
-        System.out.println(tokenList);
         for(CrawlingSite site : keyword.getSiteList()){
             fcmSender.subscribe(tokenList,
                     enConverter.ktoe(keyword.getName()) + site.getCode().toString());
@@ -131,11 +127,40 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     public void unsubscribe(Keyword keyword, Long id) throws Exception{
         //UserMapper 임시 사용
         List<String> tokenList = tokenMapper.getDeviceTokenById(id);
-        System.out.println(tokenList);
         for(CrawlingSite site : keyword.getSiteList()){
             fcmSender.unsubscribe(tokenList,
                     enConverter.ktoe(keyword.getName()) + site.getCode().toString());
             System.out.println(enConverter.ktoe(keyword.getName()) + site.getCode().toString());
         }
+    }
+
+    @Override
+    public void modifySubscription(Keyword oldWord, Keyword newWord, Long id) throws Exception{
+        System.out.println(oldWord.getSiteList());
+        System.out.println(newWord.getSiteList());
+        Keyword keyword = new Keyword();
+        keyword.setName(oldWord.getName());
+
+        //기존 키워드 구독 해제
+        List<CrawlingSite> temp = new ArrayList<>();
+        System.out.println(oldWord.getSiteList());
+        System.out.println(newWord.getSiteList());
+        for(CrawlingSite site : oldWord.getSiteList()){
+            if(!newWord.getSiteList().contains(site)) temp.add(site);
+        }
+        keyword.setSiteList(temp);
+        this.unsubscribe(keyword, id);
+        System.out.println("해제 키워드 목록");
+        System.out.println(temp);
+
+        //신규 키워드 구독
+        temp.clear();
+        for(CrawlingSite site : newWord.getSiteList()){
+            if(!oldWord.getSiteList().contains(site)) temp.add(site);
+        }
+        keyword.setSiteList(temp);
+        this.subscribe(keyword, id);
+        System.out.println("추가 키워드 목록");
+        System.out.println(temp);
     }
 }
