@@ -4,6 +4,8 @@ import in.koala.annotation.Auth;
 import in.koala.domain.Crawling;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
+import in.koala.enums.CrawlingSite;
+import in.koala.mapper.KeywordMapper;
 import in.koala.service.UserService;
 import in.koala.serviceImpl.DeviceTokenTestServiceImpl;
 import in.koala.serviceImpl.KeywordPushServiceImpl;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/fcm-test")
@@ -28,6 +32,9 @@ public class FcmTestController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private KeywordMapper keywordMapper;
 
     @Auth
     @PostMapping("/device")
@@ -60,6 +67,24 @@ public class FcmTestController {
                                       @RequestParam String url,
                                       @RequestParam Short site) throws Exception{
         keywordPushService.pushKeyword(keywordList, title, url, site);
+        return new ResponseEntity<String>("success", HttpStatus.OK);
+    }
+
+    @Auth
+    @PostMapping("/new-sub")
+    @ApiOperation(value = "키워드 구독 수정 테스트", notes = "키워드 구독 수정 실사용X", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity modifySubscription(@RequestBody Keyword keyword) throws Exception{
+        Keyword old = new Keyword();
+        old.setName(keyword.getName());
+        List<CrawlingSite> list = new ArrayList<>();
+        Set<Integer> temp = keywordMapper.getKeywordSite(userService.getLoginUserInfo().getId(), old.getName());
+        for(Integer t : temp){
+            for(CrawlingSite c : CrawlingSite.values()){
+                if(c.getCode() == t) list.add(c);
+            }
+        }
+        old.setSiteList(list);
+        keywordPushService.modifySubscription(old, keyword, userService.getLoginUserInfo().getId());
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 }
