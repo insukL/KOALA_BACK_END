@@ -74,8 +74,8 @@ public class UserServiceImpl implements UserService {
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
         if(id == null) {
-            System.out.println(snsUser.getUser_type());
             userMapper.snsSignUp(snsUser);
+            id = snsUser.getId();
         }
 
         return this.generateAccessAndRefreshToken(id);
@@ -111,6 +111,7 @@ public class UserServiceImpl implements UserService {
             userMapper.snsSignUp(user);
             user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
             userMapper.updateNickname(user);
+            id = user.getId();
         }
 
         return generateAccessAndRefreshToken(id);
