@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.NotActiveException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
@@ -49,19 +47,26 @@ public class S3Util {
             amazonS3.putObject(new PutObjectRequest(bucket + "/" + date,
                     savedName, multipartFile.getInputStream(), omd)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
+
         } catch (Exception e){
             throw new NonCriticalException(ErrorMessage.FILE_UPLOAD_FAIL);
         }
-        return amazonS3.getUrl(bucket, date+"/"+savedName).toString();
-        //return "https://" + "koala-s3.s3.ap-northeast-2.amazonaws.com" +"/" + date + "/" + savedName;
+
+        //return amazonS3.getUrl(bucket, date+"/"+savedName).toString();
+        return "https://" + "koala-s3.s3.ap-northeast-2.amazonaws.com" +"/" + date + "/" + savedName;
     }
 
     public void deleteFile(String url){
-//        int index = url.lastIndexOf("/");
-//        String file = url.substring(54);
-        url.
-        String fileName = url.substring(54);
-        System.out.println(fileName);
+        String[] split = url.split("/");
+        String fileName = "";
+
+        for(int i = 3; i < split.length; i++){
+            fileName += split[i] + "/";
+        }
+
+        fileName = fileName.substring(0, fileName.length() -  1);
+        //System.out.println(fileName);
+
         amazonS3.deleteObject(bucket, fileName);
     }
 }
