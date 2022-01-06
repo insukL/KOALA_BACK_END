@@ -1,5 +1,6 @@
 package in.koala.serviceImpl;
 
+import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
 import in.koala.enums.CrawlingSite;
@@ -88,24 +89,26 @@ public class KeywordServiceImpl implements KeywordService {
     public void deleteKeyword(String keywordName) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
 
-        keywordMapper.deleteKeyword(userId, keywordName);
-
         //2022-01-03 Firebase 키워드 등록 취소
         Keyword keyword = new Keyword();
         keyword.setName(keywordName);
         keyword.setSiteList(reConvertSiteList(keywordMapper.getSiteList(userId, keywordName)));
         System.out.println(keyword.getSiteList());
         keywordPushService.unsubscribe(keyword, userId);
+
+        keywordMapper.deleteKeyword(userId, keywordName);
     }
 
     @Override
-    public void modifyKeyword(String keywordName, Keyword keyword) {
+    public void modifyKeyword(String keywordName, Keyword keyword) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
 
         Set<Integer> addingList = new HashSet<>(convertSiteList(keyword.getSiteList()));
         Set<Integer> addingListCopy = new HashSet<>();
         addingListCopy.addAll(addingList);
         Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(userId, keywordName));
+        Set<Integer> existingListCopy = new HashSet<>();
+        existingListCopy.addAll(existingList);
 
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
@@ -132,6 +135,24 @@ public class KeywordServiceImpl implements KeywordService {
         }
 
         keywordMapper.modifyKeyword(userId, keywordName, createdAt, keyword);
+
+        //2022-01-06 Firebase 키워드 수정 로직
+        List<CrawlingSite> oldSite = reConvertSiteList(new ArrayList<>(existingList));
+        List<CrawlingSite> newSite = reConvertSiteList(new ArrayList<>(addingList));
+
+        if(keywordName.equals(keyword.getName())){
+            keywordPushService.modifySubscription(oldSite, newSite, userId);
+        }
+        else{
+            Keyword oldKeyword = new Keyword();
+            oldKeyword.setName(keywordName);
+            oldKeyword.setSiteList(reConvertSiteList(new ArrayList<>(existingListCopy)));
+            System.out.println("이름 다를 때");
+            System.out.println(oldKeyword.getSiteList());
+            System.out.println(keyword.getSiteList());
+            keywordPushService.subscribe(keyword, userId);
+            keywordPushService.unsubscribe(oldKeyword, userId);
+        }
     }
 
     @Override

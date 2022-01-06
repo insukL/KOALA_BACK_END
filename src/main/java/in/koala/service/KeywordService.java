@@ -22,5 +22,5 @@ public interface KeywordService {
 
     void registerKeyword(Keyword keyword) throws Exception;
     void deleteKeyword(String keywordId) throws Exception;
-    void modifyKeyword(String keywordName, Keyword keyword);
+    void modifyKeyword(String keywordName, Keyword keyword) throws Exception;
 }

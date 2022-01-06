@@ -74,17 +74,17 @@ public class FcmTestController {
     @PostMapping("/new-sub")
     @ApiOperation(value = "키워드 구독 수정 테스트", notes = "키워드 구독 수정 실사용X", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity modifySubscription(@RequestBody Keyword keyword) throws Exception{
-        Keyword old = new Keyword();
-        old.setName(keyword.getName());
-        List<CrawlingSite> list = new ArrayList<>();
-        Set<Integer> temp = keywordMapper.getKeywordSite(userService.getLoginUserInfo().getId(), old.getName());
-        for(Integer t : temp){
-            for(CrawlingSite c : CrawlingSite.values()){
-                if(c.getCode() == t) list.add(c);
-            }
-        }
-        old.setSiteList(list);
-        keywordPushService.modifySubscription(old, keyword, userService.getLoginUserInfo().getId());
+//        Keyword old = new Keyword();
+//        old.setName(keyword.getName());
+//        List<CrawlingSite> list = new ArrayList<>();
+//        Set<Integer> temp = keywordMapper.getKeywordSite(userService.getLoginUserInfo().getId(), old.getName());
+//        for(Integer t : temp){
+//            for(CrawlingSite c : CrawlingSite.values()){
+//                if(c.getCode() == t) list.add(c);
+//            }
+//        }
+//        old.setSiteList(list);
+//        keywordPushService.modifySubscription(old, keyword, userService.getLoginUserInfo().getId());
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 }

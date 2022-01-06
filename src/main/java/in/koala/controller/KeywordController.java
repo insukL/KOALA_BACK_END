@@ -52,7 +52,7 @@ public class KeywordController {
     @ApiOperation(value = "키워드 수정", notes = "사용자가 지정한 키워드를 수정한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PutMapping(value = "/keyword")
     public void modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
-                              @RequestBody Keyword keyword){
+                              @RequestBody Keyword keyword) throws Exception{
         keywordService.modifyKeyword(keywordName, keyword);
     }
 
