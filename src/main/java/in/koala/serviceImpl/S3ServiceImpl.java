@@ -31,7 +31,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String uploadObject(MultipartFile multipartFile) throws IOException {
-        String fileName = multipartFile.getOriginalFilename();
+        /*String fileName = multipartFile.getOriginalFilename();
 
         int index = fileName.lastIndexOf(".");
         String fileExt = fileName.substring(index+1);
@@ -50,7 +50,8 @@ public class S3ServiceImpl implements S3Service {
                 savedName, multipartFile.getInputStream(), omd)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        return customDomain + "/" + date + "/" + savedName;
+        return customDomain + "/" + date + "/" + savedName;*/
+        return null;
     }
 
     @Override

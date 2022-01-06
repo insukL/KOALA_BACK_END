@@ -4,6 +4,7 @@ import in.koala.domain.AuthEmail;
 import in.koala.domain.User;
 import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -27,5 +28,5 @@ public interface UserService {
     void softDeleteUser();
     Boolean checkFindEmail(String email);
     User createNonMemberUserAndDeviceToken(String token);
-
+    String editProfile(MultipartFile multipartFile);
 }

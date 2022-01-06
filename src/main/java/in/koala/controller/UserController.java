@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -164,4 +165,10 @@ public class UserController {
         return new ResponseEntity(CustomBody.of("탈퇴 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
+    @Auth
+    @PatchMapping(value="/profile")
+    @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다?", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
+        return new ResponseEntity(CustomBody.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
+    }
 }
