@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.HistoryMapper">
+
+    <select id="getEveryNotice" resultType = "in.koala.domain.Notice">
+        select n.id, c.site, c.title, c.url, c.created_at as createdAt, n.is_read as isRead
+        from notice as n
+                 inner join keyword as k
+                            on k.id = n.keyword_id
+                 inner join crawling as c
+                            on c.id = n.crawling_id
+        where k.user_id = #{userId}
+          and n.is_deleted = 0
+          and k.is_deleted = 0
+            limit #{pageNum}, 20;
+    </select>
+
+</mapper>

@@ -163,8 +163,8 @@
           AND keyword_id = (
             SELECT id
             FROM keyword
-            WHERE user_id = 32
-              AND name = "국가장학금"
+            WHERE user_id = #{userId}
+              AND name = #{keywordName}
         );
     </select>
 
