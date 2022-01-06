@@ -135,32 +135,34 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     }
 
     @Override
-    public void modifySubscription(Keyword oldWord, Keyword newWord, Long id) throws Exception{
-        System.out.println(oldWord.getSiteList());
-        System.out.println(newWord.getSiteList());
-        Keyword keyword = new Keyword();
-        keyword.setName(oldWord.getName());
-
-        //기존 키워드 구독 해제
-        List<CrawlingSite> temp = new ArrayList<>();
-        System.out.println(oldWord.getSiteList());
-        System.out.println(newWord.getSiteList());
-        for(CrawlingSite site : oldWord.getSiteList()){
-            if(!newWord.getSiteList().contains(site)) temp.add(site);
-        }
-        keyword.setSiteList(temp);
-        this.unsubscribe(keyword, id);
-        System.out.println("해제 키워드 목록");
-        System.out.println(temp);
-
-        //신규 키워드 구독
-        temp.clear();
-        for(CrawlingSite site : newWord.getSiteList()){
-            if(!oldWord.getSiteList().contains(site)) temp.add(site);
-        }
-        keyword.setSiteList(temp);
-        this.subscribe(keyword, id);
-        System.out.println("추가 키워드 목록");
-        System.out.println(temp);
+    public void modifySubscription(List<CrawlingSite> oldSite, List<CrawlingSite> newSite, Long id) throws Exception{
+        System.out.println(oldSite);
+        System.out.println(newSite);
+//        System.out.println(oldWord.getSiteList());
+//        System.out.println(newWord.getSiteList());
+//        Keyword keyword = new Keyword();
+//        keyword.setName(oldWord.getName());
+//
+//        //기존 키워드 구독 해제
+//        List<CrawlingSite> temp = new ArrayList<>();
+//        System.out.println(oldWord.getSiteList());
+//        System.out.println(newWord.getSiteList());
+//        for(CrawlingSite site : oldWord.getSiteList()){
+//            if(!newWord.getSiteList().contains(site)) temp.add(site);
+//        }
+//        keyword.setSiteList(temp);
+//        this.unsubscribe(keyword, id);
+//        System.out.println("해제 키워드 목록");
+//        System.out.println(temp);
+//
+//        //신규 키워드 구독
+//        temp.clear();
+//        for(CrawlingSite site : newWord.getSiteList()){
+//            if(!oldWord.getSiteList().contains(site)) temp.add(site);
+//        }
+//        keyword.setSiteList(temp);
+//        this.subscribe(keyword, id);
+//        System.out.println("추가 키워드 목록");
+//        System.out.println(temp);
     }
 }
