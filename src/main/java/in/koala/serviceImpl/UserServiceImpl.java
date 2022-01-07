@@ -18,6 +18,7 @@ import in.koala.util.SesSender;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -48,6 +49,9 @@ public class UserServiceImpl implements UserService {
     private final SpringTemplateEngine springTemplateEngine;
     private final S3Util s3Util;
 
+    @Value("${s3.default_image.url}")
+    private String defaultUrl;
+
     @Override
     public String test() {
         return userMapper.test();
@@ -69,6 +73,8 @@ public class UserServiceImpl implements UserService {
                 .nickname(userProfile.get("nickname"))
                 .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
+
+        if(snsUser.getProfile() == null) snsUser.setProfile(defaultUrl);
 
         Long id = userMapper.getIdByAccount(snsUser.getAccount());
 
@@ -103,6 +109,8 @@ public class UserServiceImpl implements UserService {
                 .nickname(userProfile.get("nickname"))
                 .user_type(Short.valueOf(userProfile.get("user_type")))
                 .build();
+
+        if(user.getProfile() == null) user.setProfile(defaultUrl);
 
         Long id = userMapper.getIdByAccount(user.getAccount());
 
@@ -172,7 +180,8 @@ public class UserServiceImpl implements UserService {
         if(userMapper.getUserByFindEmail(user.getFind_email()) != null) throw new NonCriticalException(ErrorMessage.DUPLICATED_EMAIL_EXCEPTION);
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        
+        user.setProfile(defaultUrl);
+
         userMapper.signUp(user);
 
         return userMapper.getUserById(user.getId());
@@ -208,16 +217,10 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
         }
 
-        User updateUser = new User();
+        User user = this.getLoginUserInfo();
+        user.setNickname(nickname);
 
-        updateUser.setNickname(nickname);
-        updateUser.setId(this.getLoginUserIdFromJwt(TokenType.ACCESS));
-
-        if(userMapper.getUserById(updateUser.getId()) == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
-
-        userMapper.updateNickname(updateUser);
+        userMapper.updateNickname(user);
 
         return;
     }

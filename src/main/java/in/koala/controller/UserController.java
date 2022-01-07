@@ -167,7 +167,7 @@ public class UserController {
 
     @Auth
     @PatchMapping(value="/profile")
-    @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다?", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다 \n 사진의 크기나 모양, 확장자 등 조건에 대해서는 아직 구현된 것 없습니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
         return new ResponseEntity(CustomBody.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
     }
