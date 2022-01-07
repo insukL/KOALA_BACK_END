@@ -106,9 +106,14 @@ public class KeywordServiceImpl implements KeywordService {
         Set<Integer> addingList = new HashSet<>(convertSiteList(keyword.getSiteList()));
         Set<Integer> addingListCopy = new HashSet<>();
         addingListCopy.addAll(addingList);
+        System.out.println("addingListCopy");
+        System.out.println(addingListCopy);
+
         Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(userId, keywordName));
         Set<Integer> existingListCopy = new HashSet<>();
         existingListCopy.addAll(existingList);
+        System.out.println("existingListCopy");
+        System.out.println(existingListCopy);
 
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
@@ -141,15 +146,17 @@ public class KeywordServiceImpl implements KeywordService {
         List<CrawlingSite> newSite = reConvertSiteList(new ArrayList<>(addingList));
 
         if(keywordName.equals(keyword.getName())){
-            keywordPushService.modifySubscription(oldSite, newSite, userId);
+            keywordPushService.modifySubscription(oldSite, newSite, userId, keywordName);
         }
         else{
             Keyword oldKeyword = new Keyword();
             oldKeyword.setName(keywordName);
             oldKeyword.setSiteList(reConvertSiteList(new ArrayList<>(existingListCopy)));
+
             System.out.println("이름 다를 때");
             System.out.println(oldKeyword.getSiteList());
             System.out.println(keyword.getSiteList());
+
             keywordPushService.subscribe(keyword, userId);
             keywordPushService.unsubscribe(oldKeyword, userId);
         }

@@ -3,6 +3,7 @@ package in.koala.serviceImpl;
 import in.koala.domain.Crawling;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
+import in.koala.domain.fcm.ConditionMessage;
 import in.koala.domain.fcm.TokenMessage;
 import in.koala.domain.fcm.TopicMessage;
 import in.koala.enums.CrawlingSite;
@@ -85,6 +86,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
         }
     }
 
+    /*
     //Topic Message 활용안
     @Override
     public void pushKeyword(List<String> keyword, Crawling crawling) throws Exception{
@@ -97,19 +99,53 @@ public class KeywordPushServiceImpl implements KeywordPushService {
             fcmSender.sendMessage(message);
         }
     }
+     */
+
+    @Override
+    public void pushKeyword(List<String> keyword, Crawling crawling) throws Exception{
+        StringBuilder sb = new StringBuilder();
+        ConditionMessage message = new ConditionMessage("키워드의 글이 등록되었습니다.",
+                                                    crawling.getTitle(),
+                                                    crawling.getUrl(),
+                                                    null );
+        short cnt = 0;
+        for(String word : keyword){
+            if(cnt >= 5){
+                message.setCondition(sb.toString());
+                fcmSender.sendMessage(message);
+                sb.setLength(0);
+                cnt = 0;
+            }
+            if(cnt > 0) sb.append(" || ");
+            sb.append("\'" + enConverter.ktoe(word) + crawling.getSite().toString() + "\' in topics");
+            ++cnt;
+        }
+        message.setCondition(sb.toString());
+        fcmSender.sendMessage(message);
+    }
 
     //Crawling Json 파싱 실패에 따른 테스트용 메소드
     @Override
     public void pushKeyword(List<String> keyword, String title, String url, Short site) throws Exception{
-        TopicMessage message = new TopicMessage("키워드의 글이 등록되었습니다.",
-                                                    title,
-                                                    url,
-                                                    null );
+        StringBuilder sb = new StringBuilder();
+        ConditionMessage message = new ConditionMessage("키워드의 글이 등록되었습니다.",
+                                                            title,
+                                                            url,
+                                                            null );
+        short cnt = 0;
         for(String word : keyword){
-            message.setTopic(enConverter.ktoe(word) + site.toString());
-            System.out.println(message.getTopic());
-            fcmSender.sendMessage(message);
+            if(cnt >= 5){
+                message.setCondition(sb.toString());
+                fcmSender.sendMessage(message);
+                sb.setLength(0);
+                cnt = 0;
+            }
+            if(cnt > 0) sb.append(" || ");
+            sb.append("\'" + enConverter.ktoe(word) + site + "\' in topics");
+            ++cnt;
         }
+        message.setCondition(sb.toString());
+        fcmSender.sendMessage(message);
     }
 
     @Override
@@ -135,34 +171,23 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     }
 
     @Override
-    public void modifySubscription(List<CrawlingSite> oldSite, List<CrawlingSite> newSite, Long id) throws Exception{
+    public void modifySubscription(List<CrawlingSite> oldSite,
+                                   List<CrawlingSite> newSite,
+                                   Long id, String keywordName) throws Exception{
+        System.out.println("구독 해제 목록");
         System.out.println(oldSite);
+        System.out.println("새 구독 목록");
         System.out.println(newSite);
-//        System.out.println(oldWord.getSiteList());
-//        System.out.println(newWord.getSiteList());
-//        Keyword keyword = new Keyword();
-//        keyword.setName(oldWord.getName());
-//
-//        //기존 키워드 구독 해제
-//        List<CrawlingSite> temp = new ArrayList<>();
-//        System.out.println(oldWord.getSiteList());
-//        System.out.println(newWord.getSiteList());
-//        for(CrawlingSite site : oldWord.getSiteList()){
-//            if(!newWord.getSiteList().contains(site)) temp.add(site);
-//        }
-//        keyword.setSiteList(temp);
-//        this.unsubscribe(keyword, id);
-//        System.out.println("해제 키워드 목록");
-//        System.out.println(temp);
-//
-//        //신규 키워드 구독
-//        temp.clear();
-//        for(CrawlingSite site : newWord.getSiteList()){
-//            if(!oldWord.getSiteList().contains(site)) temp.add(site);
-//        }
-//        keyword.setSiteList(temp);
-//        this.subscribe(keyword, id);
-//        System.out.println("추가 키워드 목록");
-//        System.out.println(temp);
+
+        Keyword keyword = new Keyword();
+        keyword.setName(keywordName);
+
+        //기존 키워드 구독 해제
+        keyword.setSiteList(oldSite);
+        this.unsubscribe(keyword, id);
+
+        //신규 키워드 구독
+        keyword.setSiteList(newSite);
+        this.subscribe(keyword, id);
     }
 }
