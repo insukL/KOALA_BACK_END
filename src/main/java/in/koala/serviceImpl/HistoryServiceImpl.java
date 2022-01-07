@@ -36,4 +36,14 @@ public class HistoryServiceImpl implements HistoryService {
 
         historyMapper.deleteNotice(noticeList);
     }
+
+    @Override
+    public Boolean noticeRead(String noticeId) {
+        if(historyMapper.noticeRead(noticeId) == 1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }

@@ -25,4 +25,10 @@
         </foreach>
     </update>
 
+    <update id="noticeRead">
+        UPDATE notice
+        SET is_read = 1
+        WHERE id = #{noticeId}
+    </update>
+
 </mapper>
