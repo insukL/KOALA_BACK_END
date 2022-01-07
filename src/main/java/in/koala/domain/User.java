@@ -55,4 +55,5 @@ public class User {
         this.profile = profile;
         this.user_type = user_type;
     }
+
 }
