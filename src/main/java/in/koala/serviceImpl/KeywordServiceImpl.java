@@ -115,8 +115,14 @@ public class KeywordServiceImpl implements KeywordService {
         System.out.println("existingListCopy");
         System.out.println(existingListCopy);
 
+        System.out.println("addingList : " + addingList);
+        System.out.println("existingList : " + existingList);
+
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
+
+        System.out.println("addingList 2 : " + addingList);
+        System.out.println("existingList 2 : " + existingList);
 
         Long keywordId = keywordMapper.getKeywordId(userId, keywordName);
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
@@ -144,6 +150,9 @@ public class KeywordServiceImpl implements KeywordService {
         //2022-01-06 Firebase 키워드 수정 로직
         List<CrawlingSite> oldSite = reConvertSiteList(new ArrayList<>(existingList));
         List<CrawlingSite> newSite = reConvertSiteList(new ArrayList<>(addingList));
+
+        System.out.println("oldSite : " + oldSite);
+        System.out.println("newSite : " + newSite);
 
         if(keywordName.equals(keyword.getName())){
             keywordPushService.modifySubscription(oldSite, newSite, userId, keywordName);

@@ -23,16 +23,27 @@ public class HistoryServiceImpl implements HistoryService {
 
         Long userId = userService.getLoginUserInfo().getId();
 
-        System.out.println(pageNum);
-
-        if(pageNum == 1) pageNum = 0;
+        if(pageNum <= 1) pageNum = 0;
         else {
             pageNum = (pageNum * 10) + 1;
         }
 
-        System.out.println(pageNum);
-
         return historyMapper.getEveryNotice(userId, pageNum);
     }
 
+    @Override
+    public void deleteNotice(List<Integer> noticeList) {
+
+        historyMapper.deleteNotice(noticeList);
+    }
+
+    @Override
+    public Boolean noticeRead(String noticeId) {
+        if(historyMapper.noticeRead(noticeId) == 1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }
