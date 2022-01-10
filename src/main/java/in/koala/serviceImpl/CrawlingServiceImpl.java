@@ -195,10 +195,13 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Override
     public Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception {
 
+        Timestamp lateylyCrawlingTime = crawlingMapper.getLatelyCrawlingTime();
+
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        Date tmp = new Date();
-        String now = format.format(tmp);
+
         List<Crawling> crawlingList = new ArrayList<Crawling>();
+
+        String time = format.format(lateylyCrawlingTime);
 
         Integer site = CrawlingSite.YOUTUBE.getCode();
 
@@ -208,7 +211,7 @@ public class CrawlingServiceImpl implements CrawlingService {
                 .queryParam("key",  youtubeAccessKey)
                 .queryParam("maxResults", "50")
                 .queryParam("type", "video")
-                .queryParam("publishedAfter", now);
+                .queryParam("publishedAfter", time);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
