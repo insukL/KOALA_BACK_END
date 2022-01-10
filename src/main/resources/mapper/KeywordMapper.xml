@@ -145,9 +145,13 @@
     </update>
 
     <update id="deleteNotice">
-        UPDATE notice
-        SET is_deleted = 1
-        WHERE id = #{noticeId}
+        <foreach collection="noticeList" index="index" separator=";" item="noticeId">
+            UPDATE notice
+            <set>
+                is_deleted = 1
+            </set>
+            WHERE id = #{noticeId}
+        </foreach>
     </update>
 
     <select id="searchKeyword" parameterType="java.lang.String" resultType="java.lang.String">
