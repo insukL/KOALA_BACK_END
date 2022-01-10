@@ -31,4 +31,8 @@ public final class ValidationGroups {
 
     // Memo
     public interface createMemo extends Default{}
+
+    // Crawling token
+    public interface createCrawlingToken extends Default{}
+    public interface updateCrawlingToken extends Default{}
 }

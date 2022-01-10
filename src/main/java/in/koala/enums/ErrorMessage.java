@@ -77,6 +77,9 @@ public enum ErrorMessage {
 	UNABLE_CONNECT_TO_FACEBOOK(303, "페이스북 API 호출이 불가 합니다."),
 	UNABLE_CONNECT_TO_INSTAGRAM(304, "인스타그램 API 호출이 불가 합니다."),
 
+	CRAWLING_TOKEN_NOT_EXIST(305, "해당 토큰이 존재하지 않습니다."),
+	CRAWLING_TOKEN_INVALID_EXCEPTION(306, "다른 사이트의 토큰입니다."),
+
 	/**
 	 * FCM Push Notification
 	 */

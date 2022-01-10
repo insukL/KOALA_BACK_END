@@ -54,4 +54,32 @@
         LIMIT 1;
     </select>
 
+    <insert id="addToken" parameterType="in.koala.domain.CrawlingToken">
+        INSERT INTO crawling_token(description, site, token)
+        VALUES(#{description}, #{site}, #{token});
+    </insert>
+
+    <select id="getToken" resultType="in.koala.domain.CrawlingToken">
+        SELECT id, description, site FROM crawling_token WHERE site=#{site};
+    </select>
+
+    <select id="getTokenById" resultType="in.koala.domain.CrawlingToken">
+        SELECT id, description, site, token FROM crawling_token
+        WHERE id=#{id};
+    </select>
+
+    <update id="updateToken" parameterType="in.koala.domain.CrawlingToken">
+        UPDATE crawling_token
+        SET token = #{token} WHERE id = #{id};
+    </update>
+
+    <delete id="deleteTokenById" parameterType="Long">
+        DELETE FROM crawling_token
+        WHERE id = #{id};
+    </delete>
+
+    <select id="checkTokenById" parameterType="Long" resultType="Boolean">
+        SELECT EXISTS (SELECT id FROM crawling_token WHERE id = #{id});
+    </select>
+
 </mapper>

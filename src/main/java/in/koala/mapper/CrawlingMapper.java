@@ -1,6 +1,7 @@
 package in.koala.mapper;
 
 import in.koala.domain.Crawling;
+import in.koala.domain.CrawlingToken;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +23,11 @@ public interface CrawlingMapper {
 
     void updateCrawlingData(List<Crawling> crawlingUpdateList);
     Timestamp getLatelyCrawlingTime();
+
+    void addToken(CrawlingToken token);
+    List<CrawlingToken> getToken(Long site);
+    CrawlingToken getTokenById(Long id);
+    void updateToken(CrawlingToken token);
+    void deleteTokenById(Long id);
+    Boolean checkTokenById(Long id);
 }

@@ -2,9 +2,11 @@ package in.koala.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.domain.Crawling;
+import in.koala.domain.CrawlingToken;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.CrawlingException;
+import in.koala.exception.NonCriticalException;
 import in.koala.mapper.CrawlingMapper;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
@@ -56,14 +58,8 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Value("${facebook.api.call.url}")
     private String facebookApiUrl;
 
-    @Value("${facebook.access.token}")
-    private String facebookAccessToken;
-
     @Value("${instagram.api.call.url}")
     private String instagramApiUrl;
-
-    @Value("${instagram.access.token}")
-    private String instagramAccessToken;
 
     private final CrawlingMapper crawlingMapper;
 
@@ -268,9 +264,18 @@ public class CrawlingServiceImpl implements CrawlingService {
         return true;
     }
 
-
     @Override
-    public Boolean facebookCrawling(Timestamp crawlingAt) throws Exception {
+    public Boolean facebookCrawling(Long tokenId, Timestamp crawlingAt) throws Exception {
+
+        Integer site  = CrawlingSite.FACEBOOK.getCode();
+
+        // read token
+        CrawlingToken token = getCrawlingTokenById(tokenId);
+        if(token.getSite() != site)
+            throw new NonCriticalException(ErrorMessage.CRAWLING_TOKEN_INVALID_EXCEPTION);
+
+        String facebookAccessToken = token.getToken();
+
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'+0000'");
 
@@ -278,8 +283,6 @@ public class CrawlingServiceImpl implements CrawlingService {
         parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         List<Crawling> crawlingList = new ArrayList<Crawling>();
-
-        Integer site  = CrawlingSite.FACEBOOK.getCode();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(facebookApiUrl)
                 .path("/me/posts")
@@ -351,7 +354,17 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public Boolean instagramCrawling(Timestamp crawlingAt) throws Exception {
+    public Boolean instagramCrawling(Long tokenId, Timestamp crawlingAt) throws Exception {
+
+        Integer site = CrawlingSite.INSTAGRAM.getCode();
+
+        // read token
+        CrawlingToken token = getCrawlingTokenById(tokenId);
+        if(token.getSite() != site)
+            throw new NonCriticalException(ErrorMessage.CRAWLING_TOKEN_INVALID_EXCEPTION);
+
+        String instagramAccessToken = token.getToken();
+
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'+0000'");
 
@@ -359,8 +372,6 @@ public class CrawlingServiceImpl implements CrawlingService {
         parseFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         List<Crawling> crawlingList = new ArrayList<Crawling>();
-
-        Integer site = CrawlingSite.INSTAGRAM.getCode();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(instagramApiUrl)
                 .path("/me/media")
@@ -431,6 +442,36 @@ public class CrawlingServiceImpl implements CrawlingService {
             crawlingMapper.addCrawlingData(crawlingList);
 
         return true;
+    }
+
+    @Override
+    public void addCrawlingToken(CrawlingToken token) throws Exception {
+        crawlingMapper.addToken(token);
+    }
+
+    @Override
+    public List<CrawlingToken> getCrawlingToken(Long site) throws Exception {
+        return crawlingMapper.getToken(site);
+    }
+
+    private CrawlingToken getCrawlingTokenById(Long id) throws Exception {
+        if(!crawlingMapper.checkTokenById(id))
+            throw new NonCriticalException(ErrorMessage.CRAWLING_TOKEN_NOT_EXIST);
+        return crawlingMapper.getTokenById(id);
+    }
+
+    @Override
+    public void updateCrawlingToken(CrawlingToken token) throws Exception {
+        if(!crawlingMapper.checkTokenById(token.getId()))
+            throw new NonCriticalException(ErrorMessage.CRAWLING_TOKEN_NOT_EXIST);
+        crawlingMapper.updateToken(token);
+    }
+
+    @Override
+    public void deleteCrawlingToken(Long id) throws Exception {
+        if(!crawlingMapper.checkTokenById(id))
+            throw new NonCriticalException(ErrorMessage.CRAWLING_TOKEN_NOT_EXIST);
+        crawlingMapper.deleteTokenById(id);
     }
 
     @Override
