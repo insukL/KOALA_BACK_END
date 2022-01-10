@@ -100,8 +100,8 @@ public class KeywordController {
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice")
-    public void deleteNotice(@RequestParam(name = "notice-id") String noticeId){
-        keywordService.deletedNotice(noticeId);
+    public void deleteNotice(@RequestParam(name = "notice-id") List<Integer> noticeList){
+        keywordService.deletedNotice(noticeList);
     }
 
     @Xss

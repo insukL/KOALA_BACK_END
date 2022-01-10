@@ -27,7 +27,7 @@ public interface KeywordMapper {
     List<Integer> getSiteList(Long userId, String keywordName);
 
     Integer noticeRead(String noticeId);
-    Integer deleteNotice(String noticeId);
+    Integer deleteNotice(List<Integer> noticeList);
 
     int deleteKeyword(Long userId, String keywordName);
 

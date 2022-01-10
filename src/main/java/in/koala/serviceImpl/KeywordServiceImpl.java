@@ -195,8 +195,8 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void deletedNotice(String noticeId) {
-        keywordMapper.deleteNotice(noticeId);
+    public void deletedNotice(List<Integer> noticeList) {
+        keywordMapper.deleteNotice(noticeList);
     }
 
     @Override
