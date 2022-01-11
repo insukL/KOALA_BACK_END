@@ -17,6 +17,7 @@ public interface KeywordService {
     void deletedNotice(List<Integer> noticeList);
 
     List<String> searchKeyword(String keyword);
+    List<String> recommendKeyword();
 
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
 

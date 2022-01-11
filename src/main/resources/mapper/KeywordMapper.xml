@@ -172,4 +172,12 @@
         );
     </select>
 
+    <select id="recommendKeyword" resultType="java.lang.String">
+        SELECT name
+        FROM keyword
+        GROUP BY name
+        ORDER BY count(*) DESC
+        LIMIT 10;
+    </select>
+
 </mapper>

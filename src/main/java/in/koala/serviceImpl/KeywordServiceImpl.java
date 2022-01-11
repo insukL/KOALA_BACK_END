@@ -203,4 +203,9 @@ public class KeywordServiceImpl implements KeywordService {
     public List<String> searchKeyword(String keyword) {
         return keywordMapper.searchKeyword(keyword);
     }
+
+    @Override
+    public List<String> recommendKeyword() {
+        return keywordMapper.recommendKeyword();
+    }
 }

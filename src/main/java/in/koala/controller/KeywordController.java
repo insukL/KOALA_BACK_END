@@ -57,7 +57,7 @@ public class KeywordController {
     }
 
     @Xss
-    @ApiOperation(value = "키워드 입력시 검색", notes = "키워드 등록 및 수정 시 추천 키워드를 제공한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "키워드 입력시 검색", notes = "키워드 등록 및 수정 시 추천 키워드를 제공한다.")
     @GetMapping(value = "/keyword/search")
     public ResponseEntity<List<String>> searchKeyword(@RequestParam(name = "keyword") String keyword){
 
@@ -114,6 +114,19 @@ public class KeywordController {
         }
         else{
             return new ResponseEntity(CustomBody.of("알림읽는것을 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Xss
+    @ApiOperation(value = "키워드 추가하기_추천 키워드", notes = "키워드를 추가 및 수정하는 과정에서 키워드를 추천해준다.")
+    @GetMapping(value = "/keyword/recommendation")
+    public ResponseEntity recommendKeyword(){
+        List<String> result = keywordService.recommendKeyword();
+        if(result.isEmpty()){
+            return new ResponseEntity(CustomBody.of("추천 키워드가 없습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+        }
+        else{
+            return new ResponseEntity(CustomBody.of(result, HttpStatus.OK), HttpStatus.OK);
         }
     }
 
