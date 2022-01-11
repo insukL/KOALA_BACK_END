@@ -2,12 +2,9 @@ package in.koala.controller.chat;
 
 import in.koala.domain.ChatMessage;
 import in.koala.service.ChatService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.Resource;
@@ -18,13 +15,20 @@ import javax.annotation.Resource;
 //SimpMessagingTemplate로 내용을 보낸다.
 
 @Controller
+@MessageMapping(value = "/chat")
 public class ChatController {
     @Resource
     private ChatService chatService;
 
-    @MessageMapping(value = "/chat/message")
+    @MessageMapping(value = "/message")
     public ResponseEntity send(ChatMessage message){
         chatService.send(message);
+        System.out.println(message.getMessage());
         return new ResponseEntity<String>("success", HttpStatus.OK);
+    }
+
+    @MessageMapping(value = "/member")
+    public ResponseEntity getMemberCount(){
+        return new ResponseEntity<String>(chatService.getMemberCount(), HttpStatus.OK);
     }
 }
