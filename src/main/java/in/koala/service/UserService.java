@@ -28,5 +28,5 @@ public interface UserService {
     void softDeleteUser();
     Boolean checkFindEmail(String email);
     User createNonMemberUserAndDeviceToken(String token);
-    String editProfile(MultipartFile multipartFile);
+    Map editProfile(MultipartFile multipartFile);
 }

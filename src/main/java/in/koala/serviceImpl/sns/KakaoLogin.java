@@ -91,7 +91,6 @@ public class KakaoLogin extends AbstractSnsLogin {
             parsedProfile.put("sns_email", (String) kakaoAccount.get("email"));
             parsedProfile.put("profile", (String) profile.get("profile_image_url"));
             parsedProfile.put("nickname", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
-            parsedProfile.put("user_type", "3");
 
         } catch (ParseException e) {
             e.printStackTrace();
