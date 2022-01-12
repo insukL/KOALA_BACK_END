@@ -47,7 +47,7 @@ public class JwtUtil {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
-        calendar.add(Calendar.HOUR_OF_DAY, tokenType.getTokenRemainTime());
+        calendar.add(tokenType.getCalendar(), tokenType.getTokenRemainTime());
 
         return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(calendar.getTime()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
