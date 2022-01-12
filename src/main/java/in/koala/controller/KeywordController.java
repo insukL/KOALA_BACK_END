@@ -130,4 +130,17 @@ public class KeywordController {
         }
     }
 
+    @Xss
+    @ApiOperation(value = "키워드 추가하기_추천 대상", notes = "키워드를 추가 및 수정하는 과정에서 알림받을 대상을 추천해준다.")
+    @GetMapping(value = "/keyword/site/recommendation")
+    public ResponseEntity recommendSite(){
+        List<String> result = keywordService.recommendSite();
+        if(result.isEmpty()){
+            return new ResponseEntity(CustomBody.of("추천 대상이 없습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+        }
+        else{
+            return new ResponseEntity(CustomBody.of(result, HttpStatus.OK), HttpStatus.OK);
+        }
+    }
+
 }

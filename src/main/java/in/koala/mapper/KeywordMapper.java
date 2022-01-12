@@ -26,6 +26,7 @@ public interface KeywordMapper {
 
     List<Integer> getSiteList(Long userId, String keywordName);
     List<String> recommendKeyword();
+    List<Integer> recommendSite();
 
     Integer noticeRead(String noticeId);
     Integer deleteNotice(List<Integer> noticeList);

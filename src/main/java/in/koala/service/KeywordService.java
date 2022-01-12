@@ -18,6 +18,7 @@ public interface KeywordService {
 
     List<String> searchKeyword(String keyword);
     List<String> recommendKeyword();
+    List<String> recommendSite();
 
     List<Integer> convertSiteList(List<CrawlingSite> siteList);
 

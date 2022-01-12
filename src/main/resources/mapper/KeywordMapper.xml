@@ -180,4 +180,12 @@
         LIMIT 10;
     </select>
 
+    <select id="recommendSite" resultType="java.lang.Integer">
+        SELECT site_name
+        FROM keyword_site
+        GROUP BY site_name
+        ORDER BY count(*) DESC
+        LIMIT 10;
+    </select>
+
 </mapper>
