@@ -1,18 +1,20 @@
 package in.koala.enums;
 
+import lombok.Getter;
+
 import java.util.Calendar;
 import java.util.Date;
 
+@Getter
 public enum TokenType {
-    ACCESS(12), REFRESH(24*14), SNS(0);
+    ACCESS(Calendar.HOUR_OF_DAY, 12), REFRESH(Calendar.HOUR_OF_DAY, 24*14);
 
+    private int calendar;
     private int tokenRemainTime;
 
-    TokenType(int tokenRemainTime) {
+    TokenType(int calendar, int tokenRemainTime) {
+        this.calendar = calendar;
         this.tokenRemainTime = tokenRemainTime;
     }
 
-    public int getTokenRemainTime() {
-        return tokenRemainTime;
-    }
 }

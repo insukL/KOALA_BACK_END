@@ -104,7 +104,6 @@ public class GoogleLogin extends AbstractSnsLogin {
             parsedProfile.put("sns_email", (String) jsonObject.get("email"));
             parsedProfile.put("profile", (String) jsonObject.get("picture"));
             parsedProfile.put("nickname", this.getSnsType() + "_" + (String) jsonObject.get("id"));
-            parsedProfile.put("user_type", "2");
 
         } catch (ParseException e) {
             e.printStackTrace();

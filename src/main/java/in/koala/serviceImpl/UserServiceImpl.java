@@ -71,7 +71,8 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type(Short.valueOf(userProfile.get("user_type")))
+                .sns_type(snsType)
+                .user_type((short) 0)
                 .build();
 
         if(snsUser.getProfile() == null) snsUser.setProfile(defaultUrl);
@@ -80,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
         if(id == null) {
-            userMapper.snsSignUp(snsUser);
+            this.snsSingUp(snsUser);
             id = snsUser.getId();
         }
 
@@ -107,7 +108,8 @@ public class UserServiceImpl implements UserService {
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .user_type(Short.valueOf(userProfile.get("user_type")))
+                .sns_type(snsType)
+                .user_type((short) 0)
                 .build();
 
         if(user.getProfile() == null) user.setProfile(defaultUrl);
@@ -116,9 +118,7 @@ public class UserServiceImpl implements UserService {
 
         // 해당 유저가 처음 sns 로그인을 요청한다면 회원가입
         if(id == null) {
-            userMapper.snsSignUp(user);
-            user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
-            userMapper.updateNickname(user);
+            this.snsSingUp(user);
             id = user.getId();
         }
 
@@ -142,7 +142,6 @@ public class UserServiceImpl implements UserService {
         userMapper.insertNonMemberUser(user);
         Long userId = userMapper.getIdByAccount(userUnique);
         userMapper.insertDeviceToken(userId, token);
-        createRelationUserAndDeviceToken(userId, token);
         return userMapper.getUserById(userId);
     }
 
@@ -181,8 +180,10 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         user.setProfile(defaultUrl);
+        user.setUser_type((short) 0);
+        user.setSns_type(SnsType.NORMAL);
 
-        userMapper.signUp(user);
+        this.normalSingUp(user);
 
         return userMapper.getUserById(user.getId());
     }
@@ -459,23 +460,26 @@ public class UserServiceImpl implements UserService {
         user.setFind_email(deleted + "@deletedUser.deleted");
         user.setSns_email(deleted + "@deletedUser.deleted");
 
+        userMapper.softDeleteNormalUser(user);
         userMapper.softDeleteUser(user);
     }
 
     @Override
-    public String editProfile(MultipartFile multipartFile){
+    public Map editProfile(MultipartFile multipartFile){
         User selectedUser = this.getLoginUserInfo();
 
         String profileUrl = selectedUser.getProfile();
 
-        if(profileUrl != null){
+        if(profileUrl != defaultUrl){
             s3Util.deleteFile(profileUrl);
         }
 
         profileUrl = s3Util.uploader(multipartFile);
         userMapper.updateUserProfile(profileUrl, selectedUser.getId());
 
-        return profileUrl;
+        Map<String, String> map = new HashMap<>();
+        map.put("profileUrl", profileUrl);
+        return map;
     }
 
 
@@ -526,9 +530,6 @@ public class UserServiceImpl implements UserService {
         throw new NonCriticalException(ErrorMessage.SNSTYPE_NOT_VALID);
     }
 
-    private void createRelationUserAndDeviceToken(Long id, String deviceToken){
-
-    }
 
     private User getEmailUser(AuthEmail authEmail, EmailType emailType) {
         User user = null;
@@ -547,5 +548,17 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
         return user;
+    }
+
+    private void snsSingUp(User user){
+        userMapper.insertUser(user);
+        userMapper.snsSignUp(user);
+        user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
+        userMapper.updateNickname(user);
+    }
+
+    private void normalSingUp(User user){
+        userMapper.insertUser(user);
+        userMapper.signUp(user);
     }
 }
