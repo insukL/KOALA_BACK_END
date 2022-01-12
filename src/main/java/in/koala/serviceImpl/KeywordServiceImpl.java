@@ -4,6 +4,7 @@ import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
 import in.koala.enums.CrawlingSite;
+import in.koala.enums.CrawlingSiteKorean;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
@@ -62,6 +63,21 @@ public class KeywordServiceImpl implements KeywordService {
         }
 
         return reConvertSiteList;
+    }
+
+    public List<String> convertSiteToKorean(List<CrawlingSite> crawlingSiteList){
+
+        List<String> koreanSiteList = new ArrayList<>();
+
+        for(CrawlingSite site : crawlingSiteList){
+            for(CrawlingSiteKorean value : CrawlingSiteKorean.values()){
+                if(value.toString().equals(site.toString())){
+                    koreanSiteList.add(value.getSiteName());
+                }
+            }
+        }
+
+        return koreanSiteList;
     }
 
     @Override
@@ -202,5 +218,17 @@ public class KeywordServiceImpl implements KeywordService {
     @Override
     public List<String> searchKeyword(String keyword) {
         return keywordMapper.searchKeyword(keyword);
+    }
+
+    @Override
+    public List<String> recommendKeyword() {
+        return keywordMapper.recommendKeyword();
+    }
+
+    @Override
+    public List<String> recommendSite() {
+        List<CrawlingSite> siteList = reConvertSiteList(keywordMapper.recommendSite());
+        List<String> koreanSiteList = convertSiteToKorean(siteList);
+        return koreanSiteList;
     }
 }
