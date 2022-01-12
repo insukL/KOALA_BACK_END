@@ -2,6 +2,7 @@ package in.koala.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import in.koala.annotation.ValidationGroups;
+import in.koala.enums.SnsType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
@@ -46,13 +47,16 @@ public class User {
     private Timestamp updated_at;
     @ApiModelProperty(hidden = true)
     private Short is_member;
+    @ApiModelProperty(hidden = true)
+    private SnsType sns_type;
 
     @Builder
-    public User(String account, String sns_email, String nickname, String profile, Short user_type) {
+    public User(String account, String sns_email, String nickname, String profile, SnsType sns_type, Short user_type) {
         this.account = account;
         this.sns_email = sns_email;
         this.nickname = nickname;
         this.profile = profile;
+        this.sns_type= sns_type;
         this.user_type = user_type;
     }
 
