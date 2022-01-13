@@ -21,7 +21,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final UserService userService;
 
     @Override
-    public List<Notice> getEveryNotice(int pageNum) throws Exception{
+    public List<Notice> getEveryNotice(int pageNum){
 
         Long userId = userService.getLoginUserInfo().getId();
 
@@ -30,13 +30,7 @@ public class HistoryServiceImpl implements HistoryService {
             pageNum = (pageNum * 10) + 1;
         }
 
-        List<Notice> result = historyMapper.getEveryNotice(userId, pageNum);
-
-        if(result.isEmpty()){
-            throw new HistoryException(ErrorMessage.NOTICE_NOT_EXIST);
-        }
-        else
-            return result;
+        return historyMapper.getEveryNotice(userId, pageNum);
     }
 
     @Override

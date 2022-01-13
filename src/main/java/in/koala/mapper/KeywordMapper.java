@@ -17,7 +17,7 @@ public interface KeywordMapper {
 
     Long checkDuplicateUsersKeyword(Keyword keyword);
     int insertUsersKeyword(Keyword keyword);
-    int insertUsersKeywordSite(Long keywordId, Timestamp createdAt, List<Integer> siteList);
+    int insertUsersKeywordSite(Long keywordId, List<Integer> siteList);
 
     List<Keyword> myKeywordList(Long userId);
     List<Notice> getKeywordNotice(String keywordName, String site, Long userId);
@@ -27,14 +27,15 @@ public interface KeywordMapper {
     List<Integer> getSiteList(Long userId, String keywordName);
     List<String> recommendKeyword();
     List<Integer> recommendSite();
+    Integer countKeywordNum(Long userId);
 
     Integer noticeRead(String noticeId);
     Integer deleteNotice(List<Integer> noticeList);
 
-    int deleteKeyword(Long userId, String keywordName);
+    void deleteKeyword(Long userId, String keywordName);
 
     Set getKeywordSite(Long userId, String keywordName);
     Long getKeywordId(Long userId, String keywordName);
     int modifyKeywordSite(Set<Integer> existingList, Long keywordId);
-    int modifyKeyword(Long userId, String keywordName, Timestamp createdAt, Keyword keyword);
+    int modifyKeyword(Long userId, String keywordName, Keyword keyword);
 }

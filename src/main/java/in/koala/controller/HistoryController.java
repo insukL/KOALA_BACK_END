@@ -27,8 +27,7 @@ public class HistoryController {
             authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/history")
     public ResponseEntity<List<Notice>> getEveryNotice(
-            @RequestParam(value = "pageNum", required = false, defaultValue = "1") int pageNum) throws Exception{
-
+            @RequestParam(value = "pageNum", required = false, defaultValue = "1") int pageNum){
         return new ResponseEntity(CustomBody.of(historyService.getEveryNotice(pageNum), HttpStatus.OK), HttpStatus.OK);
     }
 

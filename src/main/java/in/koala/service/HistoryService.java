@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface HistoryService {
 
-    List<Notice> getEveryNotice(int pageNum) throws Exception;
+    List<Notice> getEveryNotice(int pageNum);
     void deleteNotice(List<Integer> noticeList);
     void noticeRead(String noticeId);
 }

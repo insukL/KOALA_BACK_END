@@ -27,6 +27,8 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserService userService;
     private final KeywordPushService keywordPushService;
 
+    private static final int MAX_KEYWORD_NUM = 10;
+
     @Override
     public List<Keyword> myKeywordList() {
         Long userId = userService.getLoginUserInfo().getId();
@@ -83,18 +85,19 @@ public class KeywordServiceImpl implements KeywordService {
     public void registerKeyword(Keyword keyword) throws Exception {
 
         Long userId = userService.getLoginUserInfo().getId();
-        Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+
+        if(keywordMapper.countKeywordNum(userId) == MAX_KEYWORD_NUM)
+            throw new KeywordException(ErrorMessage.EXCEED_MAXIMUM_KEYWORD_NUMBER);
 
         keyword.setUserId(userId);
-        keyword.setCreatedAt(createdAt);
 
         if(keywordMapper.checkDuplicateUsersKeyword(keyword) != null){
             throw new KeywordException(ErrorMessage.DUPLICATED_KEYWORD_EXCEPTION);
         }
         else{
             keywordMapper.insertUsersKeyword(keyword);
-            keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getCreatedAt(), convertSiteList(keyword.getSiteList()));
-            
+            keywordMapper.insertUsersKeywordSite(keyword.getId(), convertSiteList(keyword.getSiteList()));
+
             // 2022-01-03 FireBase 키워드 등록 추가
             keywordPushService.subscribe(keyword, userId);
         }
@@ -108,7 +111,6 @@ public class KeywordServiceImpl implements KeywordService {
         Keyword keyword = new Keyword();
         keyword.setName(keywordName);
         keyword.setSiteList(reConvertSiteList(keywordMapper.getSiteList(userId, keywordName)));
-        System.out.println(keyword.getSiteList());
         keywordPushService.unsubscribe(keyword, userId);
 
         keywordMapper.deleteKeyword(userId, keywordName);
@@ -140,10 +142,9 @@ public class KeywordServiceImpl implements KeywordService {
         System.out.println("existingList 2 : " + existingList);
 
         Long keywordId = keywordMapper.getKeywordId(userId, keywordName);
-        Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
         if(!addingList.isEmpty()) {
-            if(keywordMapper.insertUsersKeywordSite(keywordId, createdAt, new ArrayList<>(addingList)) > 0){
+            if(keywordMapper.insertUsersKeywordSite(keywordId, new ArrayList<>(addingList)) > 0){
                 System.out.println("키워드 추가 성공");
             }
             else {
@@ -160,7 +161,7 @@ public class KeywordServiceImpl implements KeywordService {
             }
         }
 
-        keywordMapper.modifyKeyword(userId, keywordName, createdAt, keyword);
+        keywordMapper.modifyKeyword(userId, keywordName, keyword);
 
         //2022-01-06 Firebase 키워드 수정 로직
         List<CrawlingSite> oldSite = reConvertSiteList(new ArrayList<>(existingList));
