@@ -15,19 +15,18 @@ import javax.annotation.Resource;
 //SimpMessagingTemplate로 내용을 보낸다.
 
 @Controller
-@MessageMapping(value = "/chat")
 public class ChatController {
     @Resource
     private ChatService chatService;
 
-    @MessageMapping(value = "/message")
+    @MessageMapping(value = "/chat/message")
     public ResponseEntity send(ChatMessage message){
         chatService.send(message);
         System.out.println(message.getMessage());
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
-    @MessageMapping(value = "/member")
+    @MessageMapping(value = "/chat/member")
     public ResponseEntity getMemberCount(){
         return new ResponseEntity<String>(chatService.getMemberCount(), HttpStatus.OK);
     }

@@ -24,6 +24,8 @@ public class ChatInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         String token = accessor.getFirstNativeHeader("token");
 
+        //TODO : 문서 추가 후 중단 구문 삭제
+        if(token == null) return;
         switch (accessor.getCommand()){
             case CONNECT:
                 Long memCnt = listOps.rightPush(token, accessor.getSessionId());

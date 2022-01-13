@@ -1,7 +1,7 @@
 var stompClient = null;
 var currentRoom = null;
 var subscription = null;
-var headers = {login : 'test_login', passcode:'test_passcode', 'token' : 'token'}
+var headers = {login : 'test_login', passcode:'test_passcode'}
 
 function setRoom(roomName) {
     currentRoom = roomName.text();
