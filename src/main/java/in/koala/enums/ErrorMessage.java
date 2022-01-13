@@ -88,10 +88,14 @@ public enum ErrorMessage {
 	/**
 	 * Keyword
 	 */
-	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다.")
+	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다."),
+
+	/**
+	 * History
+	 */
+	NOTICE_NOT_EXIST(600, "알림이 없습니다."),
+	NOTICE_NOT_SELECTED(601, "알림이 선택되지 않았습니다.")
 	;
-
-
 
 	Integer code;
 	String errorMessage;
@@ -99,14 +103,11 @@ public enum ErrorMessage {
 		this.code = code;
 		this.errorMessage = errorMessage;
 	}
-	
-	
+
 	public Integer getCode() {
 		return code;
 	}
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-
-	
 }
