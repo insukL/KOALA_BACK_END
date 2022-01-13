@@ -1,10 +1,13 @@
 package in.koala.controller.chat;
 
 import in.koala.domain.ChatMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import in.koala.service.ChatService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import javax.annotation.Resource;
 
 //채팅 메시지 컨트롤러
 //Jwt, 입퇴장 메시지 등등 기능 추가 필요
@@ -13,13 +16,18 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class ChatController {
-    @Autowired
-    SimpMessagingTemplate template;
-
-    String roomId = "room";
+    @Resource
+    private ChatService chatService;
 
     @MessageMapping(value = "/chat/message")
-    public void send(ChatMessage message){
-        template.convertAndSend("/sub/" + roomId, message);
+    public ResponseEntity send(ChatMessage message){
+        chatService.send(message);
+        System.out.println(message.getMessage());
+        return new ResponseEntity<String>("success", HttpStatus.OK);
+    }
+
+    @MessageMapping(value = "/chat/member")
+    public ResponseEntity getMemberCount(){
+        return new ResponseEntity<String>(chatService.getMemberCount(), HttpStatus.OK);
     }
 }

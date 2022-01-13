@@ -1,6 +1,7 @@
 var stompClient = null;
 var currentRoom = null;
 var subscription = null;
+var headers = {login : 'test_login', passcode:'test_passcode'}
 
 function setRoom(roomName) {
     currentRoom = roomName.text();
@@ -37,10 +38,12 @@ function connect() {
 
     var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
+    stompClient.connect(headers, function (frame) {
         setConnected(true);
         subscription = stompClient.subscribe('/sub/' + currentRoom, function (chat) {
-            showChat(JSON.parse(chat.body).sender + " : " + JSON.parse(chat.body).message);
+            if(JSON.parse(chat.body).type == 'CHAT') {
+                showChat(JSON.parse(chat.body).sender + " : " + JSON.parse(chat.body).message);
+            }
         });
     });
 
@@ -64,7 +67,7 @@ function validation() {
 
 function disconnect() {
     if (stompClient !== null) {
-        stompClient.disconnect();
+        stompClient.disconnect(function(empty){}, headers);
     }
     setConnected(false);
 }
@@ -72,8 +75,12 @@ function disconnect() {
 function send() {
     var name = $("#name").val();
     var content = $("#content").val();
-    stompClient.send("/pub/chat/message" , {}, JSON.stringify({sender: name, message: content}));
+    stompClient.send("/pub/chat/message" , headers, JSON.stringify({sender: name, message: content, type:'CHAT'}));
     $("#content").val("");
+}
+
+function access(){
+    stompClient.send("/pub/chat/message" , headers, JSON.stringify({sender: name, type:'ACCESS'}));
 }
 
 function showChat(message) {
@@ -86,4 +93,5 @@ $(function () {
     $("#disconnect").click(function() { disconnect(); });
     $("#send").click(function() { send(); });
     $("a[href=\\#]").click(function() {setRoom($(this))})
+    $("#access").click(function (){ access(); })
 });
