@@ -8,5 +8,5 @@ public interface HistoryService {
 
     List<Notice> getEveryNotice(int pageNum);
     void deleteNotice(List<Integer> noticeList);
-    Boolean noticeRead(String noticeId);
+    void noticeRead(String noticeId);
 }

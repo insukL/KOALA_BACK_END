@@ -24,8 +24,8 @@
 
     <!--키워드 등록 (2. 키워드 등록)-->
     <insert id="insertUsersKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle, created_at)
-        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle}, #{createdAt})
+        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle)
+        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle})
         <selectKey keyProperty="id" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -33,13 +33,12 @@
 
     <!--키워드 등록 (3. 키워드 별로 구독하는 사이트에 등록)-->
     <insert id="insertUsersKeywordSite">
-        INSERT INTO keyword_site(keyword_id, site_name, created_at)
+        INSERT INTO keyword_site(keyword_id, site_name)
         VALUES
         <foreach item="site" separator=" , " collection="siteList">
             (
             #{keywordId},
-            #{site, jdbcType=VARCHAR},
-            #{createdAt}
+            #{site, jdbcType=VARCHAR}
             )
         </foreach>;
     </insert>
@@ -92,8 +91,7 @@
     <update id="modifyKeyword">
         UPDATE keyword
         SET name = #{keyword.name}, is_important = #{keyword.isImportant},
-            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle},
-            updated_at = #{createdAt}
+            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle}
         WHERE id = (
             SELECT id
             FROM (
@@ -186,6 +184,13 @@
         GROUP BY site_name
         ORDER BY count(*) DESC
         LIMIT 10;
+    </select>
+
+    <select id="countKeywordNum" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM keyword
+        WHERE user_id = #{userId}
+            AND is_deleted = 0
     </select>
 
 </mapper>
