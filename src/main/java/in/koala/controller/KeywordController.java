@@ -5,9 +5,7 @@ import in.koala.annotation.Xss;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
 import in.koala.domain.response.CustomBody;
-import in.koala.service.CrawlingService;
 import in.koala.service.KeywordService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
@@ -141,6 +139,13 @@ public class KeywordController {
         else{
             return new ResponseEntity(CustomBody.of(result, HttpStatus.OK), HttpStatus.OK);
         }
+    }
+
+    @Xss
+    @ApiOperation(value = "키워드 추가하기_대상 입력중", notes = "키워드를 추가 및 수정하는 과정에서 알림받을 대상을 검색했을 시, 대상을 알려준다.")
+    @GetMapping(value = "/keyword/site/search")
+    public ResponseEntity<List<String>> searchSite(@RequestParam(name = "site") String site){
+        return new ResponseEntity(CustomBody.of(keywordService.searchSite(site), HttpStatus.OK), HttpStatus.OK);
     }
 
 }

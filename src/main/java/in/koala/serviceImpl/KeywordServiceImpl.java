@@ -11,7 +11,6 @@ import in.koala.mapper.KeywordMapper;
 import in.koala.service.KeywordPushService;
 import in.koala.service.KeywordService;
 import in.koala.service.UserService;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -230,5 +229,20 @@ public class KeywordServiceImpl implements KeywordService {
         List<CrawlingSite> siteList = reConvertSiteList(keywordMapper.recommendSite());
         List<String> koreanSiteList = convertSiteToKorean(siteList);
         return koreanSiteList;
+    }
+
+    @Override
+    public List<String> searchSite(String site) {
+
+        List<String> result = new ArrayList<>();
+
+        for(CrawlingSiteKorean value : CrawlingSiteKorean.values()){
+            String siteName = value.getSiteName();
+            if(siteName.contains(site)){
+                result.add(siteName);
+            }
+        }
+
+        return result;
     }
 }
