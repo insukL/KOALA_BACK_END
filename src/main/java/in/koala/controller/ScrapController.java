@@ -38,8 +38,8 @@ public class ScrapController {
     @Auth
     @ApiOperation(value = "보관함 선택 삭제", notes = "보관함 삭제입니다.\nList 형태로 입력 받습니다.\nex) [1, 11, 111]\n메모도 함께 삭제됩니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @DeleteMapping(value = "/scrap")
-    public ResponseEntity deleteScrap(@RequestBody List<Long> boardId) throws Exception {
-        scrapService.deleteScrap(boardId);
+    public ResponseEntity deleteScrap(@RequestBody List<Long> crawlingId) throws Exception {
+        scrapService.deleteScrap(crawlingId);
         return new ResponseEntity(CustomBody.of("보관함에서 삭제되었습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 

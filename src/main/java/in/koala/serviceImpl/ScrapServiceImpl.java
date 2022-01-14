@@ -31,14 +31,14 @@ public class ScrapServiceImpl implements ScrapService {
         }
         Long userId = user.getId();
 
-        if(!scrapMapper.checkBoardExist(scrap.getBoard_id())){
+        if(!scrapMapper.checkBoardExist(scrap.getCrawling_id())){
             throw new NonCriticalException(ErrorMessage.BOARD_NOT_EXIST);
         }
 
-        if(scrapMapper.checkAlreadyScraped(userId, scrap.getBoard_id()) != 0 ){
+        if(scrapMapper.checkAlreadyScraped(userId, scrap.getCrawling_id()) != 0 ){
             throw new NonCriticalException(ErrorMessage.ALREADY_SCRAP_BOARD);
         }
-        scrapMapper.scrapBoard(userId, scrap.getBoard_id());
+        scrapMapper.scrapBoard(userId, scrap.getCrawling_id());
     }
 
     // 보관함 조회
