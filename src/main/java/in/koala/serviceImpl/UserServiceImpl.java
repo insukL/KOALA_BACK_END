@@ -9,6 +9,7 @@ import in.koala.enums.TokenType;
 import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
+import in.koala.mapper.TokenMapper;
 import in.koala.mapper.UserMapper;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
@@ -39,6 +40,7 @@ import java.util.*;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private final TokenMapper tokenMapper;
     private final UserMapper userMapper;
     private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
@@ -126,23 +128,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createNonMemberUserAndDeviceToken(String token) {
+    public String createNonMemberUserAndDeviceToken(String token) {
         Date from = new Date();
         SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String date = transFormat.format(from);
         String tokenSlice = token.substring(token.length()-5, token.length());
-        String userUnique = date + tokenSlice;
+        String userUnique = "non-user" + date + tokenSlice;
 
         User user = new User();
 
         user.setAccount(userUnique);
         user.setNickname(userUnique);
-        user.setIs_member((short) 0);
+        user.setUser_type((short)1);
 
+        userMapper.insertUser(user);
         userMapper.insertNonMemberUser(user);
-        Long userId = userMapper.getIdByAccount(userUnique);
-        userMapper.insertDeviceToken(userId, token);
-        return userMapper.getUserById(userId);
+
+        tokenMapper.insertDeviceTokenNonUser(user.getId(), token);
+        return "비회원 가입이 완료되었습니다.";
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
@@ -560,5 +563,21 @@ public class UserServiceImpl implements UserService {
     private void normalSingUp(User user){
         userMapper.insertUser(user);
         userMapper.signUp(user);
+    }
+
+    /**
+     * 비회원 -> 회원 전환시 로직 실행
+     * 회원 가입로직 이후에 실행 (user 테이블에 새로운 유저 생성 후)
+     */
+    private void updateNonUserToUser(Long normalUserId, String deviceToken) {
+        if(userMapper.getUserById(normalUserId)==null)
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        tokenMapper.updateTokenByUserId(normalUserId, deviceToken);
+    }
+
+    @Override
+    public void updateTokenByUser(String deviceToken) {
+        User user = getLoginUserInfo();
+        tokenMapper.updateTokenByUserId(user.getId(), deviceToken);
     }
 }

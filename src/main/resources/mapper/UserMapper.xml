@@ -122,11 +122,8 @@
     </select>
 
     <insert id="insertNonMemberUser" parameterType="in.koala.domain.User">
-        INSERT INTO user(nickname, account, is_member)
-        VALUES(#{nickname}, #{account}, #{is_member})
-        <selectKey keyProperty="id" resultType="Long">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
+        INSERT INTO non_user(id)
+        VALUES(#{id});
     </insert>
 
     <insert id="insertDeviceToken">

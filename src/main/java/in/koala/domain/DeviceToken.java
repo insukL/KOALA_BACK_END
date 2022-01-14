@@ -15,6 +15,8 @@ import java.sql.Timestamp;
 public class DeviceToken {
     private Long id;
     private Long user_id;
+    @ApiModelProperty(hidden = true)
+    private Long non_user_id;
     private String token;
     @ApiModelProperty(hidden = true)
     private Timestamp created_at;
