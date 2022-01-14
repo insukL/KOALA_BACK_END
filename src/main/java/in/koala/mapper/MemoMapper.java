@@ -8,5 +8,5 @@ public interface MemoMapper {
     void addMemo(Memo memo);
     void updateMemo(Memo memo);
     String getMemo(Long userScrapId);
-    Boolean checkMemoExist(Long boardId);
+    Boolean checkMemoExist(Long userScrapId);
 }
