@@ -16,6 +16,6 @@ public class Scrap extends BaseObject{
     @ApiModelProperty(hidden = true)
     private Long user_id;
 
-    private Long board_id;
+    private Long crawling_id;
 
 }
