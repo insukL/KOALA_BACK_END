@@ -7,13 +7,15 @@ import in.koala.mapper.DeviceTokenMapper;
 import in.koala.service.DeviceTokenService;
 import in.koala.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
+@Service
+@Transactional
 public class DeviceTokenServiceImpl implements DeviceTokenService {
 
-    private final UserService userService;
     private final DeviceTokenMapper deviceTokenMapper;
-
 
     @Override
     public DeviceToken updateToken(String expiredToken, String newToken) {

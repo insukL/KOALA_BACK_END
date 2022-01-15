@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signUp(User user) {
+    public User signUp(User user, String deviceToken) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
         // 해당 계정명이 이미 존재한다면 예외처리
@@ -200,6 +200,7 @@ public class UserServiceImpl implements UserService {
         user.setSns_type(SnsType.NORMAL);
 
         this.normalSingUp(user);
+        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(user.getId(), deviceToken));
 
         return userMapper.getUserById(user.getId());
     }

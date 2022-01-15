@@ -13,7 +13,7 @@ public interface UserService {
     Map<String, String> snsLogin(String code, SnsType snsType) throws Exception;
     Map<String, String> snsSingIn(SnsType snsType, String deviceToken);
     Map<String, String> login(User user);
-    User signUp(User user);
+    User signUp(User user, String deviceToken);
     void requestSnsLogin(SnsType snsType) throws Exception;
     User getLoginUserInfo();
     void updateNickname(String nickname);
@@ -27,7 +27,6 @@ public interface UserService {
     Map findAccount(String email);
     void softDeleteUser();
     Boolean checkFindEmail(String email);
-    String createNonMemberUserAndDeviceToken(String token);
     Map editProfile(MultipartFile multipartFile);
     Map nonMemberLogin(String deviceToken);
 }

@@ -32,7 +32,7 @@ public class UserController {
     @PostMapping(value = "/non-member")
     @ApiOperation(value ="비회원 유저로 로그인" , notes = "비회원 유저로 로그인 합니다. 디바이스 토큰이 필요합니다.")
     public ResponseEntity createNonMemberUserAndDeviceToken(@RequestParam(name = "deviceToken") String deviceToken){
-        return new ResponseEntity(CustomBody.of(userService.createNonMemberUserAndDeviceToken(deviceToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.nonMemberLogin(deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
 
@@ -74,8 +74,10 @@ public class UserController {
 
     @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
-    public ResponseEntity signIn(@RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
-        return new ResponseEntity(CustomBody.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
+    public ResponseEntity signIn(
+            @RequestBody @Validated({ValidationGroups.SingIn.class}) User user,
+            @RequestParam(name = "deviceToken") String deviceToken){
+        return new ResponseEntity(CustomBody.of(userService.signUp(user, deviceToken), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
