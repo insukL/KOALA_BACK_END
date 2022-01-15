@@ -52,9 +52,10 @@ public class UserController {
     @PostMapping(value="/oauth2/{snsType}")
     @ApiOperation(value ="sns 로그인 API" , notes = "각 클라이언트에서 발급받은 sns 의 accessToken 을 이용하여 로그인을 진행합니다. \n 헤더의 Authorization 에 accessToken 을 넣고 path 에는 요청하는 sns 의 type 을 넣으면 됩니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity snsSignIn(
-            @PathVariable(name="snsType") SnsType snsType){
+            @PathVariable(name="snsType") SnsType snsType,
+            @RequestParam(name = "deviceToken") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss

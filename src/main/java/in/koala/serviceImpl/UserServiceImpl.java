@@ -125,7 +125,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 디바이스 토큰의 user id 갱신
-        this.setUserIdInDeviceToken(id, deviceToken);
+        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
 
         return generateAccessAndRefreshToken(id);
     }
@@ -133,7 +133,6 @@ public class UserServiceImpl implements UserService {
     /**
      * 비회원 로그인 메소드
      * 디바이스 토큰을 이용하여 이전에 비회원 로그인 여부를 파악한다
-     *
      */
     @Override
     public Map nonMemberLogin(String deviceToken) {
