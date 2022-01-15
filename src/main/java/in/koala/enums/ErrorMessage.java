@@ -19,6 +19,10 @@ public enum ErrorMessage {
 	VALID_ANNOTATION_INVALID(1100,"@Validation 에러가 발생하였습니다."),
 	PAGENATION_INVALID(1120,"pagenation의 범위를 확인해주세요. 0 < page , 0 < per_count"),
 
+	/**
+	 * DEVICE TOKEN
+	 */
+	DEVICE_TOKEN_NOT_EXIST(50, "해당 토큰이 존재하지 않습니다"),
 
 	/**
 	 * USER

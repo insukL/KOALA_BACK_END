@@ -129,16 +129,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String createNonMemberUserAndDeviceToken(String token) {
+        /*
         Date from = new Date();
         SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String date = transFormat.format(from);
         String tokenSlice = token.substring(token.length()-5, token.length());
         String userUnique = "non-user" + date + tokenSlice;
+        */
 
         User user = new User();
 
-        user.setAccount(userUnique);
-        user.setNickname(userUnique);
+        // user.setAccount(userUnique);
+        // user.setNickname(userUnique);
         user.setUser_type((short)1);
 
         userMapper.insertUser(user);
@@ -575,9 +577,4 @@ public class UserServiceImpl implements UserService {
         tokenMapper.updateTokenByUserId(normalUserId, deviceToken);
     }
 
-    @Override
-    public void updateTokenByUser(String deviceToken) {
-        User user = getLoginUserInfo();
-        tokenMapper.updateTokenByUserId(user.getId(), deviceToken);
-    }
 }

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.TokenMapper">
+    <select id="getTokenByDeviceToken" resultType="in.koala.domain.DeviceToken">
+        SELECT * FROM device_token WHERE token=#{token}
+    </select>
+
+    <update id="updateExTokenToNewToken">
+        UPDATE device_token SET token=#{newToken} WHERE token=#{expiredToken};
+    </update>
+
+
     <insert id="insertDeviceTokenNonUser">
         INSERT INTO device_token(user_id, non_user_id, token) VALUES(#{nonUserId}, #{nonUserId}, #{deviceToken});
     </insert>
@@ -9,12 +18,16 @@
         UPDATE device_token SET user_id = #{userId} WHERE token = #{token};
     </update>
 
-    <update id="updateTokenByUserId">
+    <update id="updateToken">
         UPDATE device_token SET token = #{token} WHERE user_id = #{userId};
     </update>
 
     <update id="updateTokenByNonUserId">
         UPDATE device_token SET token = #{token} WHERE non_user_id = #{nonUserId};
     </update>
+
+    <insert id="insertDeviceToken">
+        INSERT INTO device_token(token) VALUES(#{token})
+    </insert>
 
 </mapper>

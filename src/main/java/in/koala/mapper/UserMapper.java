@@ -22,7 +22,6 @@ public interface UserMapper {
     void softDeleteUser(User user);
     void softDeleteNormalUser(User user);
     Long insertNonMemberUser(User user);
-    void insertDeviceToken(Long userId, String token);
     void updateUserProfile(String url, Long id);
     void insertUser(User user);
 }

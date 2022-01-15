@@ -35,13 +35,6 @@ public class UserController {
         return new ResponseEntity(CustomBody.of(userService.createNonMemberUserAndDeviceToken(deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
-    @PatchMapping(value = "/token")
-    @ApiOperation(value = "회원 토큰 변경", notes = "회원의 토큰을 변경합니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    public ResponseEntity updateTokenByUser(@RequestParam(name = "deviceToken") String deviceToken){
-        userService.updateTokenByUser(deviceToken);
-        return new ResponseEntity(CustomBody.of("변경되었습니다.", HttpStatus.OK), HttpStatus.OK);
-    }
 
     @GetMapping(value = "/oauth2/authorization/{snsType}")
     public ResponseEntity snsLogin(
@@ -97,7 +90,6 @@ public class UserController {
     public ResponseEntity checkNickname(@RequestParam @NotNull String nickname) {
         userService.checkNickname(nickname);
         return new ResponseEntity(CustomBody.of("사용 가능한 닉네임입니다.", HttpStatus.OK), HttpStatus.OK);
-
     }
 
     @GetMapping(value="/email-check")
