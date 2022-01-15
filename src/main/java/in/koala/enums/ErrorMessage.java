@@ -23,6 +23,7 @@ public enum ErrorMessage {
 	 * DEVICE TOKEN
 	 */
 	DEVICE_TOKEN_NOT_EXIST(50, "해당 토큰이 존재하지 않습니다"),
+	DEVICETOKEN_ALREADY_EXIST(51, "디바이스 토큰이 이미 존재합니다"),
 
 	/**
 	 * USER

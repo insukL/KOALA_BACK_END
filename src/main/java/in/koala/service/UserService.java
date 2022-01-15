@@ -29,5 +29,5 @@ public interface UserService {
     Boolean checkFindEmail(String email);
     String createNonMemberUserAndDeviceToken(String token);
     Map editProfile(MultipartFile multipartFile);
-    void updateTokenByUser(String deviceToken);
+    Map nonMemberLogin(String deviceToken);
 }

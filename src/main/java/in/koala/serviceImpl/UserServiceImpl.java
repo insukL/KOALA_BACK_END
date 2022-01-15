@@ -1,6 +1,7 @@
 package in.koala.serviceImpl;
 
 import in.koala.domain.AuthEmail;
+import in.koala.domain.DeviceToken;
 import in.koala.domain.User;
 import in.koala.enums.EmailType;
 import in.koala.enums.ErrorMessage;
@@ -9,8 +10,8 @@ import in.koala.enums.TokenType;
 import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
-import in.koala.mapper.TokenMapper;
 import in.koala.mapper.UserMapper;
+import in.koala.service.DeviceTokenService;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
@@ -27,12 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -40,7 +40,7 @@ import java.util.*;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final TokenMapper tokenMapper;
+    private final DeviceTokenService deviceTokenService;
     private final UserMapper userMapper;
     private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> snsSingIn(SnsType snsType) {
+    public Map<String, String> snsSingIn(SnsType snsType, String deviceToken) {
         // sns 별 인터페이스 구현체 변경
         SnsLogin snsLogin = this.initSnsService(snsType);
 
@@ -124,30 +124,42 @@ public class UserServiceImpl implements UserService {
             id = user.getId();
         }
 
+        // 디바이스 토큰의 user id 갱신
+        this.setUserIdInDeviceToken(id, deviceToken);
+
         return generateAccessAndRefreshToken(id);
     }
 
+    /**
+     * 비회원 로그인 메소드
+     * 디바이스 토큰을 이용하여 이전에 비회원 로그인 여부를 파악한다
+     *
+     */
     @Override
-    public String createNonMemberUserAndDeviceToken(String token) {
-        /*
-        Date from = new Date();
-        SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        String date = transFormat.format(from);
-        String tokenSlice = token.substring(token.length()-5, token.length());
-        String userUnique = "non-user" + date + tokenSlice;
-        */
+    public Map nonMemberLogin(String deviceToken) {
 
-        User user = new User();
+        boolean isTokenExist = deviceTokenService.checkTokenExist(deviceToken);
 
-        // user.setAccount(userUnique);
-        // user.setNickname(userUnique);
-        user.setUser_type((short)1);
+        // 해당 device token 으로 이전에 비회원 회원가입을 진행한 경우
+        if(isTokenExist){
+            Long nonUserId = deviceTokenService.getDeviceTokenInfoByDeviceToken(deviceToken).getNon_user_id();
+
+            if(nonUserId != null){
+                deviceTokenService.updateTokenTableUserId(nonUserId, deviceToken);
+                return this.generateAccessAndRefreshToken(nonUserId);
+            }
+        }
+
+        User user = User.builder()
+                .user_type((short)1).build();
 
         userMapper.insertUser(user);
         userMapper.insertNonMemberUser(user);
 
-        tokenMapper.insertDeviceTokenNonUser(user.getId(), token);
-        return "비회원 가입이 완료되었습니다.";
+        // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 와 non_user_id 만 갱신
+        this.setUserIdInDeviceToken(DeviceToken.ofNonUser(user.getId(), user.getId(), deviceToken));
+
+        return this.generateAccessAndRefreshToken(user.getId());
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
@@ -567,14 +579,13 @@ public class UserServiceImpl implements UserService {
         userMapper.signUp(user);
     }
 
-    /**
-     * 비회원 -> 회원 전환시 로직 실행
-     * 회원 가입로직 이후에 실행 (user 테이블에 새로운 유저 생성 후)
-     */
-    private void updateNonUserToUser(Long normalUserId, String deviceToken) {
-        if(userMapper.getUserById(normalUserId)==null)
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        tokenMapper.updateTokenByUserId(normalUserId, deviceToken);
-    }
 
+    private void setUserIdInDeviceToken(DeviceToken deviceToken){
+        if(deviceTokenService.checkTokenExist(deviceToken.getToken())) {
+            deviceTokenService.insertDeviceToken(deviceToken);
+
+        } else {
+            deviceTokenService.updateTokenTableUserId(deviceToken.getUser_id(), deviceToken.getToken());
+        }
+    }
 }
