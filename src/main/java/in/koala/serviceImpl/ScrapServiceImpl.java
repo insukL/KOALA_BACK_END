@@ -2,7 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.Crawling;
 import in.koala.domain.Scrap;
-import in.koala.domain.User;
+import in.koala.domain.user.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.ScrapMapper;

@@ -1,27 +1,28 @@
 package in.koala.mapper;
 
-import in.koala.domain.User;
+import in.koala.domain.user.NonUser;
+import in.koala.domain.user.NormalUser;
+import in.koala.domain.user.User;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface UserMapper {
     String test();
-    void signUp(User user);
-    void snsSignUp(User user);
+    void signUp(NormalUser user);
+    void snsSignUp(NormalUser user);
     Long getIdByAccount(String account);
-    User getUserByAccount(String account);
-    User getUserById(Long id);
-    User getUserByFindEmail(String email);
+    NormalUser getUserByAccount(String account);
+    NormalUser getNormalUserById(Long id);
+    NonUser getNonUserById(Long id);
+    NormalUser getUserByFindEmail(String email);
     Integer checkNickname(String nickname);
-    User getUserPassword(String account);
-    void updateNickname(User user);
+    NormalUser getUserPassword(String account);
+    void updateNickname(NormalUser user);
     void updateIsAuth(Long id);
-    void updatePassword(User user);
+    void updatePassword(NormalUser user);
     void softDeleteUser(User user);
-    void softDeleteNormalUser(User user);
-    Long insertNonMemberUser(User user);
+    void softDeleteNormalUser(NormalUser user);
+    Long insertNonMemberUser(NonUser user);
     void updateUserProfile(String url, Long id);
     void insertUser(User user);
 }

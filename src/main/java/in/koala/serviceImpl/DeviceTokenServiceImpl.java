@@ -21,6 +21,10 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
     public DeviceToken updateToken(String expiredToken, String newToken) {
         DeviceToken deviceToken = this.getDeviceTokenInfoByDeviceToken(expiredToken);
 
+        if(this.checkTokenExist(newToken)){
+            throw new NonCriticalException(ErrorMessage.DEVICETOKEN_ALREADY_EXIST);
+        }
+
         deviceTokenMapper.updateExTokenToNewToken(expiredToken, newToken);
 
         deviceToken.setToken(newToken);

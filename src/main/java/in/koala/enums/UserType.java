@@ -7,7 +7,7 @@ public enum UserType {
 
     public static UserType getUserType(String userType){
         for(UserType u : UserType.values()){
-            if(u.equals(userType)) return u;
+            if(u.name().equals(userType)) return u;
         }
 
         throw new NonCriticalException(ErrorMessage.UNDEFINED_EXCEPTION);
