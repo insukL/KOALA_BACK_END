@@ -561,4 +561,19 @@ public class UserServiceImpl implements UserService {
         userMapper.insertUser(user);
         userMapper.signUp(user);
     }
+
+    // 소켓 연결시 사용할 JWT 토큰 발급
+    @Override
+    public Map<String, String> getSocketToken(){
+        User user = this.getLoginUserInfo();
+
+        if(user.getIs_auth() == 0){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_AUTH);
+        }
+
+        Map<String, String> token = new HashMap<>();
+        token.put("socket_token", jwt.generateToken(user.getId(), TokenType.SOCKET));
+
+        return token;
+    }
 }

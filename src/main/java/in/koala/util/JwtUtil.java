@@ -63,12 +63,15 @@ public class JwtUtil {
 
         if(!sub.equals(tokenType.name())) {
             if (tokenType.equals(TokenType.ACCESS)) {
-                // access token 에 refresh token 이 들어간 경우
+                // access token 에 다른 토큰이 들어간 경우
                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
 
             } else if(tokenType.equals(TokenType.REFRESH)){
-                // refresh token 에 access token 이 들어간 경우
+                // refresh token 에 다른 토큰이 들어간 경우
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            } else if(tokenType.equals(TokenType.SOCKET)){
+                // socket token 에 다른 토큰이 들어간 경우
+                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
             }
         }
 
@@ -92,6 +95,9 @@ public class JwtUtil {
 
             } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_EXPIRED_EXCEPTION);
+
+            } else if(tokenType.equals(TokenType.SOCKET)){
+                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_EXPIRED_EXCEPTION);
             }
 
         } catch(Exception e){
@@ -100,6 +106,9 @@ public class JwtUtil {
 
             } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+
+            } else if(tokenType.equals(TokenType.SOCKET)){
+                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
             }
         }
 
@@ -109,6 +118,10 @@ public class JwtUtil {
 
             } else if(tokenType.equals(TokenType.REFRESH)){
                 throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+
+            }
+            else if(tokenType.equals(TokenType.SOCKET)){
+                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
             }
         }
 

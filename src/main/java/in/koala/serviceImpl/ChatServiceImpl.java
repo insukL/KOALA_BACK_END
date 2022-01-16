@@ -44,4 +44,5 @@ public class ChatServiceImpl implements ChatService {
         template.convertAndSend("/sub/" + roomId, message);
         return message.getMessage();
     }
+
 }

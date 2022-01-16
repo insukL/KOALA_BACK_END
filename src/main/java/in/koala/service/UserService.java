@@ -29,4 +29,5 @@ public interface UserService {
     Boolean checkFindEmail(String email);
     User createNonMemberUserAndDeviceToken(String token);
     Map editProfile(MultipartFile multipartFile);
+    Map getSocketToken();
 }

@@ -88,7 +88,15 @@ public enum ErrorMessage {
 	/**
 	 * Keyword
 	 */
-	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다.")
+	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다."),
+
+	/**
+	 * Chat
+	 */
+	SOCKETTOKEN_EXPIRED_EXCEPTION(600, "socket token 만료"),
+	SOCKETTOKEN_INVALID_EXCEPTION(601, "유효하지 않은 socket token"),
+	SOCKETTOKEN_NOT_FOUNDED(602, "socket token을 찾을 수 없습니다"),
+	USER_NOT_AUTH(603, "포털 인증이 되지 않은 유저입니다.")
 	;
 
 
