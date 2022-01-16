@@ -3,11 +3,11 @@
 <mapper namespace="in.koala.mapper.DeviceTokenMapper">
 
     <select id="getTokenByDeviceToken" resultType="in.koala.domain.DeviceToken">
-        SELECT * FROM device_token WHERE token=#{token};
+        SELECT * FROM device_token WHERE token=#{deviceToken};
     </select>
 
     <select id="checkTokenExist" resultType="Integer">
-        SELECT count(token) FROM device_token WHERE token=#{token};
+        SELECT count(token) FROM device_token WHERE token=#{deviceToken};
     </select>
 
     <update id="updateExTokenToNewToken">
@@ -15,7 +15,11 @@
     </update>
 
     <update id="updateUserId">
-        UPDATE device_token SET user_id = #{userId} WHERE id=#{id};
+        UPDATE device_token SET user_id = #{user_id} WHERE id=#{id};
+    </update>
+
+    <update id="updateNonUserId">
+        UPDATE device_token SET non_user_id = #{non_user_id} WHERE id=#{id};
     </update>
 
     <insert id="insertDeviceToken">

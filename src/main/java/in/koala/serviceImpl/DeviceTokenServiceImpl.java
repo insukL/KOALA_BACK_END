@@ -29,10 +29,10 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
     }
 
     @Override
-    public void updateTokenTableUserId(Long normalUserId, String deviceToken) {
-        DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken);
+    public void updateTokenTableUserId(DeviceToken deviceToken) {
+        DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
 
-        deviceTokenInfo.setUser_id(normalUserId);
+        deviceTokenInfo.setUser_id(deviceToken.getUser_id());
 
         deviceTokenMapper.updateUserId(deviceTokenInfo);
     }
@@ -58,5 +58,12 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
         deviceTokenMapper.insertDeviceToken(deviceToken);
     }
 
+    @Override
+    public void updateTokenTableNonUserId(DeviceToken deviceToken) {
+        DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
 
+        deviceTokenInfo.setNon_user_id(deviceToken.getNon_user_id());
+
+        deviceTokenMapper.updateNonUserId(deviceTokenInfo);
+    }
 }

@@ -5,7 +5,8 @@ import in.koala.domain.DeviceToken;
 
 public interface DeviceTokenService {
     DeviceToken updateToken(String expiredToken, String newToken);
-    void updateTokenTableUserId(Long userId, String deviceToken);
+    void updateTokenTableUserId(DeviceToken deviceToken);
+    void updateTokenTableNonUserId(DeviceToken deviceToken);
     DeviceToken getDeviceTokenInfoByDeviceToken(String deviceToken);
     boolean checkTokenExist(String deviceToken);
     void insertDeviceToken(DeviceToken deviceToken);

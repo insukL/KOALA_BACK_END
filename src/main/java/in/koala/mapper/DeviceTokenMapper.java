@@ -9,10 +9,8 @@ import java.util.Optional;
 public interface DeviceTokenMapper {
     void insertDeviceToken(DeviceToken deviceToken);
     void updateUserId(DeviceToken deviceToken);
+    void updateNonUserId(DeviceToken deviceToken);
     int checkTokenExist(String deviceToken);
-    void updateUserAndNonUserId(DeviceToken deviceToken);
-
-    void updateTokenByNonUserId(Long nonUserId, String token);
     Optional<DeviceToken> getTokenByDeviceToken(String deviceToken);
     void updateExTokenToNewToken(String expiredToken, String newToken);
 }

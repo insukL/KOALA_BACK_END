@@ -3,10 +3,7 @@ package in.koala.serviceImpl;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.User;
-import in.koala.enums.EmailType;
-import in.koala.enums.ErrorMessage;
-import in.koala.enums.SnsType;
-import in.koala.enums.TokenType;
+import in.koala.enums.*;
 import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
@@ -17,6 +14,7 @@ import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
 import in.koala.util.S3Util;
 import in.koala.util.SesSender;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.mindrot.jbcrypt.BCrypt;
@@ -28,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
@@ -87,7 +84,7 @@ public class UserServiceImpl implements UserService {
             id = snsUser.getId();
         }
 
-        return this.generateAccessAndRefreshToken(id);
+        return this.generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
 
     @Override
@@ -127,7 +124,7 @@ public class UserServiceImpl implements UserService {
         // 디바이스 토큰의 user id 갱신
         this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
 
-        return generateAccessAndRefreshToken(id);
+        return generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
 
     /**
@@ -137,28 +134,47 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map nonMemberLogin(String deviceToken) {
 
-        boolean isTokenExist = deviceTokenService.checkTokenExist(deviceToken);
+        DeviceToken token = null;
 
-        // 해당 device token 으로 이전에 비회원 회원가입을 진행한 경우
-        if(isTokenExist){
-            Long nonUserId = deviceTokenService.getDeviceTokenInfoByDeviceToken(deviceToken).getNon_user_id();
-
-            if(nonUserId != null){
-                deviceTokenService.updateTokenTableUserId(nonUserId, deviceToken);
-                return this.generateAccessAndRefreshToken(nonUserId);
-            }
+        // DB에 있는 해당 device token 의 토큰 정보 가져오기
+        if (deviceTokenService.checkTokenExist(deviceToken)) {
+            token = deviceTokenService.getDeviceTokenInfoByDeviceToken(deviceToken);
         }
 
-        User user = User.builder()
-                .user_type((short)1).build();
+        if(token == null){
+            // 비회원 유저가 존재하지 않고
+            // device token 또한 존재하지 않는 경우
 
-        userMapper.insertUser(user);
-        userMapper.insertNonMemberUser(user);
+            User user = User.builder()
+                    .user_type((short) 1).build();
 
-        // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 와 non_user_id 만 갱신
-        this.setUserIdInDeviceToken(DeviceToken.ofNonUser(user.getId(), user.getId(), deviceToken));
+            this.nonUserSingUp(user);
 
-        return this.generateAccessAndRefreshToken(user.getId());
+            token = DeviceToken.ofNonUser(user.getId(), user.getId(), deviceToken);
+
+        } else if(token.getNon_user_id() == null) {
+            // DB 의 토큰 테이블의 non user 가 null 인 경우
+            // 토큰은 있지만 연결된 비회원 유저가 존재하지 않는다
+
+            User user = User.builder()
+                    .user_type((short) 1).build();
+
+            this.nonUserSingUp(user);
+
+            token.setNon_user_id(user.getId());
+            token.setUser_id(user.getId());
+            deviceTokenService.updateTokenTableNonUserId(token);
+
+        } else if(token.getNon_user_id() != null) {
+            // 토큰이 존재하고 비회원 유저도 존재하는 경우
+
+            token.setUser_id(token.getNon_user_id());
+        }
+
+        // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 갱신
+        this.setUserIdInDeviceToken(token);
+
+        return this.generateAccessAndRefreshToken(token.getUser_id(), UserType.NON);
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
@@ -183,7 +199,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signUp(User user, String deviceToken) {
+    public User signUp(User user) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
         // 해당 계정명이 이미 존재한다면 예외처리
@@ -199,14 +215,13 @@ public class UserServiceImpl implements UserService {
         user.setUser_type((short) 0);
         user.setSns_type(SnsType.NORMAL);
 
-        this.normalSingUp(user);
-        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(user.getId(), deviceToken));
+        this.normalUserSingUp(user);
 
         return userMapper.getUserById(user.getId());
     }
 
     @Override
-    public Map<String, String> login(User user) {
+    public Map<String, String> login(User user, String deviceToken) {
         User loginUser = userMapper.getUserPassword(user.getAccount());
 
         // 해당 계정이 존재하지 않는다면 예외처리
@@ -215,7 +230,9 @@ public class UserServiceImpl implements UserService {
         // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
         if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
-        return generateAccessAndRefreshToken(loginUser.getId());
+        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+
+        return generateAccessAndRefreshToken(loginUser.getId(), UserType.NORMAL);
     }
 
     @Override
@@ -255,13 +272,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> refresh() {
-        Long id = this.getLoginUserIdFromJwt(TokenType.REFRESH);
+        Claims claims = this.getClaimsFromJwt(TokenType.REFRESH);
+
+        Long id = Long.valueOf(String.valueOf(claims.get("id")));
+        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
 
         if(userMapper.getUserById(id) == null) {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        return this.generateAccessAndRefreshToken(id);
+        return this.generateAccessAndRefreshToken(id, userType);
     }
 
     @Override
@@ -516,6 +536,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private Long getLoginUserIdFromJwt(TokenType tokenType){
+        return Long.valueOf(String.valueOf(getClaimsFromJwt(tokenType).get("id")));
+    }
+
+    private Claims getClaimsFromJwt(TokenType tokenType){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
@@ -523,16 +547,14 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
         }
 
-        jwt.isValid(token, tokenType);
-
-        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwt(token, tokenType).get("id")));
+        return jwt.getClaimsFromJwt(token, tokenType);
     }
 
-    private Map<String, String> generateAccessAndRefreshToken(Long id){
+    private Map<String, String> generateAccessAndRefreshToken(Long id, UserType userType){
         Map<String, String> token = new HashMap<>();
 
-        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS));
-        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH));
+        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS, userType));
+        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH, userType));
 
         return token;
     }
@@ -574,18 +596,24 @@ public class UserServiceImpl implements UserService {
         userMapper.updateNickname(user);
     }
 
-    private void normalSingUp(User user){
+    private void normalUserSingUp(User user){
         userMapper.insertUser(user);
         userMapper.signUp(user);
     }
 
+    private void nonUserSingUp(User user){
+        userMapper.insertUser(user);
+        userMapper.insertNonMemberUser(user);
+    }
+
 
     private void setUserIdInDeviceToken(DeviceToken deviceToken){
-        if(deviceTokenService.checkTokenExist(deviceToken.getToken())) {
+        if(!deviceTokenService.checkTokenExist(deviceToken.getToken())) {
             deviceTokenService.insertDeviceToken(deviceToken);
 
         } else {
-            deviceTokenService.updateTokenTableUserId(deviceToken.getUser_id(), deviceToken.getToken());
+            deviceTokenService.updateTokenTableUserId(deviceToken);
         }
     }
+
 }

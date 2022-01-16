@@ -75,17 +75,17 @@ public class UserController {
     @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
     public ResponseEntity signIn(
-            @RequestBody @Validated({ValidationGroups.SingIn.class}) User user,
-            @RequestParam(name = "deviceToken") String deviceToken){
-        return new ResponseEntity(CustomBody.of(userService.signUp(user, deviceToken), HttpStatus.CREATED), HttpStatus.CREATED);
+            @RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
+        return new ResponseEntity(CustomBody.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
     @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
     public ResponseEntity login(
-            @RequestBody @Validated({ValidationGroups.Login.class}) User user){
+            @RequestBody @Validated({ValidationGroups.Login.class}) User user,
+            @RequestParam(name = "deviceToken") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.login(user), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.login(user, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/nickname-check")

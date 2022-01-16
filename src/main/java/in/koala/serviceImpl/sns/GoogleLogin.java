@@ -43,6 +43,7 @@ public class GoogleLogin extends AbstractSnsLogin {
             return this.requestUserProfile(code, profileUri);
 
         } catch(Exception e){
+            e.printStackTrace();
             throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
         }
     }
@@ -53,6 +54,7 @@ public class GoogleLogin extends AbstractSnsLogin {
             return this.requestUserProfileByAccessToken(accessToken, profileUri);
 
         } catch(Exception e){
+            e.printStackTrace();
             throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
         }
     }
