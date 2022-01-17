@@ -2,6 +2,7 @@ package in.koala.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import in.koala.annotation.ValidationGroups;
+import in.koala.enums.EmailType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +25,7 @@ public class AuthEmail {
     private Long user_id;
 
     @ApiModelProperty(hidden = true)
-    private String type;
+    private EmailType type;
 
     @Email
     private String email;

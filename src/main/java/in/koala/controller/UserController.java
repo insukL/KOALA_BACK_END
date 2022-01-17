@@ -4,7 +4,8 @@ import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
 import in.koala.annotation.Xss;
 import in.koala.domain.AuthEmail;
-import in.koala.domain.User;
+import in.koala.domain.user.NormalUser;
+import in.koala.domain.user.User;
 import in.koala.domain.response.CustomBody;
 import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
@@ -31,17 +32,10 @@ public class UserController {
 
     @PostMapping(value = "/non-member")
     @ApiOperation(value ="비회원 유저로 로그인" , notes = "비회원 유저로 로그인 합니다. 디바이스 토큰이 필요합니다.")
-    public ResponseEntity createNonMemberUserAndDeviceToken(@RequestParam(name = "deviceToken") String deviceToken){
-        return new ResponseEntity(CustomBody.of(userService.createNonMemberUserAndDeviceToken(deviceToken), HttpStatus.OK), HttpStatus.OK);
+    public ResponseEntity createNonMemberUserAndDeviceToken(@RequestParam(name = "device_token") String deviceToken){
+        return new ResponseEntity(CustomBody.of(userService.nonMemberLogin(deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
-    @PatchMapping(value = "/token")
-    @ApiOperation(value = "회원 토큰 변경", notes = "회원의 토큰을 변경합니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    public ResponseEntity updateTokenByUser(@RequestParam(name = "deviceToken") String deviceToken){
-        userService.updateTokenByUser(deviceToken);
-        return new ResponseEntity(CustomBody.of("변경되었습니다.", HttpStatus.OK), HttpStatus.OK);
-    }
 
     @GetMapping(value = "/oauth2/authorization/{snsType}")
     public ResponseEntity snsLogin(
@@ -59,9 +53,10 @@ public class UserController {
     @PostMapping(value="/oauth2/{snsType}")
     @ApiOperation(value ="sns 로그인 API" , notes = "각 클라이언트에서 발급받은 sns 의 accessToken 을 이용하여 로그인을 진행합니다. \n 헤더의 Authorization 에 accessToken 을 넣고 path 에는 요청하는 sns 의 type 을 넣으면 됩니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity snsSignIn(
-            @PathVariable(name="snsType") SnsType snsType){
+            @PathVariable(name="snsType") SnsType snsType,
+            @RequestParam(name = "device_token") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -80,16 +75,18 @@ public class UserController {
 
     @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
-    public ResponseEntity signIn(@RequestBody @Validated({ValidationGroups.SingIn.class}) User user){
+    public ResponseEntity signIn(
+            @RequestBody @Validated({ValidationGroups.SingIn.class}) NormalUser user){
         return new ResponseEntity(CustomBody.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
     @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
     public ResponseEntity login(
-            @RequestBody @Validated({ValidationGroups.Login.class}) User user){
+            @RequestBody @Validated({ValidationGroups.Login.class}) NormalUser user,
+            @RequestParam(name = "device_token") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.login(user), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(CustomBody.of(userService.login(user, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/nickname-check")
@@ -97,7 +94,6 @@ public class UserController {
     public ResponseEntity checkNickname(@RequestParam @NotNull String nickname) {
         userService.checkNickname(nickname);
         return new ResponseEntity(CustomBody.of("사용 가능한 닉네임입니다.", HttpStatus.OK), HttpStatus.OK);
-
     }
 
     @GetMapping(value="/email-check")
@@ -147,7 +143,7 @@ public class UserController {
 
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경 API", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n password 와 account 을 body 로 입력받습니다.")
-    public ResponseEntity changePassword(@RequestBody User user){
+    public ResponseEntity changePassword(@RequestBody NormalUser user){
         userService.changePassword(user);
         return new ResponseEntity(CustomBody.of("비밀번호 변경 성공", HttpStatus.OK), HttpStatus.OK);
     }

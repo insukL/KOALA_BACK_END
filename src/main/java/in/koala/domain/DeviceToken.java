@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 @Getter
@@ -22,4 +23,23 @@ public class DeviceToken {
     private Timestamp created_at;
     @ApiModelProperty(hidden = true)
     private Timestamp updated_at;
+
+    public static DeviceToken ofNormalUser(Long userId, String token){
+        DeviceToken deviceToken = new DeviceToken();
+
+        deviceToken.user_id = userId;
+        deviceToken.token = token;
+
+        return deviceToken;
+    }
+
+    public static DeviceToken ofNonUser(Long userId, @Nullable Long nonUserId, String token){
+        DeviceToken deviceToken = new DeviceToken();
+
+        deviceToken.user_id = userId;
+        deviceToken.non_user_id = nonUserId;
+        deviceToken.token = token;
+
+        return deviceToken;
+    }
 }
