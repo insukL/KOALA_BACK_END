@@ -1,6 +1,8 @@
 package in.koala.serviceImpl;
 
 import in.koala.domain.Notice;
+import in.koala.enums.ErrorMessage;
+import in.koala.exception.HistoryException;
 import in.koala.mapper.HistoryMapper;
 import in.koala.service.HistoryService;
 import in.koala.service.UserService;
@@ -19,7 +21,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final UserService userService;
 
     @Override
-    public List<Notice> getEveryNotice(int pageNum) {
+    public List<Notice> getEveryNotice(int pageNum){
 
         Long userId = userService.getLoginUserInfo().getId();
 
@@ -34,16 +36,14 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     public void deleteNotice(List<Integer> noticeList) {
 
+        if(noticeList.isEmpty())
+            throw new HistoryException(ErrorMessage.NOTICE_NOT_SELECTED);
+
         historyMapper.deleteNotice(noticeList);
     }
 
     @Override
-    public Boolean noticeRead(String noticeId) {
-        if(historyMapper.noticeRead(noticeId) == 1){
-            return true;
-        }
-        else{
-            return false;
-        }
+    public void noticeRead(String noticeId) {
+        historyMapper.noticeRead(noticeId);
     }
 }

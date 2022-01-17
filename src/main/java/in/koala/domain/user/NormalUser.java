@@ -1,24 +1,22 @@
-package in.koala.domain;
+package in.koala.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import in.koala.annotation.ValidationGroups;
 import in.koala.enums.SnsType;
+import in.koala.enums.UserType;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.sql.Timestamp;
 
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class User {
-    private Long id;
-
+public class NormalUser extends User{
     @NotNull(message="account 는 반드시 입력되야 합니다", groups = {ValidationGroups.SingIn.class, ValidationGroups.Login.class, ValidationGroups.Password.class} )
     @Length(message="계정은 1 ~ 15자 사이여야 합니다", min=1, max=15, groups = {ValidationGroups.SingIn.class, ValidationGroups.Login.class} )
     private String account;
@@ -37,27 +35,21 @@ public class User {
     private String sns_email;
     @ApiModelProperty(hidden = true)
     private String profile;
-    @ApiModelProperty(hidden = true)
-    private Short user_type;
+
     @ApiModelProperty(hidden = true)
     private Short is_auth;
-    @ApiModelProperty(hidden = true)
-    private Timestamp created_at;
-    @ApiModelProperty(hidden = true)
-    private Timestamp updated_at;
-    @ApiModelProperty(hidden = true)
-    private Short is_member;
+
     @ApiModelProperty(hidden = true)
     private SnsType sns_type;
 
     @Builder
-    public User(String account, String sns_email, String nickname, String profile, SnsType sns_type, Short user_type) {
+    public NormalUser(String account, String sns_email, String find_email, String nickname, String profile, SnsType sns_type, UserType user_type) {
         this.account = account;
         this.sns_email = sns_email;
+        this.find_email = find_email;
         this.nickname = nickname;
         this.profile = profile;
         this.sns_type= sns_type;
         this.user_type = user_type;
     }
-
 }

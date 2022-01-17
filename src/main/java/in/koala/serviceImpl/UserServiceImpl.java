@@ -1,20 +1,22 @@
 package in.koala.serviceImpl;
 
 import in.koala.domain.AuthEmail;
-import in.koala.domain.User;
-import in.koala.enums.EmailType;
-import in.koala.enums.ErrorMessage;
-import in.koala.enums.SnsType;
-import in.koala.enums.TokenType;
+import in.koala.domain.DeviceToken;
+import in.koala.domain.user.NonUser;
+import in.koala.domain.user.NormalUser;
+import in.koala.domain.user.User;
+import in.koala.enums.*;
 import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.AuthEmailMapper;
 import in.koala.mapper.UserMapper;
+import in.koala.service.DeviceTokenService;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
 import in.koala.util.S3Util;
 import in.koala.util.SesSender;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.mindrot.jbcrypt.BCrypt;
@@ -29,9 +31,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -39,6 +39,7 @@ import java.util.*;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private final DeviceTokenService deviceTokenService;
     private final UserMapper userMapper;
     private final AuthEmailMapper authEmailMapper;
     private final HttpServletResponse response;
@@ -57,6 +58,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.test();
     }
 
+    // 클라이언트 필요없는 서버 개발용
     @Override
     public Map<String, String> snsLogin(String code, SnsType snsType) throws Exception {
         // sns 별 인터페이스 구현체 변경
@@ -66,13 +68,13 @@ public class UserServiceImpl implements UserService {
         Map<String, String> userProfile = snsLogin.requestUserProfile(code);
 
         // 받은 정보를 이용하여 User domain 생성
-        User snsUser = User.builder()
+        NormalUser snsUser = NormalUser.builder()
                 .account(userProfile.get("account"))
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
                 .sns_type(snsType)
-                .user_type((short) 0)
+                .user_type(UserType.NORMAL)
                 .build();
 
         if(snsUser.getProfile() == null) snsUser.setProfile(defaultUrl);
@@ -85,11 +87,11 @@ public class UserServiceImpl implements UserService {
             id = snsUser.getId();
         }
 
-        return this.generateAccessAndRefreshToken(id);
+        return this.generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
 
     @Override
-    public Map<String, String> snsSingIn(SnsType snsType) {
+    public Map<String, String> snsSingIn(SnsType snsType, String deviceToken) {
         // sns 별 인터페이스 구현체 변경
         SnsLogin snsLogin = this.initSnsService(snsType);
 
@@ -103,13 +105,13 @@ public class UserServiceImpl implements UserService {
         Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
 
         // 받은 정보를 이용하여 User domain 생성
-        User user = User.builder()
+        NormalUser user = NormalUser.builder()
                 .account(userProfile.get("account"))
                 .sns_email(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
                 .sns_type(snsType)
-                .user_type((short) 0)
+                .user_type(UserType.NORMAL)
                 .build();
 
         if(user.getProfile() == null) user.setProfile(defaultUrl);
@@ -122,27 +124,60 @@ public class UserServiceImpl implements UserService {
             id = user.getId();
         }
 
-        return generateAccessAndRefreshToken(id);
+        // 디바이스 토큰의 user id 갱신
+        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
+
+        return generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
 
+    /**
+     * 비회원 로그인 메소드
+     * 디바이스 토큰을 이용하여 이전에 비회원 로그인 여부를 파악한다
+     */
     @Override
-    public User createNonMemberUserAndDeviceToken(String token) {
-        Date from = new Date();
-        SimpleDateFormat transFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        String date = transFormat.format(from);
-        String tokenSlice = token.substring(token.length()-5, token.length());
-        String userUnique = date + tokenSlice;
+    public Map nonMemberLogin(String deviceToken) {
 
-        User user = new User();
+        DeviceToken token = null;
 
-        user.setAccount(userUnique);
-        user.setNickname(userUnique);
-        user.setIs_member((short) 0);
+        // DB에 있는 해당 device token 의 토큰 정보 가져오기
+        if (deviceTokenService.checkTokenExist(deviceToken)) {
+            token = deviceTokenService.getDeviceTokenInfoByDeviceToken(deviceToken);
+        }
 
-        userMapper.insertNonMemberUser(user);
-        Long userId = userMapper.getIdByAccount(userUnique);
-        userMapper.insertDeviceToken(userId, token);
-        return userMapper.getUserById(userId);
+        if(token == null){
+            // 비회원 유저가 존재하지 않고
+            // device token 또한 존재하지 않는 경우
+
+            NonUser user = NonUser.builder()
+                    .user_type(UserType.NON).build();
+
+            this.nonUserSingUp(user);
+
+            token = DeviceToken.ofNonUser(user.getId(), user.getId(), deviceToken);
+
+        } else if(token.getNon_user_id() == null) {
+            // DB 의 토큰 테이블의 non user 가 null 인 경우
+            // 토큰은 있지만 연결된 비회원 유저가 존재하지 않는다
+
+            NonUser user = NonUser.builder()
+                    .user_type(UserType.NON).build();
+
+            this.nonUserSingUp(user);
+
+            token.setNon_user_id(user.getId());
+            token.setUser_id(user.getId());
+            deviceTokenService.updateTokenTableNonUserId(token);
+
+        } else if(token.getNon_user_id() != null) {
+            // 토큰이 존재하고 비회원 유저도 존재하는 경우
+
+            token.setUser_id(token.getNon_user_id());
+        }
+
+        // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 갱신
+        this.setUserIdInDeviceToken(token);
+
+        return this.generateAccessAndRefreshToken(token.getUser_id(), UserType.NON);
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
@@ -167,7 +202,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signUp(User user) {
+    public User signUp(NormalUser user) {
         User selectUser = userMapper.getUserByAccount(user.getAccount());
 
         // 해당 계정명이 이미 존재한다면 예외처리
@@ -180,17 +215,17 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         user.setProfile(defaultUrl);
-        user.setUser_type((short) 0);
+        user.setUser_type(UserType.NORMAL);
         user.setSns_type(SnsType.NORMAL);
 
-        this.normalSingUp(user);
+        this.normalUserSingUp(user);
 
-        return userMapper.getUserById(user.getId());
+        return userMapper.getNormalUserById(user.getId());
     }
 
     @Override
-    public Map<String, String> login(User user) {
-        User loginUser = userMapper.getUserPassword(user.getAccount());
+    public Map<String, String> login(NormalUser user, String deviceToken) {
+        NormalUser loginUser = userMapper.getUserPassword(user.getAccount());
 
         // 해당 계정이 존재하지 않는다면 예외처리
         if(loginUser == null) throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
@@ -198,14 +233,37 @@ public class UserServiceImpl implements UserService {
         // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
         if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
-        return generateAccessAndRefreshToken(loginUser.getId());
+        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+
+        return generateAccessAndRefreshToken(loginUser.getId(), UserType.NORMAL);
     }
 
     @Override
     public User getLoginUserInfo() {
+        Claims claims =  this.getClaimsFromJwt(TokenType.ACCESS);
+
+        Long id = Long.valueOf(String.valueOf(claims.get("id")));
+        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
+
+        User user = null;
+
+        if(userType.equals(UserType.NORMAL)) {
+            user = userMapper.getNormalUserById(id);
+
+        } else if(userType.equals(UserType.NON)){
+            user = userMapper.getNonUserById(id);
+        }
+
+        if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+
+        return user;
+    }
+
+    @Override
+    public NormalUser getLoginNormalUserInfo(){
         Long id = this.getLoginUserIdFromJwt(TokenType.ACCESS);
 
-        User user = userMapper.getUserById(id);
+        NormalUser user = userMapper.getNormalUserById(id);
 
         if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
 
@@ -218,7 +276,7 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
         }
 
-        User user = this.getLoginUserInfo();
+        NormalUser user = this.getLoginNormalUserInfo();
         user.setNickname(nickname);
 
         userMapper.updateNickname(user);
@@ -238,13 +296,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> refresh() {
-        Long id = this.getLoginUserIdFromJwt(TokenType.REFRESH);
+        User user = this.getLoginUserInfo();
 
-        if(userMapper.getUserById(id) == null) {
+        if(user == null) {
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        return this.generateAccessAndRefreshToken(id);
+        return this.generateAccessAndRefreshToken(user.getId(), user.getUser_type());
     }
 
     @Override
@@ -257,10 +315,10 @@ public class UserServiceImpl implements UserService {
             }
         }
         // email 전송 종류에 따른 유저 초기화
-        User user = getEmailUser(authEmail, emailType);
-
+        NormalUser user = initNormalUserByEmailType(authEmail, emailType);
+        System.out.println(user);
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
-        if(user.getUser_type() != 0 && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
+        if(user.getSns_type() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
             throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
@@ -309,7 +367,7 @@ public class UserServiceImpl implements UserService {
         authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
 
         authEmail.setSecret(secret);
-        authEmail.setType(emailType.toString());
+        authEmail.setType(emailType);
 
         // 이전에 보냈던 이메일들은 전부 무효화
         authEmailMapper.expirePastAuthEmail(authEmail);
@@ -324,10 +382,10 @@ public class UserServiceImpl implements UserService {
     public void certificateEmail(AuthEmail authEmail, EmailType emailType) {
 
         // email 전송 종류에 따른 유저 초기화
-        User user = getEmailUser(authEmail, emailType);
+        User user = initNormalUserByEmailType(authEmail, emailType);
 
         authEmail.setUser_id(user.getId());
-        authEmail.setType(emailType.toString());
+        authEmail.setType(emailType);
 
         List<AuthEmail> authEmailList = authEmailMapper.getUndeletedAuthEmailByUserIdAndType(authEmail);
 
@@ -368,7 +426,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isUniversityCertification() {
-        User user = getLoginUserInfo();
+        NormalUser user = getLoginNormalUserInfo();
 
         if(user.getIs_auth() == 1){
             return true;
@@ -390,16 +448,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(User user) {
+    public void changePassword(NormalUser user) {
 
-        User selectedUser = userMapper.getUserPassword(user.getAccount());
+        NormalUser selectedUser = userMapper.getUserPassword(user.getAccount());
 
         if(selectedUser == null){
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
 
         // 이메일 인증이 선행되지 않은 경우
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD.toString()) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
         
@@ -414,7 +472,7 @@ public class UserServiceImpl implements UserService {
 
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(selectedUser.getId());
-        authEmail.setType(EmailType.PASSWORD.toString());
+        authEmail.setType(EmailType.PASSWORD);
 
         // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
@@ -422,19 +480,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map findAccount(String email) {
-        User user = userMapper.getUserByFindEmail(email);
+        NormalUser user = userMapper.getUserByFindEmail(email);
 
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT.toString()) <= 0){
+        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT) <= 0){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
 
         AuthEmail authEmail = new AuthEmail();
         authEmail.setUser_id(user.getId());
-        authEmail.setType(EmailType.ACCOUNT.toString());
+        authEmail.setType(EmailType.ACCOUNT);
 
         // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
@@ -451,7 +509,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void softDeleteUser() {
-        User user = this.getLoginUserInfo();
+        NormalUser user = this.getLoginNormalUserInfo();
 
         String deleted = "deletedUser_" + user.getId().toString();
 
@@ -466,7 +524,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map editProfile(MultipartFile multipartFile){
-        User selectedUser = this.getLoginUserInfo();
+        NormalUser selectedUser = this.getLoginNormalUserInfo();
 
         String profileUrl = selectedUser.getProfile();
 
@@ -499,6 +557,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private Long getLoginUserIdFromJwt(TokenType tokenType){
+        return Long.valueOf(String.valueOf(getClaimsFromJwt(tokenType).get("id")));
+    }
+
+    private Claims getClaimsFromJwt(TokenType tokenType){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
 
@@ -506,16 +568,14 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
         }
 
-        jwt.isValid(token, tokenType);
-
-        return Long.valueOf(String.valueOf(jwt.getClaimsFromJwt(token, tokenType).get("id")));
+        return jwt.getClaimsFromJwt(token, tokenType);
     }
 
-    private Map<String, String> generateAccessAndRefreshToken(Long id){
+    private Map<String, String> generateAccessAndRefreshToken(Long id, UserType userType){
         Map<String, String> token = new HashMap<>();
 
-        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS));
-        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH));
+        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS, userType));
+        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH, userType));
 
         return token;
     }
@@ -531,14 +591,14 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private User getEmailUser(AuthEmail authEmail, EmailType emailType) {
-        User user = null;
+    private NormalUser initNormalUserByEmailType(AuthEmail authEmail, EmailType emailType) {
+        NormalUser user = null;
 
         if(emailType.equals(EmailType.ACCOUNT)){
             user = userMapper.getUserByFindEmail(authEmail.getEmail());
 
         } else if(emailType.equals(EmailType.UNIVERSITY)){
-            user = this.getLoginUserInfo();
+            user = this.getLoginNormalUserInfo();
 
         } else {
             user = userMapper.getUserByAccount(authEmail.getAccount());
@@ -550,14 +610,14 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    private void snsSingUp(User user){
+    private void snsSingUp(NormalUser user){
         userMapper.insertUser(user);
         userMapper.snsSignUp(user);
         user.setNickname("TEMP_NICKNAME_" + user.getId().toString());
         userMapper.updateNickname(user);
     }
 
-    private void normalSingUp(User user){
+    private void normalUserSingUp(NormalUser user){
         userMapper.insertUser(user);
         userMapper.signUp(user);
     }
@@ -575,5 +635,20 @@ public class UserServiceImpl implements UserService {
         token.put("socket_token", jwt.generateToken(user.getId(), TokenType.SOCKET));
 
         return token;
+    }
+  
+    private void nonUserSingUp(NonUser user){
+        userMapper.insertUser(user);
+        userMapper.insertNonMemberUser(user);
+    }
+
+  
+    private void setUserIdInDeviceToken(DeviceToken deviceToken){
+        if(!deviceTokenService.checkTokenExist(deviceToken.getToken())) {
+            deviceTokenService.insertDeviceToken(deviceToken);
+
+        } else {
+            deviceTokenService.updateTokenTableUserId(deviceToken);
+        }
     }
 }

@@ -10,13 +10,13 @@
         </selectKey>
     </insert>
 
-    <insert id="signUp" parameterType="in.koala.domain.User">
+    <insert id="signUp" parameterType="in.koala.domain.user.NormalUser">
         INSERT INTO normal_user(user_id, nickname, account, password, find_email, profile, sns_type, is_auth)
         VALUES(#{id}, #{nickname}, #{account}, #{password}, #{find_email}, #{profile}, #{sns_type}, DEFAULT);
     </insert>
 
-    <insert id="snsSignUp" parameterType="in.koala.domain.User">
-        INSERT INTO normal_user(user_id, nickname, account, sns_email, profile, sns_type, is_auth)
+    <insert id="snsSignUp" parameterType="in.koala.domain.user.NormalUser">
+        INSERT INTO normal_user(id, nickname, account, sns_email, profile, sns_type, is_auth)
         VALUES(#{id}, #{nickname}, #{account}, #{sns_email}, #{profile}, #{sns_type}, DEFAULT);
     </insert>
 
@@ -24,11 +24,12 @@
         SELECT id FROM user u INNER JOIN normal_user nu ON nu.user_id=u.id WHERE nu.account=#{account} AND u.deleted_at IS NULL;
     </select>
 
-    <select id="getUserByFindEmail" resultType="in.koala.domain.User">
+    <select id="getUserByFindEmail" resultType="in.koala.domain.user.NormalUser">
         SELECT
         <include refid="normalUserInfo">
             <property name="alias" value="nu."/>
         </include>,
+        u.id,
         u.created_at,
         u.updated_at,
         u.user_type
@@ -38,11 +39,12 @@
         WHERE nu.find_email=#{email};
     </select>
     
-    <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.User">
+    <select id="getUserByAccount" parameterType="String" resultType="in.koala.domain.user.NormalUser">
         SELECT
         <include refid="normalUserInfo">
             <property name="alias" value="nu."/>
         </include>,
+            u.id,
             u.created_at,
             u.updated_at,
             u.user_type
@@ -52,28 +54,59 @@
         WHERE nu.account=#{account};
     </select>
 
-    <select id="getUserById" parameterType="Long" resultType="in.koala.domain.User">
+    <select id="getUserById" parameterType="Long" resultType="in.koala.domain.user.User">
         SELECT
-        <include refid="normalUserInfo">
-            <property name="alias" value="nu."/>
-        </include>,
-        u.created_at,
-        u.updated_at,
-        u.user_type
-        FROM normal_user nu
-        INNER JOIN (SELECT * FROM user WHERE id=#{id} AND deleted_at IS NULL) AS u
-        ON nu.user_id=u.id;
+            <include refid="normalUserInfo">
+               <property name="alias" value="nu."/>
+            </include>,
+            u.id,
+            u.created_at,
+            u.updated_at,
+            u.user_type
+        FROM user u
+        LEFT JOIN normal_user AS nu
+        ON nu.user_id=#{userId}
+        LEFT JOIN non_user AS nonu
+        ON nonu.id=#{userId}
+        WHERE u.id=#{userId} AND u.deleted_at IS NULL;
+    </select>
+
+    <select id="getNormalUserById" resultType="in.koala.domain.user.NormalUser">
+        SELECT
+            <include refid="normalUserInfo">
+                <property name="alias" value="nu."/>
+            </include>,
+            u.id,
+            u.created_at,
+            u.updated_at,
+            u.user_type
+        FROM user u
+        INNER JOIN normal_user AS nu
+        ON nu.user_id=u.id
+        WHERE u.id=#{userId} AND u.deleted_at IS NULL;
+    </select>
+
+    <select id="getNonUserById" resultType="in.koala.domain.user.NonUser">
+        SELECT
+            u.id,
+            u.created_at,
+            u.updated_at,
+            u.user_type
+        FROM user u
+        INNER JOIN non_user AS nu
+        ON nu.id=u.id
+        WHERE u.id=#{userId} AND u.deleted_at IS NULL;
     </select>
 
     <select id="checkNickname" parameterType="String" resultType="Integer">
         SELECT count(*) FROM normal_user WHERE nickname=#{nickname};
     </select>
 
-    <select id="getUserPassword" parameterType="String" resultType="in.koala.domain.User">
+    <select id="getUserPassword" parameterType="String" resultType="in.koala.domain.user.NormalUser">
         SELECT u.id, nu.password FROM normal_user nu INNER JOIN user u ON u.id=nu.user_id WHERE account=#{account} AND deleted_at IS NULL
     </select>
 
-    <update id="updateNickname" parameterType="in.koala.domain.User">
+    <update id="updateNickname" parameterType="in.koala.domain.user.NormalUser">
         UPDATE normal_user
         SET
             nickname=#{nickname}
@@ -100,6 +133,7 @@
             deleted_at=CURRENT_TIMESTAMP
         WHERE id=#{id};
     </update>
+
     <update id="softDeleteNormalUser">
         UPDATE normal_user
         SET
@@ -121,26 +155,21 @@
         SELECT nickname from normal_user where user_id=1;
     </select>
 
-    <insert id="insertNonMemberUser" parameterType="in.koala.domain.User">
-        INSERT INTO user(nickname, account, is_member)
-        VALUES(#{nickname}, #{account}, #{is_member})
-        <selectKey keyProperty="id" resultType="Long">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
+    <insert id="insertNonMemberUser" parameterType="in.koala.domain.user.NonUser">
+        INSERT INTO non_user(id)
+        VALUES(#{id});
     </insert>
 
-    <insert id="insertDeviceToken">
-        INSERT INTO device_token(token) VALUES(#{token})
-    </insert>
+
 
     <sql id="normalUserInfo">
-        ${alias}user_id as id,
         ${alias}account,
         ${alias}find_email,
         ${alias}sns_email,
         ${alias}nickname,
         ${alias}profile,
-        ${alias}is_auth
+        ${alias}is_auth,
+        ${alias}sns_type
     </sql>
 
 </mapper>

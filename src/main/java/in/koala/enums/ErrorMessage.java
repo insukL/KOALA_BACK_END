@@ -19,6 +19,11 @@ public enum ErrorMessage {
 	VALID_ANNOTATION_INVALID(1100,"@Validation 에러가 발생하였습니다."),
 	PAGENATION_INVALID(1120,"pagenation의 범위를 확인해주세요. 0 < page , 0 < per_count"),
 
+	/**
+	 * DEVICE TOKEN
+	 */
+	DEVICE_TOKEN_NOT_EXIST(50, "해당 토큰이 존재하지 않습니다"),
+	DEVICETOKEN_ALREADY_EXIST(51, "디바이스 토큰이 이미 존재합니다"),
 
 	/**
 	 * USER
@@ -88,18 +93,23 @@ public enum ErrorMessage {
 	/**
 	 * Keyword
 	 */
-	DUPLICATED_KEYWORD_EXCEPTION(500, "이미 등록하신 키워드입니다."),
+	EXCEED_MAXIMUM_KEYWORD_NUMBER(500, "등록가능한 키워드 갯수를 초과했습니다."),
+	DUPLICATED_KEYWORD_EXCEPTION(501, "이미 등록하신 키워드입니다."),
 
+	/**
+	 * History
+	 */
+	NOTICE_NOT_EXIST(600, "알림이 없습니다."),
+	NOTICE_NOT_SELECTED(601, "알림이 선택되지 않았습니다.")
+    
 	/**
 	 * Chat
 	 */
-	SOCKETTOKEN_EXPIRED_EXCEPTION(600, "socket token 만료"),
-	SOCKETTOKEN_INVALID_EXCEPTION(601, "유효하지 않은 socket token"),
-	SOCKETTOKEN_NOT_FOUNDED(602, "socket token을 찾을 수 없습니다"),
-	USER_NOT_AUTH(603, "포털 인증이 되지 않은 유저입니다.")
+  SOCKETTOKEN_EXPIRED_EXCEPTION(700, "socket token 만료"),
+	SOCKETTOKEN_INVALID_EXCEPTION(701, "유효하지 않은 socket token"),
+	SOCKETTOKEN_NOT_FOUNDED(702, "socket token을 찾을 수 없습니다"),
+	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다.")
 	;
-
-
 
 	Integer code;
 	String errorMessage;
@@ -107,14 +117,11 @@ public enum ErrorMessage {
 		this.code = code;
 		this.errorMessage = errorMessage;
 	}
-	
-	
+
 	public Integer getCode() {
 		return code;
 	}
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-
-	
 }

@@ -3,6 +3,7 @@ package in.koala.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
+import in.koala.enums.UserType;
 import in.koala.exception.NonCriticalException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +34,8 @@ public class JwtUtil {
         return jsonMap;
     }
 
-    public String generateToken(Long id, TokenType tokenType){
+
+    public String generateToken(Long id, TokenType tokenType, UserType userType){
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
@@ -42,6 +44,7 @@ public class JwtUtil {
         Map<String, Object> payloads = new HashMap<>();
         payloads.put("id", id );
         payloads.put("sub", tokenType.name());
+        payloads.put("aud", userType.name());
 
         // 토큰 유효기간 설정
         Calendar calendar = Calendar.getInstance();
@@ -57,7 +60,16 @@ public class JwtUtil {
         if(token == null) throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
 
-        Claims claims = this.getClaimsFromJwt(token, tokenType);
+        Claims claims = this.parseClaimsFromJwt(token, tokenType);
+
+        if(claims.get("id") == null || claims.get("sub") == null || claims.get("exp") == null || claims.get("aud") == null){
+            if(tokenType.equals(TokenType.ACCESS)){
+                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else if(tokenType.equals(TokenType.REFRESH)){
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            }
+        }
 
         String sub = String.valueOf(claims.get("sub"));
 
@@ -79,6 +91,31 @@ public class JwtUtil {
     }
 
     public Claims getClaimsFromJwt(String token, TokenType tokenType){
+        isValid(token, tokenType);
+        return parseClaimsFromJwt(token, tokenType);
+    }
+
+    public Claims getClaimsFromAppleJwt(String token, PublicKey key) {
+        //System.out.println(token);
+        Claims claims = null;
+
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+        } catch (ExpiredJwtException e) {
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_EXPIRED_EXCEPTION);
+
+        } catch (Exception e) {
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
+        }
+
+        return claims;
+    }
+
+    private Claims parseClaimsFromJwt(String token, TokenType tokenType){
         //System.out.println(token);
         Claims claims = null;
         token = token.substring(7);
@@ -111,40 +148,6 @@ public class JwtUtil {
                 throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
             }
         }
-
-        if(claims.get("id") == null || claims.get("sub") == null || claims.get("exp") == null){
-            if(tokenType.equals(TokenType.ACCESS)){
-                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
-
-            } else if(tokenType.equals(TokenType.REFRESH)){
-                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
-
-            }
-            else if(tokenType.equals(TokenType.SOCKET)){
-                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
-            }
-        }
-
-        return claims;
-    }
-
-    public Claims getClaimsFromJwt(String token, PublicKey key) {
-        //System.out.println(token);
-        Claims claims = null;
-
-        try {
-            claims = Jwts.parser()
-                    .setSigningKey(key)
-                    .parseClaimsJws(token)
-                    .getBody();
-
-        } catch (ExpiredJwtException e) {
-            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_EXPIRED_EXCEPTION);
-
-        } catch (Exception e) {
-            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
-        }
-
         return claims;
     }
 }

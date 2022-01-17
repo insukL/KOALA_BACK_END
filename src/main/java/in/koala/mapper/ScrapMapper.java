@@ -8,10 +8,10 @@ import java.util.List;
 @Repository
 public interface ScrapMapper {
     List<Crawling> getScrapList(Long userId);
-    void scrapBoard(Long userId, Long boardId);
-    void deleteScrap(List<Long> boardId);
-    Boolean checkBoardExist(Long boardId);
-    Boolean checkScrapExist(Long boardId);
-    Long checkAlreadyScraped(Long userId, Long boardId);
+    void scrapBoard(Long userId, Long crawlingId);
+    void deleteScrap(List<Long> crawlingId);
+    Boolean checkBoardExist(Long crawlingId);
+    Boolean checkScrapExist(Long crawlingId);
+    Long checkAlreadyScraped(Long userId, Long crawlingId);
     Boolean checkScrapExistByMemo(Long userId, Long userScrapId);
 }

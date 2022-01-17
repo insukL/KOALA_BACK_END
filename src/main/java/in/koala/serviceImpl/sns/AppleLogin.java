@@ -10,12 +10,10 @@ import in.koala.exception.NonCriticalException;
 import in.koala.service.sns.SnsLogin;
 import in.koala.util.JwtUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -61,7 +59,7 @@ public class AppleLogin implements SnsLogin {
             KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
             PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
-            Claims claims = jwtUtil.getClaimsFromJwt(identityToken, publicKey);
+            Claims claims = jwtUtil.getClaimsFromAppleJwt(identityToken, publicKey);
 
             profile.put("account", "APPLE" + "_" + claims.get("sub").toString());
             profile.put("sns_email", claims.get("email").toString());
