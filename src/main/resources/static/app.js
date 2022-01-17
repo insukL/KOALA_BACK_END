@@ -75,12 +75,12 @@ function disconnect() {
 function send() {
     var name = $("#name").val();
     var content = $("#content").val();
-    stompClient.send("/pub/chat/message" , headers, JSON.stringify({sender: name, message: content, type:'CHAT'}));
+    stompClient.send("/pub/chat/message" , headers, JSON.stringify({message: content, type:'CHAT'}));
     $("#content").val("");
 }
 
 function access(){
-    stompClient.send("/pub/chat/message" , headers, JSON.stringify({sender: name, type:'ACCESS'}));
+    stompClient.send("/pub/chat/member" , headers, JSON.stringify({type:'ACCESS'}));
 }
 
 function showChat(message) {

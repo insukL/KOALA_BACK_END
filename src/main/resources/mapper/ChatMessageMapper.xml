@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.ChatMessageMapper">
+
+    <insert id="insertMessage" parameterType="in.koala.domain.ChatMessage">
+        INSERT INTO chat_message(sender, message, type) VALUES(#{sender}, #{message}, #{type})
+        <selectKey keyProperty="id" resultType="Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    
+    <select id="getMessageList" resultMap="messageMap">
+        SELECT id, sender, message, type, sent_at, is_deleted
+        FROM chat_message as c
+        ORDER BY id DESC
+        LIMIT #{criteria.cursor}, #{criteria.limit}
+    </select>
+    
+    <resultMap id="messageMap" type="in.koala.domain.ChatMessage">
+        <id column="id" property="id"/>
+        <result column="sender" property="sender"/>
+        <result column="message" property="message" javaType="java.lang.String"/>
+        <result column="type" property="type" javaType="in.koala.enums.ChatType"/>
+        <result column="sent_at" property="sent_at"/>
+        <result column="is_deleted" property="is_deleted"/>
+    </resultMap>
+
+</mapper>

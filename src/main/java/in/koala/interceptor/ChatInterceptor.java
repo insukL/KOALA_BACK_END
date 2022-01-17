@@ -33,13 +33,13 @@ public class ChatInterceptor implements ChannelInterceptor {
         System.out.println(accessor.getCommand());
         System.out.println(accessor.getFirstNativeHeader("Authorization"));
 
-        //TODO : 문서 추가 후 중단 구문 삭제
-        //TODO : Socket Token만으로 처리가 되는지 좀 고민
+        //TODO : 에러처리
         if(accessor.getCommand().equals(StompCommand.CONNECT)){
             String id = this.getId(accessor);
             Long memCnt = listOps.rightPush(id, accessor.getSessionId());
             if(memCnt == 1){ setOps.add("member", id); }
         }
+        //TODO : DISCONNECT 2번 전송 발생 (2번쨰 NULL 전송) 클라이언트와 함께 확인하기
         else if(accessor.getCommand().equals(StompCommand.DISCONNECT)){
             String id = this.getId(accessor);
             listOps.remove(id, 0, accessor.getSessionId());
