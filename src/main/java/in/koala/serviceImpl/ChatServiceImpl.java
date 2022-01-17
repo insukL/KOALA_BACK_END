@@ -67,7 +67,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public String getMemberName(Long id){
-        return userMapper.getUserById(id).getNickname();
+        return userMapper.getNormalUserById(id).getNickname();
     }
 
     @Auth
