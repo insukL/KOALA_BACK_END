@@ -168,7 +168,8 @@
         ${alias}sns_email,
         ${alias}nickname,
         ${alias}profile,
-        ${alias}is_auth
+        ${alias}is_auth,
+        ${alias}sns_type
     </sql>
 
 </mapper>

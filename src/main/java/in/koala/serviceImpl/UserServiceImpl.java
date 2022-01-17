@@ -316,7 +316,7 @@ public class UserServiceImpl implements UserService {
         }
         // email 전송 종류에 따른 유저 초기화
         NormalUser user = initNormalUserByEmailType(authEmail, emailType);
-
+        System.out.println(user);
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
         if(user.getSns_type() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
             throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
