@@ -101,6 +101,14 @@ public enum ErrorMessage {
 	 */
 	NOTICE_NOT_EXIST(600, "알림이 없습니다."),
 	NOTICE_NOT_SELECTED(601, "알림이 선택되지 않았습니다.")
+    
+	/**
+	 * Chat
+	 */
+  SOCKETTOKEN_EXPIRED_EXCEPTION(700, "socket token 만료"),
+	SOCKETTOKEN_INVALID_EXCEPTION(701, "유효하지 않은 socket token"),
+	SOCKETTOKEN_NOT_FOUNDED(702, "socket token을 찾을 수 없습니다"),
+	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다.")
 	;
 
 	Integer code;

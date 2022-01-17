@@ -1,5 +1,6 @@
 package in.koala.config;
 
+import in.koala.interceptor.ChatAuthInterceptor;
 import in.koala.interceptor.ChatInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -7,6 +8,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import javax.annotation.Resource;
 
@@ -15,6 +17,9 @@ import javax.annotation.Resource;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Resource
     ChatInterceptor chatInterceptor;
+
+    @Resource
+    ChatAuthInterceptor chatAuthInterceptor;
 
     // enableSimpleBroker : Simple Message Broker를 사용하며, /sub로 시작하는 url로 구독
     // setApplicationDestinationPrefixes : 메시지를 보낼 때 맨 앞에 포함되는 url
@@ -30,6 +35,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry){
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("*")
+                .addInterceptors(chatAuthInterceptor)
                 .withSockJS();
     }
 
