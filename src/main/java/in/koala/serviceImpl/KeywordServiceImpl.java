@@ -14,8 +14,6 @@ import in.koala.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -35,41 +33,8 @@ public class KeywordServiceImpl implements KeywordService {
         return keywordMapper.myKeywordList(userId);
     }
 
-    @Override
-    public List<Integer> convertSiteList(List<CrawlingSite> siteList) {
-
-        List<Integer> convertSiteList = new ArrayList<>();
-
-        for(CrawlingSite site : siteList){
-            for(CrawlingSite value : CrawlingSite.values()){
-                if(value.equals(site)){
-                    convertSiteList.add(value.getCode());
-                }
-            }
-        }
-
-        return convertSiteList;
-    }
-
-    public List<CrawlingSite> reConvertSiteList(List<Integer> siteList) {
-
-        List<CrawlingSite> reConvertSiteList = new ArrayList<>();
-
-        for(Integer site : siteList) {
-            for(CrawlingSite value : CrawlingSite.values()) {
-                if (value.getCode().equals(site)) {
-                    reConvertSiteList.add(value);
-                }
-            }
-        }
-
-        return reConvertSiteList;
-    }
-
     public List<String> convertSiteToKorean(List<CrawlingSite> crawlingSiteList){
-
         List<String> koreanSiteList = new ArrayList<>();
-
         for(CrawlingSite site : crawlingSiteList){
             for(CrawlingSiteKorean value : CrawlingSiteKorean.values()){
                 if(value.toString().equals(site.toString())){
@@ -77,7 +42,6 @@ public class KeywordServiceImpl implements KeywordService {
                 }
             }
         }
-
         return koreanSiteList;
     }
 
@@ -96,7 +60,7 @@ public class KeywordServiceImpl implements KeywordService {
         }
         else{
             keywordMapper.insertUsersKeyword(keyword);
-            keywordMapper.insertUsersKeywordSite(keyword.getId(), convertSiteList(keyword.getSiteList()));
+            keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getSiteList());
 
             // 2022-01-03 FireBase 키워드 등록 추가
             keywordPushService.subscribe(keyword, userId);
@@ -110,7 +74,7 @@ public class KeywordServiceImpl implements KeywordService {
         //2022-01-03 Firebase 키워드 등록 취소
         Keyword keyword = new Keyword();
         keyword.setName(keywordName);
-        keyword.setSiteList(reConvertSiteList(keywordMapper.getSiteList(userId, keywordName)));
+        keyword.setSiteList(keywordMapper.getSiteList(userId, keywordName));
         keywordPushService.unsubscribe(keyword, userId);
 
         keywordMapper.deleteKeyword(userId, keywordName);
@@ -120,26 +84,16 @@ public class KeywordServiceImpl implements KeywordService {
     public void modifyKeyword(String keywordName, Keyword keyword) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
 
-        Set<Integer> addingList = new HashSet<>(convertSiteList(keyword.getSiteList()));
-        Set<Integer> addingListCopy = new HashSet<>();
+        Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
+        Set<CrawlingSite> addingListCopy = new HashSet<>();
         addingListCopy.addAll(addingList);
-        System.out.println("addingListCopy");
-        System.out.println(addingListCopy);
 
-        Set<Integer> existingList = new HashSet<>(keywordMapper.getKeywordSite(userId, keywordName));
-        Set<Integer> existingListCopy = new HashSet<>();
+        Set<CrawlingSite> existingList = new HashSet<>(keywordMapper.getKeywordSite(userId, keywordName));
+        Set<CrawlingSite> existingListCopy = new HashSet<>();
         existingListCopy.addAll(existingList);
-        System.out.println("existingListCopy");
-        System.out.println(existingListCopy);
-
-        System.out.println("addingList : " + addingList);
-        System.out.println("existingList : " + existingList);
 
         addingList.removeAll(existingList);
         existingList.removeAll(addingListCopy);
-
-        System.out.println("addingList 2 : " + addingList);
-        System.out.println("existingList 2 : " + existingList);
 
         Long keywordId = keywordMapper.getKeywordId(userId, keywordName);
 
@@ -164,11 +118,8 @@ public class KeywordServiceImpl implements KeywordService {
         keywordMapper.modifyKeyword(userId, keywordName, keyword);
 
         //2022-01-06 Firebase 키워드 수정 로직
-        List<CrawlingSite> oldSite = reConvertSiteList(new ArrayList<>(existingList));
-        List<CrawlingSite> newSite = reConvertSiteList(new ArrayList<>(addingList));
-
-        System.out.println("oldSite : " + oldSite);
-        System.out.println("newSite : " + newSite);
+        List<CrawlingSite> oldSite = new ArrayList<>(existingList);
+        List<CrawlingSite> newSite = new ArrayList<>(addingList);
 
         if(keywordName.equals(keyword.getName())){
             keywordPushService.modifySubscription(oldSite, newSite, userId, keywordName);
@@ -176,11 +127,7 @@ public class KeywordServiceImpl implements KeywordService {
         else{
             Keyword oldKeyword = new Keyword();
             oldKeyword.setName(keywordName);
-            oldKeyword.setSiteList(reConvertSiteList(new ArrayList<>(existingListCopy)));
-
-            System.out.println("이름 다를 때");
-            System.out.println(oldKeyword.getSiteList());
-            System.out.println(keyword.getSiteList());
+            oldKeyword.setSiteList(new ArrayList<>(existingListCopy));
 
             keywordPushService.subscribe(keyword, userId);
             keywordPushService.unsubscribe(oldKeyword, userId);
@@ -189,7 +136,6 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<Notice> getKeywordNotice(String keywordName, String site) {
-
         Long userId = userService.getLoginUserInfo().getId();
         return keywordMapper.getKeywordNotice(keywordName, site, userId);
     }
@@ -227,23 +173,20 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<String> recommendSite() {
-        List<CrawlingSite> siteList = reConvertSiteList(keywordMapper.recommendSite());
+        List<CrawlingSite> siteList = keywordMapper.recommendSite();
         List<String> koreanSiteList = convertSiteToKorean(siteList);
         return koreanSiteList;
     }
 
     @Override
     public List<String> searchSite(String site) {
-
         List<String> result = new ArrayList<>();
-
         for(CrawlingSiteKorean value : CrawlingSiteKorean.values()){
             String siteName = value.getSiteName();
             if(siteName.contains(site)){
                 result.add(siteName);
             }
         }
-
         return result;
     }
 }
