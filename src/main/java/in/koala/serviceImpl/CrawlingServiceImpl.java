@@ -70,7 +70,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public void updateLog(Integer site, Timestamp crawlingAt) {
+    public void updateLog(CrawlingSite site, Timestamp crawlingAt) {
         crawlingMapper.updateLog(site, crawlingAt);
     }
 
@@ -96,7 +96,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        Integer site = CrawlingSite.PORTAL.getCode();
+        CrawlingSite site = CrawlingSite.PORTAL;
 
         // 14= 일반공지, 15=장학공지, 16=학사공지, 150=채용공지, 151=현장실습공지, 148=총학생회, 21=학생생활
         String[] boardList = new String[]{"14", "15", "16", "150", "151", "148", "21"};
@@ -147,7 +147,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         List<Crawling> crawlingInsertList = new ArrayList<Crawling>();
         // 크롤링한 객체들을 담을 List - 중복된 데이터
         List<Crawling> crawlingUpdateList = new ArrayList<Crawling>();
-        Integer site = CrawlingSite.DORM.getCode();
+        CrawlingSite site = CrawlingSite.DORM;
 
         try{
             //아우미르 공지사항에 접속해서 html 파일을 전체 다 긁어오기
@@ -203,7 +203,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         String time = format.format(lateylyCrawlingTime);
 
-        Integer site = CrawlingSite.YOUTUBE.getCode();
+        CrawlingSite site = CrawlingSite.YOUTUBE;
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(youtubeApiUrl)
                 .queryParam("part", "snippet")
@@ -270,7 +270,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Override
     public Boolean facebookCrawling(Long tokenId, Timestamp crawlingAt) throws Exception {
 
-        Integer site  = CrawlingSite.FACEBOOK.getCode();
+        CrawlingSite site  = CrawlingSite.FACEBOOK;
 
         // read token
         CrawlingToken token = getCrawlingTokenById(tokenId);
@@ -359,7 +359,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     @Override
     public Boolean instagramCrawling(Long tokenId, Timestamp crawlingAt) throws Exception {
 
-        Integer site = CrawlingSite.INSTAGRAM.getCode();
+        CrawlingSite site = CrawlingSite.INSTAGRAM;
 
         // read token
         CrawlingToken token = getCrawlingTokenById(tokenId);

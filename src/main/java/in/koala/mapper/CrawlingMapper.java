@@ -2,6 +2,7 @@ package in.koala.mapper;
 
 import in.koala.domain.Crawling;
 import in.koala.domain.CrawlingToken;
+import in.koala.enums.CrawlingSite;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +18,7 @@ public interface CrawlingMapper {
 
     int checkDuplicatedData(Crawling crawling);
 
-    int updateLog(Integer site, Timestamp crawlingAt);
+    int updateLog(CrawlingSite site, Timestamp crawlingAt);
 
     void addCrawlingData(List<Crawling> crawlingInsertList);
 
