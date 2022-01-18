@@ -60,7 +60,7 @@
             );
     </update>
 
-    <select id="getKeywordSite" resultType="java.lang.Integer">
+    <select id="getKeywordSite" resultType="in.koala.enums.CrawlingSite">
         SELECT ks.site_name
         FROM keyword_site as ks
         INNER JOIN keyword as k
@@ -158,7 +158,7 @@
         WHERE name LIKE concat("%", #{keyword}, "%");
     </select>
 
-    <select id="getSiteList" resultType="java.lang.Integer">
+    <select id="getSiteList" resultType="in.koala.enums.CrawlingSite">
         SELECT site_name
         FROM keyword_site
         WHERE is_deleted = 0
@@ -178,7 +178,7 @@
         LIMIT 10;
     </select>
 
-    <select id="recommendSite" resultType="java.lang.Integer">
+    <select id="recommendSite" resultType="in.koala.enums.CrawlingSite">
         SELECT site_name
         FROM keyword_site
         GROUP BY site_name

@@ -22,9 +22,6 @@ public interface KeywordService {
     List<String> recommendKeyword();
     List<String> recommendSite();
 
-
-    List<Integer> convertSiteList(List<CrawlingSite> siteList);
-
     void registerKeyword(Keyword keyword) throws Exception;
     void deleteKeyword(String keywordId) throws Exception;
     void modifyKeyword(String keywordName, Keyword keyword) throws Exception;
