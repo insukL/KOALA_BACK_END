@@ -296,9 +296,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> refresh() {
-        User user = this.getLoginUserInfo();
+        Claims claims = this.getClaimsFromJwt(TokenType.REFRESH);
 
-        if(user == null) {
+        Long id = Long.valueOf(String.valueOf(claims.get("id")));
+        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
+
+        User user = null;
+        if(userType.equals(UserType.NORMAL)) {
+            user = userMapper.getNormalUserById(id);
+
+        } else {
+            user = userMapper.getNonUserById(id);
+        }
+
+        if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
