@@ -93,7 +93,12 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public void modifyKeyword(String keywordName, Keyword keyword) throws Exception {
+
         Long userId = userService.getLoginUserInfo().getId();
+
+        if(keywordMapper.checkDuplicateUsersKeyword(keyword) != null){
+            throw new KeywordException(ErrorMessage.DUPLICATED_KEYWORD_EXCEPTION);
+        }
 
         Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
         Set<CrawlingSite> addingListCopy = new HashSet<>();
