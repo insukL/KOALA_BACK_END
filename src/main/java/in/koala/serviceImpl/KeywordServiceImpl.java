@@ -3,9 +3,11 @@ package in.koala.serviceImpl;
 import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
+import in.koala.domain.user.User;
 import in.koala.enums.CrawlingSite;
 import in.koala.enums.CrawlingSiteKorean;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.UserType;
 import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
 import in.koala.service.KeywordPushService;
@@ -25,13 +27,8 @@ public class KeywordServiceImpl implements KeywordService {
     private final UserService userService;
     private final KeywordPushService keywordPushService;
 
-    private static final int MAX_KEYWORD_NUM = 10;
-
-    @Override
-    public List<Keyword> myKeywordList() {
-        Long userId = userService.getLoginUserInfo().getId();
-        return keywordMapper.myKeywordList(userId);
-    }
+    private static final int NORMAL_USER_MAX_KEYWORD_NUM = 10;
+    private static final int NON_USER_MAX_KEYWORD_NUM = 5;
 
     public List<String> convertSiteToKorean(List<CrawlingSite> crawlingSiteList){
         List<String> koreanSiteList = new ArrayList<>();
@@ -46,12 +43,26 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public List<Keyword> myKeywordList() {
+        Long userId = userService.getLoginUserInfo().getId();
+        return keywordMapper.myKeywordList(userId);
+    }
+
+    @Override
     public void registerKeyword(Keyword keyword) throws Exception {
 
-        Long userId = userService.getLoginUserInfo().getId();
+        User user = userService.getLoginUserInfo();
+        Long userId = user.getId();
+        UserType userType = user.getUser_type();
 
-        if(keywordMapper.countKeywordNum(userId) == MAX_KEYWORD_NUM)
-            throw new KeywordException(ErrorMessage.EXCEED_MAXIMUM_KEYWORD_NUMBER);
+        if(userType.equals(UserType.NON)){
+            if(keywordMapper.countKeywordNum(userId) >= NON_USER_MAX_KEYWORD_NUM)
+                throw new KeywordException(ErrorMessage.EXCEED_MAXIMUM_KEYWORD_NUMBER);
+        }
+        else{
+            if(keywordMapper.countKeywordNum(userId) >= NORMAL_USER_MAX_KEYWORD_NUM)
+                throw new KeywordException(ErrorMessage.EXCEED_MAXIMUM_KEYWORD_NUMBER);
+        }
 
         keyword.setUserId(userId);
 
@@ -82,7 +93,12 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public void modifyKeyword(String keywordName, Keyword keyword) throws Exception {
+
         Long userId = userService.getLoginUserInfo().getId();
+
+        if(keywordMapper.checkDuplicateUsersKeyword(keyword) != null){
+            throw new KeywordException(ErrorMessage.DUPLICATED_KEYWORD_EXCEPTION);
+        }
 
         Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
         Set<CrawlingSite> addingListCopy = new HashSet<>();

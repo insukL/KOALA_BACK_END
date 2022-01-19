@@ -24,8 +24,9 @@
 
     <!--키워드 등록 (2. 키워드 등록)-->
     <insert id="insertUsersKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle)
-        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle})
+        INSERT INTO keyword
+            (user_id, name, is_important, silent_mode, vibration_mode, until_press_ok_button, alarm_cycle)
+        VALUES (#{userId}, #{name}, #{isImportant}, #{silentMode}, #{vibrationMode}, #{untilPressOkButton}, #{alarmCycle})
         <selectKey keyProperty="id" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -91,7 +92,8 @@
     <update id="modifyKeyword">
         UPDATE keyword
         SET name = #{keyword.name}, is_important = #{keyword.isImportant},
-            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle}
+            silent_mode = #{keyword.silentMode}, vibration_mode = #{keyword.vibrationMode},
+            until_press_ok_button = #{keyword.untilPressOkButton}, alarm_cycle = #{keyword.alarmCycle}
         WHERE id = (
             SELECT id
             FROM (
