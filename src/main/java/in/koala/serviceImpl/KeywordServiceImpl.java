@@ -8,6 +8,7 @@ import in.koala.enums.CrawlingSite;
 import in.koala.enums.CrawlingSiteKorean;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.UserType;
+import in.koala.exception.CriticalException;
 import in.koala.exception.KeywordException;
 import in.koala.mapper.KeywordMapper;
 import in.koala.service.KeywordPushService;
@@ -49,7 +50,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void registerKeyword(Keyword keyword) throws Exception {
+    public Boolean registerKeyword(Keyword keyword) throws Exception {
 
         User user = userService.getLoginUserInfo();
         Long userId = user.getId();
@@ -70,16 +71,21 @@ public class KeywordServiceImpl implements KeywordService {
             throw new KeywordException(ErrorMessage.DUPLICATED_KEYWORD_EXCEPTION);
         }
         else{
-            keywordMapper.insertUsersKeyword(keyword);
-            keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getSiteList());
+            if(keywordMapper.insertUsersKeyword(keyword) != 1)
+                throw new CriticalException(ErrorMessage.DATA_INSERT_ERROR);
+
+            if(keywordMapper.insertUsersKeywordSite(keyword.getId(), keyword.getSiteList()) != keyword.getSiteList().size())
+                throw new CriticalException(ErrorMessage.DATA_INSERT_ERROR);
 
             // 2022-01-03 FireBase 키워드 등록 추가
             keywordPushService.subscribe(keyword, userId);
+
+            return true;
         }
     }
 
     @Override
-    public void deleteKeyword(String keywordName) throws Exception {
+    public Boolean deleteKeyword(String keywordName) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
 
         //2022-01-03 Firebase 키워드 등록 취소
@@ -89,10 +95,11 @@ public class KeywordServiceImpl implements KeywordService {
         keywordPushService.unsubscribe(keyword, userId);
 
         keywordMapper.deleteKeyword(userId, keywordName);
+        return true;
     }
 
     @Override
-    public void modifyKeyword(String keywordName, Keyword keyword) throws Exception {
+    public Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception {
 
         Long userId = userService.getLoginUserInfo().getId();
 
@@ -148,6 +155,8 @@ public class KeywordServiceImpl implements KeywordService {
             keywordPushService.subscribe(keyword, userId);
             keywordPushService.unsubscribe(oldKeyword, userId);
         }
+
+        return true;
     }
 
     @Override
@@ -173,8 +182,11 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void deletedNotice(List<Integer> noticeList) {
-        keywordMapper.deleteNotice(noticeList);
+    public Boolean deletedNotice(List<Integer> noticeList) {
+        if(keywordMapper.deleteNotice(noticeList) == 1)
+            return true;
+        else
+            return false;
     }
 
     @Override

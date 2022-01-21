@@ -95,6 +95,7 @@ public enum ErrorMessage {
 	 */
 	EXCEED_MAXIMUM_KEYWORD_NUMBER(500, "등록가능한 키워드 갯수를 초과했습니다."),
 	DUPLICATED_KEYWORD_EXCEPTION(501, "이미 등록하신 키워드입니다."),
+	DATA_INSERT_ERROR(502, "키워드 등록 에러"),
 
 	/**
 	 * History

@@ -35,15 +35,22 @@ public class HistoryController {
     @Auth
     @ApiOperation(value = "히스토리 - 삭제", notes = "사용자가 받은 알림에 대한 전체 내역에서 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/history")
-    public void deleteNotice(@RequestParam("notice-id") List<Integer> noticeList){
-        historyService.deleteNotice(noticeList);
+    public ResponseEntity deleteNotice(@RequestParam("notice-id") List<Integer> noticeList){
+        if(historyService.deleteNotice(noticeList))
+            return new ResponseEntity(CustomBody.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+
     }
 
     @Xss
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PutMapping(value = "/history")
-    public void noticeRead(@RequestParam(name = "notice-id") String noticeId){
-        historyService.noticeRead(noticeId);
+    public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
+        if(historyService.noticeRead(noticeId))
+            return new ResponseEntity(CustomBody.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 }
