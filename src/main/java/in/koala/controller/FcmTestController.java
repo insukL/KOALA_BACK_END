@@ -4,6 +4,7 @@ import in.koala.annotation.Auth;
 import in.koala.domain.Crawling;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
+import in.koala.domain.response.CustomBody;
 import in.koala.enums.CrawlingSite;
 import in.koala.mapper.KeywordMapper;
 import in.koala.service.UserService;
@@ -32,9 +33,6 @@ public class FcmTestController {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private KeywordMapper keywordMapper;
 
     @Auth
     @PostMapping("/device")
@@ -86,5 +84,18 @@ public class FcmTestController {
 //        old.setSiteList(list);
 //        keywordPushService.modifySubscription(old, keyword, userService.getLoginUserInfo().getId());
         return new ResponseEntity<String>("success", HttpStatus.OK);
+    }
+
+    // --------------------------------- 위 인석 / 아래 현승 -------------------------------------------------------
+    // To. 인석
+    // 크롤링한 시점에서 키워드 푸쉬 될 수 있도록 변경해서 쓸게....
+    // KeywordPushController를 삭제하고 여기서 한번에 테스트 하려구
+
+    @Auth
+    @PostMapping("/keyword2")
+    @ApiOperation(value ="키워드 푸시 테스트2", notes = "키워드 알람 발송 실사용X", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity pushKeywordAtOnce() throws Exception{
+        keywordPushService.pushKeywordAtOnce();
+        return new ResponseEntity(CustomBody.of("success", HttpStatus.OK), HttpStatus.OK);
     }
 }
