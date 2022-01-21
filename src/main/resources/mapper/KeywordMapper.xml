@@ -19,7 +19,7 @@
     <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
         SELECT id
         FROM keyword
-        WHERE user_id = #{userId} AND name = #{name}
+        WHERE user_id = #{userId} AND name = #{name} AND is_deleted = 0
     </select>
 
     <!--키워드 등록 (2. 키워드 등록)-->

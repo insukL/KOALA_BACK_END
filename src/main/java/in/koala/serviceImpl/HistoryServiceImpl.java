@@ -34,16 +34,22 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void deleteNotice(List<Integer> noticeList) {
+    public Boolean deleteNotice(List<Integer> noticeList) {
 
         if(noticeList.isEmpty())
             throw new HistoryException(ErrorMessage.NOTICE_NOT_SELECTED);
 
-        historyMapper.deleteNotice(noticeList);
+        if(historyMapper.deleteNotice(noticeList)==1)
+            return true;
+        else
+            return false;
     }
 
     @Override
-    public void noticeRead(String noticeId) {
-        historyMapper.noticeRead(noticeId);
+    public Boolean noticeRead(String noticeId) {
+        if(historyMapper.noticeRead(noticeId)==1)
+            return true;
+        else
+            return false;
     }
 }

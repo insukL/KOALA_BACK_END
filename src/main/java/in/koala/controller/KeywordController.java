@@ -33,25 +33,34 @@ public class KeywordController {
     @Auth
     @ApiOperation(value ="키워드 추가" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/keyword")
-    public void registerKeyword(@RequestBody Keyword keyword) throws Exception {
-        keywordService.registerKeyword(keyword);
+    public ResponseEntity registerKeyword(@RequestBody Keyword keyword) throws Exception {
+        if(keywordService.registerKeyword(keyword))
+            return new ResponseEntity(CustomBody.of("키워드 추가에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("키워드 추가에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
     @Auth
     @ApiOperation(value = "키워드 삭제", notes = "사용자가 지정한 키워드를 삭제한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword")
-    public void deleteKeyword(@RequestParam(name = "keyword-name") String keywordName) throws Exception {
-        keywordService.deleteKeyword(keywordName);
+    public ResponseEntity deleteKeyword(@RequestParam(name = "keyword-name") String keywordName) throws Exception {
+        if(keywordService.deleteKeyword(keywordName))
+            return new ResponseEntity(CustomBody.of("키워드 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("키워드 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
     @Auth
     @ApiOperation(value = "키워드 수정", notes = "사용자가 지정한 키워드를 수정한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PutMapping(value = "/keyword")
-    public void modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
+    public ResponseEntity modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
                               @RequestBody Keyword keyword) throws Exception{
-        keywordService.modifyKeyword(keywordName, keyword);
+        if(keywordService.modifyKeyword(keywordName, keyword))
+            return new ResponseEntity(CustomBody.of("키워드 수정에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("키워드 수정에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -84,16 +93,22 @@ public class KeywordController {
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice")
-    public void deleteNotice(@RequestParam(name = "notice-id") List<Integer> noticeList){
-        keywordService.deletedNotice(noticeList);
+    public ResponseEntity deleteNotice(@RequestParam(name = "notice-id") List<Integer> noticeList){
+        if(keywordService.deletedNotice(noticeList))
+            return new ResponseEntity(CustomBody.of("알림 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
     @Auth
     @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice/reading-check")
-    public void noticeRead(@RequestParam(name = "notice-id") String noticeId){
-        keywordService.noticeRead(noticeId);
+    public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
+        if(keywordService.noticeRead(noticeId))
+            return new ResponseEntity(CustomBody.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss

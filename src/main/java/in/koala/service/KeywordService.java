@@ -14,7 +14,7 @@ public interface KeywordService {
     List<Notice> getSearchNotice(String keywordName, String site, String word);
 
     Boolean noticeRead(String noticeId);
-    void deletedNotice(List<Integer> noticeList);
+    Boolean deletedNotice(List<Integer> noticeList);
 
     List<String> searchKeyword(String keyword);
     List<String> searchSite(String site);
@@ -22,7 +22,7 @@ public interface KeywordService {
     List<String> recommendKeyword();
     List<String> recommendSite();
 
-    void registerKeyword(Keyword keyword) throws Exception;
-    void deleteKeyword(String keywordId) throws Exception;
-    void modifyKeyword(String keywordName, Keyword keyword) throws Exception;
+    Boolean registerKeyword(Keyword keyword) throws Exception;
+    Boolean deleteKeyword(String keywordId) throws Exception;
+    Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception;
 }

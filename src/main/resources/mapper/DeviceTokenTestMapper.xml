@@ -16,6 +16,6 @@
     </insert>
 
     <select id="getDeviceTokenById" parameterType="Long" resultType="String">
-        SELECT token FROM device_token WHERE user_id = #{id};
+        SELECT token FROM device_token WHERE user_id = #{id} ORDER BY created_at;
     </select>
 </mapper>

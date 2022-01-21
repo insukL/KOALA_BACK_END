@@ -42,50 +42,33 @@ public class KeywordPushServiceImpl implements KeywordPushService {
 
     //TODO : 아래 메소드 2개 정리
     @Override
-    public void pushKeywordAtOnce(String deviceToken) throws Exception {
+    public void pushKeywordAtOnce() throws Exception {
 
-        Long userId = userService.getLoginUserInfo().getId();
-
-        //crawlingService.executeAll();
+        crawlingService.executeAll();
 
         Timestamp latelyCrawlingTime = crawlingService.getLatelyCrawlingTime();
 
-        List<Map<String, String>> tmp = keywordPushMapper.pushKeywordByLatelyCrawlingTime(latelyCrawlingTime, userId);
+        System.out.println(latelyCrawlingTime);
 
-        try{
-            for(Map<String, String> map : tmp){
-                String title = map.get("title");
-                String url = map.get("url");
-                System.out.println("제목 : " + title);
-                System.out.println("url : " + url);
-                fcmSender.sendMessage(new TokenMessage("키워드의 글이 등록되었습니다", title, url, deviceToken));
-            }
-        }
-        catch (Exception e){
-            throw new KeywordPushException(ErrorMessage.FAILED_TO_SEND_NOTIFICATION);
-        }
+        List<Map<String, String>> tmp = keywordPushMapper.pushKeywordByLatelyCrawlingTime(latelyCrawlingTime);
 
-    }
+        System.out.println(tmp);
 
-    @Override
-    public void pushKeyword(String deviceToken) {
+        for(Map value : tmp){
+            StringBuilder sb = new StringBuilder();
+            ConditionMessage message = new ConditionMessage("키워드의 글이 등록되었습니다.",
+                    value.get("title").toString(),
+                    value.get("url").toString(),
+                    null);
 
-        Long userId = userService.getLoginUserInfo().getId();
-        List<Map<String, String>> tmp = keywordPushMapper.pushKeyword(userId);
-
-        try{
-            for(Map<String, String> map : tmp){
-                String title = map.get("title");
-                String url = map.get("url");
-                noticeMapper.insertNotice(map);
-                fcmSender.sendMessage(new TokenMessage("키워드의 글이 등록되었습니다", title, url, deviceToken));
-            }
-        }
-        catch (Exception e){
-            throw new KeywordPushException(ErrorMessage.FAILED_TO_SEND_NOTIFICATION);
+            sb.append("\'" + enConverter.ktoe(value.get("name").toString()) + "1" + "\' in topics");
+            message.setCondition(sb.toString());
+            System.out.println("최종 : "+ sb);
+            fcmSender.sendMessage(message);
         }
     }
 
+    // ---------------------------------------- 위 현승 / 아래 인석 -------------------------------------------------
     /*
     //Topic Message 활용안
     @Override
@@ -136,15 +119,19 @@ public class KeywordPushServiceImpl implements KeywordPushService {
         for(String word : keyword){
             if(cnt >= 5){
                 message.setCondition(sb.toString());
+                System.out.println("다섯개 이상일때 : " + sb);
                 fcmSender.sendMessage(message);
                 sb.setLength(0);
+                System.out.println("cnt>= 5 : " + sb);
                 cnt = 0;
             }
             if(cnt > 0) sb.append(" || ");
             sb.append("\'" + enConverter.ktoe(word) + site + "\' in topics");
             ++cnt;
+            System.out.println("cnt>0 : " + sb);
         }
         message.setCondition(sb.toString());
+        System.out.println("최종 : "+ sb);
         fcmSender.sendMessage(message);
     }
 
