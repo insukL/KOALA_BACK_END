@@ -240,23 +240,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getLoginUserInfo() {
-        Claims claims =  this.getClaimsFromJwt(TokenType.ACCESS);
+        User loginUser = getUserInfo(TokenType.ACCESS);
 
-        Long id = Long.valueOf(String.valueOf(claims.get("id")));
-        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
-
-        User user = null;
-
-        if(userType.equals(UserType.NORMAL)) {
-            user = userMapper.getNormalUserById(id);
-
-        } else if(userType.equals(UserType.NON)){
-            user = userMapper.getNonUserById(id);
-        }
-
-        if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-
-        return user;
+        return loginUser;
     }
 
     @Override
@@ -296,22 +282,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> refresh() {
-        Claims claims = this.getClaimsFromJwt(TokenType.REFRESH);
-
-        Long id = Long.valueOf(String.valueOf(claims.get("id")));
-        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
-
-        User user = null;
-        if(userType.equals(UserType.NORMAL)) {
-            user = userMapper.getNormalUserById(id);
-
-        } else {
-            user = userMapper.getNonUserById(id);
-        }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
+        User user = getUserInfo(TokenType.REFRESH);
 
         return this.generateAccessAndRefreshToken(user.getId(), user.getUser_type());
     }
@@ -646,6 +617,26 @@ public class UserServiceImpl implements UserService {
         } else {
             deviceTokenService.updateTokenTableUserId(deviceToken);
         }
+    }
+
+    private User getUserInfo(TokenType tokenType){
+        Long id = getLoginUserIdFromJwt(tokenType);
+
+        UserType userType = userMapper.getUserType(id);
+
+        User user = null;
+        if(userType.equals(userType.equals(UserType.NORMAL))) {
+            user = userMapper.getNormalUserById(id);
+
+        } else {
+            user = userMapper.getNonUserById(id);
+        }
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        return user;
     }
 
 }

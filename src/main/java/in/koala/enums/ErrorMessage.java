@@ -62,6 +62,7 @@ public enum ErrorMessage {
 	APPLE_PUBLIC_KEY_EXCEPTION(151, "apple server 에서 public key 가져오는 것 실패했습니다"),
 	EMAIL_NOT_UNIVERSITY(152, "학교인증은 이메일형식이 학교 이메일이여야 합니다"),
 	FILE_UPLOAD_FAIL(153, "amazon s3 file upload failed"),
+	FORBIDDEN_EXCEPTION(154, "USER AUTHORIZATION EXCEPTION"),
 
 	/*
 	 * Scrap, Memo
