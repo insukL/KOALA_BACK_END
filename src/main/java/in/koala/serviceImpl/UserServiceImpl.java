@@ -125,7 +125,9 @@ public class UserServiceImpl implements UserService {
         }
 
         // 디바이스 토큰의 user id 갱신
-        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
+        if(!checkIsWebUser(deviceToken)) {
+            this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
+        }
 
         return generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
@@ -136,6 +138,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map nonMemberLogin(String deviceToken) {
+
+        if(checkIsWebUser(deviceToken)){
+            throw new NonCriticalException(ErrorMessage.WEB_NOT_SUPPORT);
+        }
 
         DeviceToken token = null;
 
@@ -233,30 +239,18 @@ public class UserServiceImpl implements UserService {
         // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
         if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
-        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+        if(!checkIsWebUser(deviceToken)) {
+            this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+        }
 
         return generateAccessAndRefreshToken(loginUser.getId(), UserType.NORMAL);
     }
 
     @Override
     public User getLoginUserInfo() {
-        Claims claims =  this.getClaimsFromJwt(TokenType.ACCESS);
+        User loginUser = getUserInfo(TokenType.ACCESS);
 
-        Long id = Long.valueOf(String.valueOf(claims.get("id")));
-        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
-
-        User user = null;
-
-        if(userType.equals(UserType.NORMAL)) {
-            user = userMapper.getNormalUserById(id);
-
-        } else if(userType.equals(UserType.NON)){
-            user = userMapper.getNonUserById(id);
-        }
-
-        if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-
-        return user;
+        return loginUser;
     }
 
     @Override
@@ -296,22 +290,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> refresh() {
-        Claims claims = this.getClaimsFromJwt(TokenType.REFRESH);
-
-        Long id = Long.valueOf(String.valueOf(claims.get("id")));
-        UserType userType = UserType.getUserType(String.valueOf(claims.get("aud")));
-
-        User user = null;
-        if(userType.equals(UserType.NORMAL)) {
-            user = userMapper.getNormalUserById(id);
-
-        } else {
-            user = userMapper.getNonUserById(id);
-        }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
+        User user = getUserInfo(TokenType.REFRESH);
 
         return this.generateAccessAndRefreshToken(user.getId(), user.getUser_type());
     }
@@ -662,4 +641,29 @@ public class UserServiceImpl implements UserService {
             deviceTokenService.updateTokenTableUserId(deviceToken);
         }
     }
+
+    private User getUserInfo(TokenType tokenType){
+        Long id = getLoginUserIdFromJwt(tokenType);
+
+        UserType userType = userMapper.getUserType(id);
+
+        User user = null;
+        if(userType.equals(userType.equals(UserType.NORMAL))) {
+            user = userMapper.getNormalUserById(id);
+
+        } else {
+            user = userMapper.getNonUserById(id);
+        }
+
+        if(user == null){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
+        }
+
+        return user;
+    }
+
+    private boolean checkIsWebUser(String deviceToken){
+        return deviceToken.startsWith("webuser");
+    }
+
 }

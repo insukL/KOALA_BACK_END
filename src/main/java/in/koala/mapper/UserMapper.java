@@ -3,6 +3,7 @@ package in.koala.mapper;
 import in.koala.domain.user.NonUser;
 import in.koala.domain.user.NormalUser;
 import in.koala.domain.user.User;
+import in.koala.enums.UserType;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -15,6 +16,7 @@ public interface UserMapper {
     NormalUser getNormalUserById(Long id);
     NonUser getNonUserById(Long id);
     NormalUser getUserByFindEmail(String email);
+    UserType getUserType(Long id);
     Integer checkNickname(String nickname);
     NormalUser getUserPassword(String account);
     void updateNickname(NormalUser user);

@@ -106,6 +106,10 @@
         SELECT u.id, nu.password FROM normal_user nu INNER JOIN user u ON u.id=nu.user_id WHERE account=#{account} AND deleted_at IS NULL
     </select>
 
+    <select id="getUserType" resultType="in.koala.enums.UserType">
+        SELECT user_type FROM user WHERE id=#{id};
+    </select>
+
     <update id="updateNickname" parameterType="in.koala.domain.user.NormalUser">
         UPDATE normal_user
         SET

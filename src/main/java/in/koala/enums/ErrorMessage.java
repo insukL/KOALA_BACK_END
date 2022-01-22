@@ -24,6 +24,7 @@ public enum ErrorMessage {
 	 */
 	DEVICE_TOKEN_NOT_EXIST(50, "해당 토큰이 존재하지 않습니다"),
 	DEVICETOKEN_ALREADY_EXIST(51, "디바이스 토큰이 이미 존재합니다"),
+	WEB_NOT_SUPPORT(52, "웹에는 지원하지 않는 기능입니다"),
 
 	/**
 	 * USER
@@ -62,6 +63,7 @@ public enum ErrorMessage {
 	APPLE_PUBLIC_KEY_EXCEPTION(151, "apple server 에서 public key 가져오는 것 실패했습니다"),
 	EMAIL_NOT_UNIVERSITY(152, "학교인증은 이메일형식이 학교 이메일이여야 합니다"),
 	FILE_UPLOAD_FAIL(153, "amazon s3 file upload failed"),
+	FORBIDDEN_EXCEPTION(154, "USER AUTHORIZATION EXCEPTION"),
 
 	/**
 	 * Scrap, Memo

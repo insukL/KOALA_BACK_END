@@ -9,6 +9,7 @@ import in.koala.domain.user.User;
 import in.koala.domain.response.CustomBody;
 import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
+import in.koala.enums.UserType;
 import in.koala.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -59,7 +60,6 @@ public class UserController {
         return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Xss
     @Auth
     @GetMapping(value="/my")
     @ApiOperation(value ="유저의 현재정보" , notes = "로그인된 유저의 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
@@ -103,7 +103,7 @@ public class UserController {
         return new ResponseEntity(CustomBody.of("사용 가능한 이메일입니다", HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
+    @Auth(role = UserType.NORMAL)
     @PatchMapping(value="/nickname")
     @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity changeNickname(@RequestParam @NotNull String nickname){
@@ -154,7 +154,7 @@ public class UserController {
         return new ResponseEntity(CustomBody.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
+    @Auth(role = UserType.NORMAL)
     @GetMapping(value="/auth-check")
     @ApiOperation(value="학교 인증 여부 확인", notes="해당 계정의 학교 인증 여부를 확인하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity checkAuth(){
@@ -162,7 +162,7 @@ public class UserController {
         return new ResponseEntity(CustomBody.of("인증 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
+    @Auth(role = UserType.NORMAL)
     @PatchMapping(value="/delete")
     @ApiOperation(value="유저 탈퇴", notes="유저 탈퇴", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity deleteUser(){
@@ -170,7 +170,7 @@ public class UserController {
         return new ResponseEntity(CustomBody.of("탈퇴 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
+    @Auth(role = UserType.NORMAL)
     @PatchMapping(value="/profile")
     @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다 \n 사진의 크기나 모양, 확장자 등 조건에 대해서는 아직 구현된 것 없습니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
