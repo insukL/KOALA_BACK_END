@@ -30,5 +30,6 @@ public interface UserService {
     void softDeleteUser();
     Boolean checkFindEmail(String email);
     Map editProfile(MultipartFile multipartFile);
+    Map getSocketToken();
     Map nonMemberLogin(String deviceToken);
 }

@@ -2,6 +2,7 @@ package in.koala.service;
 
 import in.koala.domain.Crawling;
 import in.koala.domain.CrawlingToken;
+import in.koala.enums.CrawlingSite;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface CrawlingService {
 
     String test();
-    void updateLog(Integer site, Timestamp crawlingAt);
+    void updateLog(CrawlingSite site, Timestamp crawlingAt);
     void updateTable(List<Crawling> crawlingInsertList, List<Crawling> crawlingUpdateList);
     Timestamp getLatelyCrawlingTime();
 

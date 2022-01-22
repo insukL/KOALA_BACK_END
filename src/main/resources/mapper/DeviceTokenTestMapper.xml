@@ -16,15 +16,6 @@
     </insert>
 
     <select id="getDeviceTokenById" parameterType="Long" resultType="String">
-        SELECT token
-        FROM(
-                SELECT ud.user_id AS id, dt.token AS token
-                FROM
-                    user_device AS ud,
-                    device_token AS dt
-                WHERE
-                    ud.device_token_id = dt.id
-            ) t
-        WHERE id = #{id}
+        SELECT token FROM device_token WHERE user_id = #{id} ORDER BY created_at;
     </select>
 </mapper>

@@ -19,13 +19,14 @@
     <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
         SELECT id
         FROM keyword
-        WHERE user_id = #{userId} AND name = #{name}
+        WHERE user_id = #{userId} AND name = #{name} AND is_deleted = 0
     </select>
 
     <!--키워드 등록 (2. 키워드 등록)-->
     <insert id="insertUsersKeyword" parameterType="in.koala.domain.Keyword">
-        INSERT INTO keyword (user_id, name, is_important, alarm_mode, alarm_cycle)
-        VALUES (#{userId}, #{name}, #{isImportant}, #{alarmMode}, #{alarmCycle})
+        INSERT INTO keyword
+            (user_id, name, is_important, silent_mode, vibration_mode, until_press_ok_button, alarm_cycle)
+        VALUES (#{userId}, #{name}, #{isImportant}, #{silentMode}, #{vibrationMode}, #{untilPressOkButton}, #{alarmCycle})
         <selectKey keyProperty="id" resultType="Long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -60,7 +61,7 @@
             );
     </update>
 
-    <select id="getKeywordSite" resultType="java.lang.Integer">
+    <select id="getKeywordSite" resultType="in.koala.enums.CrawlingSite">
         SELECT ks.site_name
         FROM keyword_site as ks
         INNER JOIN keyword as k
@@ -91,7 +92,8 @@
     <update id="modifyKeyword">
         UPDATE keyword
         SET name = #{keyword.name}, is_important = #{keyword.isImportant},
-            alarm_mode = #{keyword.alarmMode}, alarm_cycle = #{keyword.alarmCycle}
+            silent_mode = #{keyword.silentMode}, vibration_mode = #{keyword.vibrationMode},
+            until_press_ok_button = #{keyword.untilPressOkButton}, alarm_cycle = #{keyword.alarmCycle}
         WHERE id = (
             SELECT id
             FROM (
@@ -158,7 +160,7 @@
         WHERE name LIKE concat("%", #{keyword}, "%");
     </select>
 
-    <select id="getSiteList" resultType="java.lang.Integer">
+    <select id="getSiteList" resultType="in.koala.enums.CrawlingSite">
         SELECT site_name
         FROM keyword_site
         WHERE is_deleted = 0
@@ -178,7 +180,7 @@
         LIMIT 10;
     </select>
 
-    <select id="recommendSite" resultType="java.lang.Integer">
+    <select id="recommendSite" resultType="in.koala.enums.CrawlingSite">
         SELECT site_name
         FROM keyword_site
         GROUP BY site_name

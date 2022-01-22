@@ -612,12 +612,27 @@ public class UserServiceImpl implements UserService {
         userMapper.signUp(user);
     }
 
+    // 소켓 연결시 사용할 JWT 토큰 발급
+    @Override
+    public Map<String, String> getSocketToken(){
+        NormalUser user = this.getLoginNormalUserInfo();
+
+        if(user.getIs_auth() == 0){
+            throw new NonCriticalException(ErrorMessage.USER_NOT_AUTH);
+        }
+
+        Map<String, String> token = new HashMap<>();
+        token.put("socket_token", jwt.generateToken(user.getId(), TokenType.SOCKET, UserType.NORMAL));
+
+        return token;
+    }
+  
     private void nonUserSingUp(NonUser user){
         userMapper.insertUser(user);
         userMapper.insertNonMemberUser(user);
     }
 
-
+  
     private void setUserIdInDeviceToken(DeviceToken deviceToken){
         if(!deviceTokenService.checkTokenExist(deviceToken.getToken())) {
             deviceTokenService.insertDeviceToken(deviceToken);

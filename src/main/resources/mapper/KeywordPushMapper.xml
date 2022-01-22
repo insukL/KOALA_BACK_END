@@ -7,22 +7,21 @@
         from crawling as c
                  inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
                  inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
-        where k.user_id = #{userId}
-          AND ks.is_deleted IS NULL
+        where k.user_id = 1
+          AND ks.is_deleted = 0
           AND c.is_deleted = 0
-          AND k.is_deleted IS NULL;
+          AND k.is_deleted = 0;
     </select>
 
     <select id="pushKeywordByLatelyCrawlingTime" resultType="java.util.Map">
-        SELECT c.id, c.title, c.url
+        SELECT k.name, c.title, c.url, c.site
         from crawling as c
                  inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
                  inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
-        where k.user_id = #{userId}
-          AND c.crawling_at = #{latelyCrawlingTime}
-          AND ks.is_deleted IS NULL
+        where c.crawling_at = #{latelyCrawlingTime}
+          AND ks.is_deleted = 0
           AND c.is_deleted = 0
-          AND k.is_deleted IS NULL;
+          AND k.is_deleted = 0;
     </select>
 
 </mapper>

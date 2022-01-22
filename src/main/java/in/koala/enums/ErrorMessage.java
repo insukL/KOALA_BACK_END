@@ -65,7 +65,7 @@ public enum ErrorMessage {
 	FILE_UPLOAD_FAIL(153, "amazon s3 file upload failed"),
 	FORBIDDEN_EXCEPTION(154, "USER AUTHORIZATION EXCEPTION"),
 
-	/*
+	/**
 	 * Scrap, Memo
 	 */
 	BOARD_NOT_EXIST(250, "글이 존재하지 않습니다"),
@@ -97,12 +97,21 @@ public enum ErrorMessage {
 	 */
 	EXCEED_MAXIMUM_KEYWORD_NUMBER(500, "등록가능한 키워드 갯수를 초과했습니다."),
 	DUPLICATED_KEYWORD_EXCEPTION(501, "이미 등록하신 키워드입니다."),
+	DATA_INSERT_ERROR(502, "키워드 등록 에러"),
 
 	/**
 	 * History
 	 */
 	NOTICE_NOT_EXIST(600, "알림이 없습니다."),
-	NOTICE_NOT_SELECTED(601, "알림이 선택되지 않았습니다.")
+	NOTICE_NOT_SELECTED(601, "알림이 선택되지 않았습니다."),
+    
+	/**
+	 * Chat
+	 */
+  	SOCKETTOKEN_EXPIRED_EXCEPTION(700, "socket token 만료"),
+	SOCKETTOKEN_INVALID_EXCEPTION(701, "유효하지 않은 socket token"),
+	SOCKETTOKEN_NOT_FOUNDED(702, "socket token을 찾을 수 없습니다"),
+	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다.")
 	;
 
 	Integer code;
