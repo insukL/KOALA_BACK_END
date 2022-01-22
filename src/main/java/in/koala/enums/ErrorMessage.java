@@ -24,6 +24,7 @@ public enum ErrorMessage {
 	 */
 	DEVICE_TOKEN_NOT_EXIST(50, "해당 토큰이 존재하지 않습니다"),
 	DEVICETOKEN_ALREADY_EXIST(51, "디바이스 토큰이 이미 존재합니다"),
+	WEB_NOT_SUPPORT(52, "웹에는 지원하지 않는 기능입니다"),
 
 	/**
 	 * USER

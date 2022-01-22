@@ -125,7 +125,9 @@ public class UserServiceImpl implements UserService {
         }
 
         // 디바이스 토큰의 user id 갱신
-        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
+        if(!checkIsWebUser(deviceToken)) {
+            this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
+        }
 
         return generateAccessAndRefreshToken(id, UserType.NORMAL);
     }
@@ -136,6 +138,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map nonMemberLogin(String deviceToken) {
+
+        if(checkIsWebUser(deviceToken)){
+            throw new NonCriticalException(ErrorMessage.WEB_NOT_SUPPORT);
+        }
 
         DeviceToken token = null;
 
@@ -233,7 +239,9 @@ public class UserServiceImpl implements UserService {
         // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
         if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
-        this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+        if(!checkIsWebUser(deviceToken)) {
+            this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+        }
 
         return generateAccessAndRefreshToken(loginUser.getId(), UserType.NORMAL);
     }
@@ -637,6 +645,10 @@ public class UserServiceImpl implements UserService {
         }
 
         return user;
+    }
+
+    private boolean checkIsWebUser(String deviceToken){
+        return deviceToken.startsWith("webuser");
     }
 
 }

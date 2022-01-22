@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -69,5 +71,10 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
         deviceTokenInfo.setNon_user_id(deviceToken.getNon_user_id());
 
         deviceTokenMapper.updateNonUserId(deviceTokenInfo);
+    }
+
+    @Override
+    public List<DeviceToken> getDeviceTokenListByUserId(Long userId) {
+        return deviceTokenMapper.getDeviceTokenByUserId(userId);
     }
 }
