@@ -15,7 +15,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -48,6 +47,7 @@ public class ChatServiceImpl implements ChatService {
         ChatMessage chatMessage = message.getPayload();
         chatMessage.setSender(id);
         chatMessageMapper.insertMessage(chatMessage);
+        chatMessage.setNickname(userMapper.getNormalUserById(id).getNickname());
         template.convertAndSend("/sub/" + roomId, chatMessage);
     }
 

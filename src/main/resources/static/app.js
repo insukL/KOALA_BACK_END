@@ -93,7 +93,7 @@ function login(){
 }
 
 function upgrade(){
-    fetch("http://localhost:8080/user/socket-token", {
+    fetch("https://localhost:8080/user/socket-token", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
