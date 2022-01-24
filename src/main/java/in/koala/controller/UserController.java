@@ -177,7 +177,7 @@ public class UserController {
         return new ResponseEntity(CustomBody.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
     }
 
-    @Auth
+    @Auth(role = UserType.NORMAL)
     @GetMapping(value = "/socket-token")
     @ApiOperation(value = "웹소켓 인증용 토큰 API", notes = "웹소켓 인증용 토큰을 얻어오는 API입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getSocketToken(){

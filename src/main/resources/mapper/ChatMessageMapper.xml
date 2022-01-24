@@ -11,9 +11,9 @@
     
     <select id="getMessageList" resultMap="messageMap">
         SELECT id, sender, message, type, sent_at, is_deleted
-        FROM chat_message as c
-        ORDER BY id DESC
-        LIMIT #{criteria.cursor}, #{criteria.limit}
+        FROM chat_message
+        WHERE id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
+        ORDER BY id DESC LIMIT #{criteria.limit}
     </select>
     
     <resultMap id="messageMap" type="in.koala.domain.ChatMessage">
@@ -21,8 +21,11 @@
         <result column="sender" property="sender"/>
         <result column="message" property="message" javaType="java.lang.String"/>
         <result column="type" property="type" javaType="in.koala.enums.ChatType"/>
-        <result column="sent_at" property="sent_at"/>
-        <result column="is_deleted" property="is_deleted"/>
+        <result column="sentAt" property="sent_at"/>
+        <result column="isDeleted" property="is_deleted"/>
     </resultMap>
 
+    <sql id="getLastKey">
+        (SELECT id FROM chat_message ORDER BY id DESC LIMIT 1 )
+    </sql>
 </mapper>

@@ -2,22 +2,22 @@ package in.koala.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import in.koala.enums.ChatType;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.sql.Timestamp;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatMessage {
     private Long id;
     private Long sender;
     private String message;
     private ChatType type;
-    private Timestamp sent_at;
-    private Short is_deleted;
+    private Timestamp sentAt;
+    private Boolean isDeleted;
+    private String nickname;
 }
