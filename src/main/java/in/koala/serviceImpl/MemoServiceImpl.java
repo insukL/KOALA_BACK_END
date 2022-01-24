@@ -11,6 +11,7 @@ import in.koala.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 @Service
@@ -44,7 +45,7 @@ public class MemoServiceImpl implements MemoService {
     }
 
     @Override
-    public String getMemo(Long userScrapId) throws Exception{
+    public List<String> getMemo(Long userScrapId) throws Exception{
         User user = userService.getLoginUserInfo();
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
