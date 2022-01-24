@@ -648,7 +648,7 @@ public class UserServiceImpl implements UserService {
         UserType userType = userMapper.getUserType(id);
 
         User user = null;
-        if(userType.equals(userType.equals(UserType.NORMAL))) {
+        if(userType.equals(UserType.NORMAL)) {
             user = userMapper.getNormalUserById(id);
 
         } else {
