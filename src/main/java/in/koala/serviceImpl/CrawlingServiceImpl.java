@@ -11,8 +11,6 @@ import in.koala.exception.NonCriticalException;
 import in.koala.mapper.CrawlingMapper;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.joda.time.DateTime;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +19,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -30,15 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Resource;
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -82,7 +74,7 @@ public class CrawlingServiceImpl implements CrawlingService {
 
         for(String boardNumber : boardList) {
             Document portalHtml;
-            String portalUrl = "http://portal.koreatech.ac.kr/ctt/bb/bulletin?b="+ boardNumber;
+            String portalUrl = "https://portal.koreatech.ac.kr/ctt/bb/bulletin?b=" + boardNumber;
 
             try{
                 portalHtml = getConnectionToKoreaTechSite(portalUrl);
