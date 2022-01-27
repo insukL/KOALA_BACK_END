@@ -3,15 +3,25 @@
 <mapper namespace="in.koala.mapper.HistoryMapper">
 
     <select id="getEveryNotice" resultType = "in.koala.domain.Notice">
-        select n.id, c.site, c.title, c.url, c.created_at as createdAt, n.is_read as isRead
-        from notice as n
-                 inner join keyword as k
-                            on k.id = n.keyword_id
-                 inner join crawling as c
-                            on c.id = n.crawling_id
-        where k.user_id = #{userId}
-          and n.is_deleted = 0
-          and k.is_deleted = 0
+        SELECT n.id, c.site, c.title, c.url, c.created_at AS createdAt, n.is_read AS isRead
+        FROM notice AS n
+                 INNER JOIN keyword AS k
+                            ON k.id = n.keyword_id
+                 INNER JOIN crawling AS c
+                            ON c.id = n.crawling_id
+        WHERE k.user_id = #{userId}
+          AND n.is_deleted = 0
+          AND k.is_deleted = 0
+          <if test="sortType != null">
+              <choose>
+                  <when test='sortType.equals("yes")'>
+                      AND n.is_read = 1
+                  </when>
+                  <when test='sortType.equals("no")'>
+                      AND n.is_read = 0
+                  </when>
+              </choose>
+          </if>
             LIMIT #{pageNum}, 5;
     </select>
 

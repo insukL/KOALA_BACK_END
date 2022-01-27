@@ -8,7 +8,7 @@ import java.util.List;
 @Repository
 public interface HistoryMapper {
 
-    List<Notice> getEveryNotice(Long userId, int pageNum);
+    List<Notice> getEveryNotice(Long userId, int pageNum, String sortType);
     Integer deleteNotice(List<Integer> noticeList);
     Integer noticeRead(String noticeId);
 }

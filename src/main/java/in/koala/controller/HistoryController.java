@@ -27,8 +27,9 @@ public class HistoryController {
             authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/history")
     public ResponseEntity<List<Notice>> getEveryNotice(
-            @RequestParam(value = "pageNum", required = false, defaultValue = "1") int pageNum){
-        return new ResponseEntity(CustomBody.of(historyService.getEveryNotice(pageNum), HttpStatus.OK), HttpStatus.OK);
+            @RequestParam(value = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @RequestParam(value = "is-read", required = false) String sortType){
+        return new ResponseEntity(CustomBody.of(historyService.getEveryNotice(pageNum, sortType), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss

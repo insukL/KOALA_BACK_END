@@ -21,7 +21,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final UserService userService;
 
     @Override
-    public List<Notice> getEveryNotice(int pageNum){
+    public List<Notice> getEveryNotice(int pageNum, String sortType){
 
         Long userId = userService.getLoginUserInfo().getId();
 
@@ -30,7 +30,7 @@ public class HistoryServiceImpl implements HistoryService {
             pageNum = 5 * (pageNum-1);
         }
 
-        return historyMapper.getEveryNotice(userId, pageNum);
+        return historyMapper.getEveryNotice(userId, pageNum, sortType);
     }
 
     @Override
