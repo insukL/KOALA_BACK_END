@@ -16,19 +16,17 @@ public interface CrawlingMapper {
 
     String test();
 
-    int checkDuplicatedData(Crawling crawling);
+    Boolean checkDuplicatedData(Crawling crawling);
+    Timestamp getLatelyCrawlingTime();
 
     int updateLog(CrawlingSite site, Timestamp crawlingAt);
-
     void addCrawlingData(List<Crawling> crawlingInsertList);
-
     void updateCrawlingData(List<Crawling> crawlingUpdateList);
-    Timestamp getLatelyCrawlingTime();
 
     void addToken(CrawlingToken token);
     List<CrawlingToken> getToken(Long site);
-    CrawlingToken getTokenById(Long id);
     void updateToken(CrawlingToken token);
     void deleteTokenById(Long id);
     Boolean checkTokenById(Long id);
+    CrawlingToken getTokenById(Long id);
 }

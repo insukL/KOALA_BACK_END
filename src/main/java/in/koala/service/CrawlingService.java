@@ -11,14 +11,10 @@ import java.util.List;
 public interface CrawlingService {
 
     String test();
-    void updateLog(CrawlingSite site, Timestamp crawlingAt);
-    void updateTable(List<Crawling> crawlingInsertList, List<Crawling> crawlingUpdateList);
-    Timestamp getLatelyCrawlingTime();
 
-    Boolean dormCrawling(Timestamp crawlingAt) throws Exception;
     Boolean portalCrawling(Timestamp crawlingAt) throws Exception;
+    Boolean dormCrawling(Timestamp crawlingAt) throws Exception;
     Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception;
-
     Boolean facebookCrawling(Long tokenId, Timestamp crawlingAt) throws Exception;
     Boolean instagramCrawling(Long tokenId, Timestamp crawlingAt) throws Exception;
 
@@ -27,5 +23,6 @@ public interface CrawlingService {
     void updateCrawlingToken(CrawlingToken token) throws Exception;
     void deleteCrawlingToken(Long id) throws Exception;
 
+    Timestamp getLatelyCrawlingTime();
     Boolean executeAll() throws Exception;
 }

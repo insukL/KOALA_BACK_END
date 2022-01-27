@@ -6,13 +6,22 @@
         SELECT title FROM crawling LIMIT 1;
     </select>
 
-    <select id="checkDuplicatedData" parameterType="in.koala.domain.Crawling" resultType="int">
-        SELECT count(*)
-        FROM crawling
-        WHERE title = #{title}
-          AND url = #{url}
-          AND site = #{site}
-          AND created_at = #{createdAt}
+    <select id="checkDuplicatedData" parameterType="in.koala.domain.Crawling" resultType="Boolean">
+        SELECT EXISTS(
+            SELECT id
+            FROM crawling
+            WHERE title = #{title}
+                AND url = #{url}
+                AND site = #{site}
+                AND created_at = #{createdAt}
+        )
+    </select>
+
+    <select id="getLatelyCrawlingTime" resultType="java.sql.Timestamp">
+        SELECT crawling_at
+        FROM crawling_log
+        ORDER BY crawling_at DESC
+            LIMIT 1;
     </select>
 
     <insert id="updateLog">
@@ -47,13 +56,6 @@
         </foreach>
     </update>
 
-    <select id="getLatelyCrawlingTime" resultType="java.sql.Timestamp">
-        SELECT crawling_at
-        FROM crawling_log
-        ORDER BY crawling_at DESC
-        LIMIT 1;
-    </select>
-
     <insert id="addToken" parameterType="in.koala.domain.CrawlingToken">
         INSERT INTO crawling_token(description, site, token)
         VALUES(#{description}, #{site}, #{token});
@@ -61,11 +63,6 @@
 
     <select id="getToken" resultType="in.koala.domain.CrawlingToken">
         SELECT id, description, site FROM crawling_token WHERE site=#{site};
-    </select>
-
-    <select id="getTokenById" resultType="in.koala.domain.CrawlingToken">
-        SELECT id, description, site, token FROM crawling_token
-        WHERE id=#{id};
     </select>
 
     <update id="updateToken" parameterType="in.koala.domain.CrawlingToken">
@@ -82,4 +79,8 @@
         SELECT EXISTS (SELECT id FROM crawling_token WHERE id = #{id});
     </select>
 
+    <select id="getTokenById" resultType="in.koala.domain.CrawlingToken">
+        SELECT id, description, site, token FROM crawling_token
+        WHERE id=#{id};
+    </select>
 </mapper>

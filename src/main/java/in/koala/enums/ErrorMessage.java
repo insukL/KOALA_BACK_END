@@ -81,11 +81,11 @@ public enum ErrorMessage {
 	UNABLE_CONNECT_TO_PORTAL(300, "아우누리 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_DORM(301, "아우미르 웹 사이트에 접속할 수 없습니다."),
 	UNABLE_CONNECT_TO_YOUTUBE(302, "유튜브 API 호출이 불가 합니다."),
-	UNABLE_CONNECT_TO_FACEBOOK(303, "페이스북 API 호출이 불가 합니다."),
-	UNABLE_CONNECT_TO_INSTAGRAM(304, "인스타그램 API 호출이 불가 합니다."),
-
-	CRAWLING_TOKEN_NOT_EXIST(305, "해당 토큰이 존재하지 않습니다."),
-	CRAWLING_TOKEN_INVALID_EXCEPTION(306, "다른 사이트의 토큰입니다."),
+	YOUTUBE_JSON_PARSE_EXCEPTION(303,"유튜브 JSON Parse 과정에 문제가 있습니다."),
+	UNABLE_CONNECT_TO_FACEBOOK(304, "페이스북 API 호출이 불가 합니다."),
+	UNABLE_CONNECT_TO_INSTAGRAM(305, "인스타그램 API 호출이 불가 합니다."),
+	CRAWLING_TOKEN_NOT_EXIST(306, "해당 토큰이 존재하지 않습니다."),
+	CRAWLING_TOKEN_INVALID_EXCEPTION(307, "다른 사이트의 토큰입니다."),
 
 	/**
 	 * FCM Push Notification
