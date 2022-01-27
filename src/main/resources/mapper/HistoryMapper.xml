@@ -12,7 +12,7 @@
         where k.user_id = #{userId}
           and n.is_deleted = 0
           and k.is_deleted = 0
-            limit #{pageNum}, 20;
+            LIMIT #{pageNum}, 5;
     </select>
 
     <update id="deleteNotice">

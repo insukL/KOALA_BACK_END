@@ -27,7 +27,7 @@ public class HistoryServiceImpl implements HistoryService {
 
         if(pageNum <= 1) pageNum = 0;
         else {
-            pageNum = (pageNum * 10) + 1;
+            pageNum = 5 * (pageNum-1);
         }
 
         return historyMapper.getEveryNotice(userId, pageNum);
