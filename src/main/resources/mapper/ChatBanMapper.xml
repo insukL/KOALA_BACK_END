@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="in.koala.mapper.ChatBanMapper">
+
+    <select id="getBanWordList" parameterType="Long" resultType="in.koala.domain.BanWord">
+        SELECT id, word FROM chat_banword WHERE user_id=#{userId} AND is_deleted=0;
+    </select>
+
+    <insert id="addBanWord">
+        INSERT INTO chat_banword(user_id, word)
+        VALUES(#{userId}, #{word});
+    </insert>
+
+    <update id="updateBanWord">
+        UPDATE chat_banword
+        SET word = #{word} WHERE id = #{id};
+    </update>
+
+    <delete id="deleteBanWordById" parameterType="Long">
+        UPDATE chat_banword
+        SET is_deleted = 1 WHERE id = #{id};
+    </delete>
+
+    <select id="checkExistBanWord" resultType="Boolean">
+        SELECT EXISTS (SELECT id FROM chat_banword WHERE id = #{id} AND user_id = #{userId} AND is_deleted=0);
+    </select>
+
+</mapper>
