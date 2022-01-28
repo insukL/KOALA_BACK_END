@@ -7,8 +7,12 @@
         VALUES(#{user_scrap_id}, #{memo})
     </insert>
 
-    <select id="getMemo" resultType="String">
-        SELECT memo FROM koala.memo WHERE user_scrap_id = #{userScrapId} AND is_deleted = 0;
+    <select id="getMemo" resultType="java.util.Map">
+        SELECT m.user_scrap_id as userScrapId, m.memo, m.created_at, m.updated_at
+        FROM koala.memo AS m
+        JOIN koala.scrap AS s
+        ON s.id = m.user_scrap_id
+        WHERE s.user_id = #{userId} AND s.is_deleted = 0 AND m.is_deleted = 0;
     </select>
 
     <update id="updateMemo" parameterType="in.koala.domain.Memo">
