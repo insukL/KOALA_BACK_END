@@ -30,9 +30,9 @@ public class MemoController {
 
     @Auth
     @ApiOperation(value = "보관함 메모 조회", notes = "보관함 메모 조회입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @GetMapping(value = "/memo/{userScrapId}")
-    public ResponseEntity getMemo(@RequestParam Long userScrapId) throws Exception {
-        return new ResponseEntity(CustomBody.of(memoService.getMemo(userScrapId), HttpStatus.OK), HttpStatus.OK);
+    @GetMapping(value = "/memo")
+    public ResponseEntity getMemo() throws Exception {
+        return new ResponseEntity(CustomBody.of(memoService.getMemo(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth

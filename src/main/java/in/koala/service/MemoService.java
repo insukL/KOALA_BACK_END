@@ -7,5 +7,5 @@ import java.util.List;
 public interface MemoService {
     void addMemo(Memo memo) throws Exception;
     void updateMemo(Memo memo) throws Exception;
-    List<String> getMemo(Long userScrapId) throws Exception;
+    List<Memo> getMemo() throws Exception;
 }
