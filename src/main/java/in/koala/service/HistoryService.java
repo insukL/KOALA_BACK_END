@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface HistoryService {
 
-    List<Notice> getEveryNotice(int pageNum);
+    List<Notice> getEveryNotice(int pageNum, String sortType);
     Boolean deleteNotice(List<Integer> noticeList);
     Boolean noticeRead(String noticeId);
 }
