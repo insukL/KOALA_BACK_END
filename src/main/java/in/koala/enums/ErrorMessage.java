@@ -111,7 +111,12 @@ public enum ErrorMessage {
   	SOCKETTOKEN_EXPIRED_EXCEPTION(700, "socket token 만료"),
 	SOCKETTOKEN_INVALID_EXCEPTION(701, "유효하지 않은 socket token"),
 	SOCKETTOKEN_NOT_FOUNDED(702, "socket token을 찾을 수 없습니다"),
-	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다.")
+	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다."),
+
+	/**
+	 * Chat Ban
+	 */
+	BAN_WORD_NOT_EXIST(800, "해당 금칙어가 존재하지 않습니다."),
 	;
 
 	Integer code;
