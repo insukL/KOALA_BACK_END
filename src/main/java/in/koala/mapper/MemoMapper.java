@@ -9,6 +9,6 @@ import java.util.List;
 public interface MemoMapper {
     void addMemo(Memo memo);
     void updateMemo(Memo memo);
-    List<String> getMemo(Long userScrapId);
+    List<Memo> getMemo(Long userId);
     Boolean checkMemoExist(Long userScrapId);
 }
