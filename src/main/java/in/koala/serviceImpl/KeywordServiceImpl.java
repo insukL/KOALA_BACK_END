@@ -217,4 +217,11 @@ public class KeywordServiceImpl implements KeywordService {
         }
         return result;
     }
+
+    @Override
+    public List<String> getSiteList(String keywordName) {
+        Long userId = userService.getLoginUserInfo().getId();
+        List<String> siteList = convertSiteToKorean(keywordMapper.getSiteList(userId, keywordName));
+        return siteList;
+    }
 }

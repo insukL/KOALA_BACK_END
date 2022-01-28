@@ -25,4 +25,6 @@ public interface KeywordService {
     Boolean registerKeyword(Keyword keyword) throws Exception;
     Boolean deleteKeyword(String keywordId) throws Exception;
     Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception;
+
+    List<String> getSiteList(String keywordName);
 }
