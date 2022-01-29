@@ -119,6 +119,15 @@ public class KeywordController {
     }
 
     @Xss
+    @ApiOperation(value = "키워드 목록페이지_구독하는 사이트 반환",
+            notes = "키워드별로 구독하는 사이트 반환한다.",
+            authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/site")
+    public ResponseEntity getSiteList(@RequestParam(name="keyword-name") String keywordName){
+        return new ResponseEntity(CustomBody.of(keywordService.getSiteList(keywordName), HttpStatus.OK), HttpStatus.OK);
+    }
+
+    @Xss
     @ApiOperation(value = "키워드 추가하기_추천 대상", notes = "키워드를 추가 및 수정하는 과정에서 알림받을 대상을 추천해준다.")
     @GetMapping(value = "/keyword/site/recommendation")
     public ResponseEntity recommendSite(){
