@@ -45,17 +45,13 @@ public class MemoServiceImpl implements MemoService {
     }
 
     @Override
-    public List<String> getMemo(Long userScrapId) throws Exception{
+    public List<Memo> getMemo() throws Exception{
         User user = userService.getLoginUserInfo();
         if(user == null){
             throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
         }
 
-        if(!scrapMapper.checkScrapExistByMemo(user.getId(), userScrapId)){
-            throw new NonCriticalException(ErrorMessage.SCRAP_NOT_EXIST);
-        }
-
-        return memoMapper.getMemo(userScrapId);
+        return memoMapper.getMemo(user.getId());
     }
 
     @Override
