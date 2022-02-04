@@ -22,7 +22,8 @@
                   </when>
               </choose>
           </if>
-            LIMIT #{pageNum}, 5;
+          ORDER BY n.created_at
+          LIMIT #{pageNum}, 5;
     </select>
 
     <update id="deleteNotice">
