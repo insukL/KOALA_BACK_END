@@ -10,26 +10,35 @@
     </insert>
     
     <select id="getMessageList" resultMap="messageMap">
-        SELECT id, sender, message, type, sent_at, is_deleted
-        FROM chat_message
-        WHERE id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
+        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname
+        FROM chat_message AS m,
+             normal_user AS u
+        WHERE
+            id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
+            AND
+            m.sender = u.user_id
         ORDER BY id DESC LIMIT #{criteria.limit}
     </select>
 
     <select id="searchMessage" resultMap="messageMap">
-        SELECT id, sender, message, type, sent_at, is_deleted
-        FROM chat_message
-        WHERE id <![CDATA[ <= ]]> <include refid="getLastMessageId"/>
+        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname
+        FROM chat_message AS m,
+             normal_user AS u
+        WHERE
+              id <![CDATA[ <= ]]> <include refid="getLastMessageId"/>
+              AND
+              m.sender = u.user_id
         ORDER BY id DESC LIMIT #{criteria.limit}
     </select>
 
     <sql id="getLastMessageId">
-        SELECT id
+        ( SELECT id
         FROM chat_message
         WHERE
-              id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor} AND
-              message LIKE '%#{word}%'
-        ORDER BY id DESC LIMIT 1
+              id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
+          AND
+              message LIKE CONCAT('%', #{word}, '%')
+        ORDER BY id DESC LIMIT 1 )
     </sql>
 
     <resultMap id="messageMap" type="in.koala.domain.ChatMessage">
@@ -39,6 +48,7 @@
         <result column="type" property="type" javaType="in.koala.enums.ChatType"/>
         <result column="sentAt" property="sent_at"/>
         <result column="isDeleted" property="is_deleted"/>
+        <result column="nickname" property="nickname"/>
     </resultMap>
 
     <sql id="getLastKey">
