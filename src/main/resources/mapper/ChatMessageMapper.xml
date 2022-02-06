@@ -15,7 +15,23 @@
         WHERE id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
         ORDER BY id DESC LIMIT #{criteria.limit}
     </select>
-    
+
+    <select id="searchMessage" resultMap="messageMap">
+        SELECT id, sender, message, type, sent_at, is_deleted
+        FROM chat_message
+        WHERE id <![CDATA[ <= ]]> <include refid="getLastMessageId"/>
+        ORDER BY id DESC LIMIT #{criteria.limit}
+    </select>
+
+    <sql id="getLastMessageId">
+        SELECT id
+        FROM chat_message
+        WHERE
+              id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor} AND
+              message LIKE '%#{word}%'
+        ORDER BY id DESC LIMIT 1
+    </sql>
+
     <resultMap id="messageMap" type="in.koala.domain.ChatMessage">
         <id column="id" property="id"/>
         <result column="sender" property="sender"/>

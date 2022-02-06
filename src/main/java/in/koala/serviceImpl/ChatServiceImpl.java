@@ -70,10 +70,13 @@ public class ChatServiceImpl implements ChatService {
         return userMapper.getNormalUserById(id).getNickname();
     }
 
-    @Auth
     @Override
     public List<ChatMessage> getMessageList(Criteria criteria){
         return chatMessageMapper.getMessageList(criteria);
     }
 
+    @Override
+    public List<ChatMessage> searchMessageList(Criteria criteria, String word){
+        return chatMessageMapper.searchMessage(criteria, word);
+    }
 }

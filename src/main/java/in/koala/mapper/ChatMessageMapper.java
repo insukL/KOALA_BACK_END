@@ -11,4 +11,5 @@ import java.util.List;
 public interface ChatMessageMapper {
     List<ChatMessage> getMessageList(@Param("criteria") Criteria criteria);
     int insertMessage(ChatMessage message);
+    List<ChatMessage> searchMessage(@Param("criteria") Criteria criteria, String word);
 }

@@ -12,4 +12,5 @@ public interface ChatService {
     String getMemberCount();
     String getMemberName(Long id);
     List<ChatMessage> getMessageList(Criteria criteria);
+    List<ChatMessage> searchMessageList(Criteria criteria, String word);
 }

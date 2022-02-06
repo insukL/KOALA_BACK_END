@@ -1,40 +1,29 @@
 package in.koala.domain;
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 
 public class Criteria {
-    @ApiParam(required = false, defaultValue = "1")
-    private Integer page = 1;
     @ApiParam(required = false, defaultValue = "10")
     private Integer limit = 10;
-    @ApiModelProperty(hidden = true)
+    @ApiParam(required = false, defaultValue = "0")
     private Integer cursor;
 
-    public Integer getLimit() {
-        return limit;
-    }
+    public Integer getLimit() { return limit; }
 
     public void setLimit(Integer limit) {
         this.limit = limit > 50 ? 50 : limit;
     }
 
-    public Integer getPage() {
-        return page;
-    }
-
-    public void setPage(Integer page) {
-        this.page = page < 1 ? 1 : page;
-    }
-
     public Integer getCursor() {
-        return (page - 1) * limit;
+        return cursor;
     }
+
+    public void setCursor(Integer cursor){ this.cursor = cursor; }
 
     @Override
     public String toString() {
         return "Criteria{" +
-                "page=" + page +
+                "cursor=" + cursor +
                 ", limit=" + limit +
                 '}';
     }
