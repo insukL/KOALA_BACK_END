@@ -65,6 +65,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
             message.setCondition(sb.toString());
             System.out.println("최종 : "+ sb);
             fcmSender.sendMessage(message);
+            noticeMapper.insertNotice(value);
         }
     }
 
