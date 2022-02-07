@@ -14,7 +14,7 @@
     </select>
 
     <select id="pushKeywordByLatelyCrawlingTime" resultType="java.util.Map">
-        SELECT k.name, c.title, c.url, c.site
+        SELECT k.id as keywordId, k.name, c.id as crawlingId, c.title, c.url, c.site
         from crawling as c
                  inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
                  inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
