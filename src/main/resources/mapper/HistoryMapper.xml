@@ -36,6 +36,16 @@
         </foreach>
     </update>
 
+    <update id="deleteNoticeUndo">
+        <foreach collection="noticeList" index="index" separator=";" item="noticeId">
+            UPDATE notice
+            <set>
+                is_deleted = 0
+            </set>
+            WHERE id = #{noticeId}
+        </foreach>
+    </update>
+
     <update id="noticeRead">
         UPDATE notice
         SET is_read = 1

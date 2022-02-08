@@ -46,6 +46,16 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
+    public Boolean deleteNoticeUndo(List<Integer> noticeList) {
+        if(noticeList.isEmpty())
+            throw new HistoryException(ErrorMessage.NOTICE_NOT_SELECTED);
+        if(historyMapper.deleteNoticeUndo(noticeList)==1)
+            return true;
+        else
+            return false;
+    }
+
+    @Override
     public Boolean noticeRead(String noticeId) {
         if(historyMapper.noticeRead(noticeId)==1)
             return true;

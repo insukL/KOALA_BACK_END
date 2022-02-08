@@ -132,8 +132,16 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public Boolean deletedNotice(List<Integer> noticeList) {
+    public Boolean deleteNotice(List<Integer> noticeList) {
         if(keywordMapper.deleteNotice(noticeList) == 1)
+            return true;
+        else
+            return false;
+    }
+
+    @Override
+    public Boolean deleteNoticeUndo(List<Integer> noticeList) {
+        if(keywordMapper.deleteNoticeUndo(noticeList) == 1)
             return true;
         else
             return false;

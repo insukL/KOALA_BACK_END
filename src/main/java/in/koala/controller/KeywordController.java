@@ -94,10 +94,21 @@ public class KeywordController {
     @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice")
     public ResponseEntity deleteNotice(@RequestParam(name = "notice-id") List<Integer> noticeList){
-        if(keywordService.deletedNotice(noticeList))
+        if(keywordService.deleteNotice(noticeList))
             return new ResponseEntity(CustomBody.of("알림 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
             return new ResponseEntity(CustomBody.of("알림 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    @Xss
+    @Auth
+    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제(실행취소)", notes = "알림 삭제에 대한 실행 취소", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PatchMapping(value = "/keyword/list/notice/undo")
+    public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Integer> noticeList){
+        if(keywordService.deleteNoticeUndo(noticeList))
+            return new ResponseEntity(CustomBody.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
