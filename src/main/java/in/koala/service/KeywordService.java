@@ -17,7 +17,8 @@ public interface KeywordService {
 
     List<Notice> getKeywordNotice(String keywordName, String site);
     List<Notice> getSearchNotice(String keywordName, String site, String word);
-    Boolean deletedNotice(List<Integer> noticeList);
+    Boolean deleteNotice(List<Integer> noticeList);
+    Boolean deleteNoticeUndo(List<Integer> noticeList);
     Boolean noticeRead(String noticeId);
 
     List<String> recommendKeyword();
