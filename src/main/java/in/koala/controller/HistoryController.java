@@ -7,6 +7,7 @@ import in.koala.domain.response.CustomBody;
 import in.koala.service.HistoryService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,17 @@ public class HistoryController {
         else
             return new ResponseEntity(CustomBody.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
 
+    }
+
+    @Xss
+    @Auth
+    @ApiOperation(value = "히스토리 - 삭제(실행취소)", notes = "알림 삭제에 대한 실행 취소", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @PatchMapping(value = "/history/undo")
+    public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Integer> noticeList){
+        if(historyService.deleteNoticeUndo(noticeList))
+            return new ResponseEntity(CustomBody.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
+        else
+            return new ResponseEntity(CustomBody.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
