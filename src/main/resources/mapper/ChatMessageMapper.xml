@@ -10,7 +10,7 @@
     </insert>
     
     <select id="getMessageList" resultMap="messageMap">
-        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname
+        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname, u.profile
         FROM chat_message AS m,
              normal_user AS u
         WHERE
@@ -21,7 +21,7 @@
     </select>
 
     <select id="searchMessage" resultMap="messageMap">
-        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname
+        SELECT m.id, m.sender, m.message, m.type, m.sent_at, m.is_deleted, u.nickname, u.profile
         FROM chat_message AS m,
              normal_user AS u
         WHERE
@@ -46,9 +46,10 @@
         <result column="sender" property="sender"/>
         <result column="message" property="message" javaType="java.lang.String"/>
         <result column="type" property="type" javaType="in.koala.enums.ChatType"/>
-        <result column="sentAt" property="sent_at"/>
-        <result column="isDeleted" property="is_deleted"/>
+        <result column="sent_at" property="sentAt"/>
+        <result column="is_deleted" property="isDeleted"/>
         <result column="nickname" property="nickname"/>
+        <result column="profile" property="profile"/>
     </resultMap>
 
     <sql id="getLastKey">

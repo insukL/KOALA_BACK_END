@@ -3,6 +3,7 @@ package in.koala.serviceImpl;
 import in.koala.annotation.Auth;
 import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
+import in.koala.domain.user.NormalUser;
 import in.koala.enums.ChatType;
 import in.koala.enums.TokenType;
 import in.koala.mapper.ChatMessageMapper;
@@ -47,7 +48,9 @@ public class ChatServiceImpl implements ChatService {
         ChatMessage chatMessage = message.getPayload();
         chatMessage.setSender(id);
         chatMessageMapper.insertMessage(chatMessage);
-        chatMessage.setNickname(userMapper.getNormalUserById(id).getNickname());
+        NormalUser user = userMapper.getNormalUserById(id);
+        chatMessage.setNickname(user.getNickname());
+        chatMessage.setProfile(user.getProfile());
         template.convertAndSend("/sub/" + roomId, chatMessage);
     }
 

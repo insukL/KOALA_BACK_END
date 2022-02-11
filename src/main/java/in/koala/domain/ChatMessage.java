@@ -1,6 +1,7 @@
 package in.koala.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import in.koala.enums.ChatType;
 import lombok.*;
 
@@ -17,7 +18,10 @@ public class ChatMessage {
     private Long sender;
     private String message;
     private ChatType type;
+    @JsonProperty("sent_at")
     private Timestamp sentAt;
+    @JsonProperty("is_deleted")
     private Boolean isDeleted;
     private String nickname;
+    private String profile;
 }
