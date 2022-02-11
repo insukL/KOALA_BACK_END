@@ -72,7 +72,7 @@ public class KeywordController {
 
     @Xss
     @Auth
-    @ApiOperation(value = "키워드 목록 페이지 - 전체", notes = "키워드 목록에서 하나의 키워드를 선택한 후 받은 알람을 본다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "키워드 목록 페이지 - 전체 및 구독하는 사이트별로 조회", notes = "키워드 목록에서 하나의 키워드를 선택한 후 받은 알람을 본다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword/list")
     public ResponseEntity<List<Notice>> getKeywordNotice(@RequestParam(name = "keyword-name") String keywordName,
                                                          @RequestParam(name = "site", required = false) String site){
@@ -91,13 +91,13 @@ public class KeywordController {
 
     @Xss
     @Auth
-    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "키워드 목록 페이지 - 알림 삭제", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/keyword/list/notice")
     public ResponseEntity deleteNotice(@RequestParam(name = "notice-id") List<Integer> noticeList){
         if(keywordService.deleteNotice(noticeList))
-            return new ResponseEntity(CustomBody.of("알림 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(CustomBody.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss

@@ -87,7 +87,7 @@ public class CrawlingController {
     }
 
     @DeleteMapping(value="/crawling/token")
-    public void deleteToken(@RequestParam("tokenId") Long tokenId) throws Exception {
+    public void deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
         crawlingService.deleteCrawlingToken(tokenId);
     }
 }

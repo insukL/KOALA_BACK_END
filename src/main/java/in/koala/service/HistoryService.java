@@ -7,7 +7,7 @@ import java.util.List;
 public interface HistoryService {
 
     List<Notice> getEveryNotice(int pageNum, String sortType);
-    Boolean deleteNotice(List<Integer> noticeList);
-    Boolean deleteNoticeUndo(List<Integer> noticeList);
+    Boolean deleteNotice(List<Long> noticeList);
+    Boolean deleteNoticeUndo(List<Long> noticeList);
     Boolean noticeRead(String noticeId);
 }
