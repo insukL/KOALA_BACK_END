@@ -167,11 +167,12 @@ public class KeywordPushServiceImpl implements KeywordPushService {
         System.out.println("새 구독 목록");
         System.out.println(newSite);
 
-        Keyword keyword = new Keyword();
-        keyword.setName(keywordName);
+        Keyword keyword = Keyword.builder()
+                .name(keywordName)
+                .siteList(oldSite)
+                .build();
 
         //기존 키워드 구독 해제
-        keyword.setSiteList(oldSite);
         this.unsubscribe(keyword, id);
 
         //신규 키워드 구독
