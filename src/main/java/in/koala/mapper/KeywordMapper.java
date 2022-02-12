@@ -30,8 +30,8 @@ public interface KeywordMapper {
     Integer countKeywordNum(Long userId);
 
     Integer noticeRead(String noticeId);
-    Integer deleteNotice(List<Integer> noticeList);
-    Integer deleteNoticeUndo(List<Integer> noticeList);
+    Integer deleteNotice(List<Long> noticeList);
+    Integer deleteNoticeUndo(List<Long> noticeList);
 
     void deleteKeyword(Long userId, String keywordName);
 

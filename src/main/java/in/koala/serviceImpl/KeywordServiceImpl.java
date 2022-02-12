@@ -134,7 +134,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public Boolean deleteNotice(List<Integer> noticeList) {
+    public Boolean deleteNotice(List<Long> noticeList) {
         if(keywordMapper.deleteNotice(noticeList) == 1)
             return true;
         else
@@ -142,7 +142,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public Boolean deleteNoticeUndo(List<Integer> noticeList) {
+    public Boolean deleteNoticeUndo(List<Long> noticeList) {
         if(keywordMapper.deleteNoticeUndo(noticeList) == 1)
             return true;
         else
