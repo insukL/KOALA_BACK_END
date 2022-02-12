@@ -34,7 +34,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public Boolean deleteNotice(List<Integer> noticeList) {
+    public Boolean deleteNotice(List<Long> noticeList) {
 
         if(noticeList.isEmpty())
             throw new HistoryException(ErrorMessage.NOTICE_NOT_SELECTED);
@@ -46,7 +46,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public Boolean deleteNoticeUndo(List<Integer> noticeList) {
+    public Boolean deleteNoticeUndo(List<Long> noticeList) {
         if(noticeList.isEmpty())
             throw new HistoryException(ErrorMessage.NOTICE_NOT_SELECTED);
         if(historyMapper.deleteNoticeUndo(noticeList)==1)

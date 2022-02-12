@@ -9,7 +9,7 @@ import java.util.List;
 public interface HistoryMapper {
 
     List<Notice> getEveryNotice(Long userId, int pageNum, String sortType);
-    Integer deleteNotice(List<Integer> noticeList);
-    Integer deleteNoticeUndo(List<Integer> noticeList);
+    Integer deleteNotice(List<Long> noticeList);
+    Integer deleteNoticeUndo(List<Long> noticeList);
     Integer noticeRead(String noticeId);
 }

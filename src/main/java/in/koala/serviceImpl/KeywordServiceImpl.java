@@ -62,9 +62,10 @@ public class KeywordServiceImpl implements KeywordService {
     public Boolean deleteKeyword(String keywordName) throws Exception {
         Long userId = getLoginUserInfo().getId();
 
-        Keyword keyword = new Keyword();
-        keyword.setName(keywordName);
-        keyword.setSiteList(getKeywordsSiteList(userId, keywordName));
+        Keyword keyword = Keyword.builder()
+                .name(keywordName)
+                .siteList(new ArrayList<>(getKeywordsSiteList(userId, keywordName)))
+                .build();
         fireBaseUnSubscribe(keyword, userId);
 
         deleteKeyword(userId, keywordName);
@@ -103,9 +104,10 @@ public class KeywordServiceImpl implements KeywordService {
             keywordPushService.modifySubscription(oldSite, newSite, userId, keywordName);
         }
         else{
-            Keyword oldKeyword = new Keyword();
-            oldKeyword.setName(keywordName);
-            oldKeyword.setSiteList(new ArrayList<>(existingListCopy));
+            Keyword oldKeyword = Keyword.builder()
+                    .name(keywordName)
+                    .siteList(new ArrayList<>(existingListCopy))
+                    .build();
 
             keywordPushService.subscribe(keyword, userId);
             keywordPushService.unsubscribe(oldKeyword, userId);
@@ -132,7 +134,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public Boolean deleteNotice(List<Integer> noticeList) {
+    public Boolean deleteNotice(List<Long> noticeList) {
         if(keywordMapper.deleteNotice(noticeList) == 1)
             return true;
         else
@@ -140,7 +142,7 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public Boolean deleteNoticeUndo(List<Integer> noticeList) {
+    public Boolean deleteNoticeUndo(List<Long> noticeList) {
         if(keywordMapper.deleteNoticeUndo(noticeList) == 1)
             return true;
         else

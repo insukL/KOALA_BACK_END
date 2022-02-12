@@ -29,7 +29,7 @@ public class CrawlingController {
         if (crawlingService.portalCrawling(crawlingAt))
             return new ResponseEntity(CustomBody.of("아우누리 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity("아우누리 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("아우누리 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "/crawling/dorm")
@@ -38,7 +38,7 @@ public class CrawlingController {
         if (crawlingService.dormCrawling(crawlingAt))
             return new ResponseEntity(CustomBody.of("아우미르 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity("아우미르 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("아우미르 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/youtube")
@@ -47,7 +47,7 @@ public class CrawlingController {
         if (crawlingService.youtubeCrawling(crawlingAt))
             return new ResponseEntity(CustomBody.of("유튜브 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/facebook")
@@ -56,7 +56,7 @@ public class CrawlingController {
         if (crawlingService.facebookCrawling(tokenId, crawlingAt))
             return new ResponseEntity(CustomBody.of("페이스북 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity("페이스북 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("페이스북 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/instagram")
@@ -65,7 +65,7 @@ public class CrawlingController {
         if (crawlingService.instagramCrawling(tokenId, crawlingAt))
             return new ResponseEntity(CustomBody.of("인스타그램 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity("인스타그램 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(CustomBody.of("인스타그램 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     // 토큰 관련 API
@@ -87,7 +87,7 @@ public class CrawlingController {
     }
 
     @DeleteMapping(value="/crawling/token")
-    public void deleteToken(@RequestParam("tokenId") Long tokenId) throws Exception {
+    public void deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
         crawlingService.deleteCrawlingToken(tokenId);
     }
 }

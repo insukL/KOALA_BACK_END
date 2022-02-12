@@ -28,7 +28,7 @@ public class HistoryController {
             authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/history")
     public ResponseEntity<List<Notice>> getEveryNotice(
-            @RequestParam(value = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @RequestParam(value = "page-num", required = false, defaultValue = "1") int pageNum,
             @RequestParam(value = "is-read", required = false) String sortType){
         return new ResponseEntity(CustomBody.of(historyService.getEveryNotice(pageNum, sortType), HttpStatus.OK), HttpStatus.OK);
     }
@@ -37,7 +37,7 @@ public class HistoryController {
     @Auth
     @ApiOperation(value = "히스토리 - 삭제", notes = "사용자가 받은 알림에 대한 전체 내역에서 알림 삭제", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/history")
-    public ResponseEntity deleteNotice(@RequestParam("notice-id") List<Integer> noticeList){
+    public ResponseEntity deleteNotice(@RequestParam("notice-id") List<Long> noticeList){
         if(historyService.deleteNotice(noticeList))
             return new ResponseEntity(CustomBody.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
@@ -49,7 +49,7 @@ public class HistoryController {
     @Auth
     @ApiOperation(value = "히스토리 - 삭제(실행취소)", notes = "알림 삭제에 대한 실행 취소", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PatchMapping(value = "/history/undo")
-    public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Integer> noticeList){
+    public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Long> noticeList){
         if(historyService.deleteNoticeUndo(noticeList))
             return new ResponseEntity(CustomBody.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
@@ -58,7 +58,7 @@ public class HistoryController {
 
     @Xss
     @Auth
-    @ApiOperation(value = "키워드 목록 페이지 - 알림 읽음 처리", notes = "키워드 목록에서 하나의 키워드를 선택한 후 나온 알림에 대해서 \n 클릭시 알림 읽음 처리", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @ApiOperation(value = "히스토리 알림 읽음", notes = "사용자가 받은 알림에 대한 전체 내역에서 알림 읽음", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PutMapping(value = "/history")
     public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
         if(historyService.noticeRead(noticeId))
