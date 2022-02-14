@@ -19,7 +19,7 @@ public interface CrawlingService {
     Boolean instagramCrawling(Long tokenId, Timestamp crawlingAt) throws Exception;
 
     void addCrawlingToken(CrawlingToken token) throws Exception;
-    List<CrawlingToken> getCrawlingToken(Long site) throws Exception;
+    List<CrawlingToken> getCrawlingToken() throws Exception;
     void updateCrawlingToken(CrawlingToken token) throws Exception;
     void deleteCrawlingToken(Long id) throws Exception;
 

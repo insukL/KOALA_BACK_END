@@ -24,7 +24,7 @@ public interface CrawlingMapper {
     void updateCrawlingData(List<Crawling> crawlingUpdateList);
 
     void addToken(CrawlingToken token);
-    List<CrawlingToken> getToken(Long site);
+    List<CrawlingToken> getToken();
     void updateToken(CrawlingToken token);
     void deleteTokenById(Long id);
     Boolean checkTokenById(Long id);

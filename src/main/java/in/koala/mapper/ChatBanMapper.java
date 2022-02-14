@@ -12,4 +12,5 @@ public interface ChatBanMapper {
     void deleteBanWordById(Long id);
 
     Boolean checkExistBanWord(Long id, Long userId); // userId, id
+    Integer countBanWord(Long userId); // userId
 }

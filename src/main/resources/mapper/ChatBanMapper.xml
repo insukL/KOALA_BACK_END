@@ -25,4 +25,8 @@
         SELECT EXISTS (SELECT id FROM chat_banword WHERE id = #{id} AND user_id = #{userId} AND is_deleted=0);
     </select>
 
+    <select id="countBanWord" resultType="Integer">
+        SELECT COUNT(id) FROM chat_banword WHERE user_id = #{userId} AND is_deleted=0;
+    </select>
+
 </mapper>

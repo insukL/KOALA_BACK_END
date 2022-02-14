@@ -119,6 +119,7 @@ public enum ErrorMessage {
 	 * Chat Ban
 	 */
 	BAN_WORD_NOT_EXIST(800, "해당 금칙어가 존재하지 않습니다."),
+	EXCEED_MAXIMUM_BAN_WORD_NUMBER(801, "등록 가능한 금칙어 갯수를 초과했습니다."),
 	;
 
 	Integer code;

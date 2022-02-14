@@ -3,6 +3,7 @@ package in.koala.controller;
 import in.koala.annotation.ValidationGroups;
 import in.koala.domain.CrawlingToken;
 import in.koala.domain.response.CustomBody;
+import in.koala.enums.CrawlingSite;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -70,24 +71,27 @@ public class CrawlingController {
 
     // 토큰 관련 API
     @PostMapping(value="/crawling/token")
-    public void addToken(@Validated(ValidationGroups.createCrawlingToken.class)
+    public ResponseEntity addToken(@Validated(ValidationGroups.createCrawlingToken.class)
                                        @RequestBody CrawlingToken token) throws Exception{
         crawlingService.addCrawlingToken(token);
+        return new ResponseEntity(CustomBody.of("토큰 추가 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/crawling/token")
-    public ResponseEntity getToken(@RequestParam("site") Long site) throws Exception {
-        return new ResponseEntity (CustomBody.of(crawlingService.getCrawlingToken(site), HttpStatus.OK), HttpStatus.OK);
+    public ResponseEntity getToken() throws Exception {
+        return new ResponseEntity (CustomBody.of(crawlingService.getCrawlingToken(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @PutMapping(value="/crawling/token")
-    public void updateToken(@Validated(ValidationGroups.updateCrawlingToken.class)
+    public ResponseEntity updateToken(@Validated(ValidationGroups.updateCrawlingToken.class)
                                 @RequestBody CrawlingToken token) throws Exception {
         crawlingService.updateCrawlingToken(token);
+        return new ResponseEntity(CustomBody.of("토큰 수정 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @DeleteMapping(value="/crawling/token")
-    public void deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
+    public ResponseEntity deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
         crawlingService.deleteCrawlingToken(tokenId);
+        return new ResponseEntity(CustomBody.of("토큰 삭제 완료", HttpStatus.OK), HttpStatus.OK);
     }
 }

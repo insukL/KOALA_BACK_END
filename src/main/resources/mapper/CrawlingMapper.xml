@@ -62,7 +62,7 @@
     </insert>
 
     <select id="getToken" resultType="in.koala.domain.CrawlingToken">
-        SELECT id, description, site FROM crawling_token WHERE site=#{site};
+        SELECT id, description, site FROM crawling_token;
     </select>
 
     <update id="updateToken" parameterType="in.koala.domain.CrawlingToken">
