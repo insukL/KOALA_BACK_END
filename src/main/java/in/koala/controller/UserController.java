@@ -2,11 +2,9 @@ package in.koala.controller;
 
 import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
-import in.koala.annotation.Xss;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.user.NormalUser;
-import in.koala.domain.user.User;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
 import in.koala.enums.UserType;
@@ -34,7 +32,7 @@ public class UserController {
     @PostMapping(value = "/non-member")
     @ApiOperation(value ="비회원 유저로 로그인" , notes = "비회원 유저로 로그인 합니다. 디바이스 토큰이 필요합니다.")
     public ResponseEntity createNonMemberUserAndDeviceToken(@RequestParam(name = "device_token") String deviceToken){
-        return new ResponseEntity(CustomBody.of(userService.nonMemberLogin(deviceToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.nonMemberLogin(deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
 
@@ -47,7 +45,7 @@ public class UserController {
         if (error != null) {
             throw new IOException(error);
         } else {
-            return new ResponseEntity<>(CustomBody.of(userService.snsLogin(code, snsType), HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity<>(BaseResponse.of(userService.snsLogin(code, snsType), HttpStatus.OK), HttpStatus.OK);
         }
     }
 
@@ -57,14 +55,14 @@ public class UserController {
             @PathVariable(name="snsType") SnsType snsType,
             @RequestParam(name = "device_token") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.snsSingIn(snsType, deviceToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.snsSingIn(snsType, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
     @GetMapping(value="/my")
     @ApiOperation(value ="유저의 현재정보" , notes = "로그인된 유저의 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getMyInfo(){
-        return new ResponseEntity(CustomBody.of(userService.getLoginUserInfo(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.getLoginUserInfo(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @ApiOperation(value = "sns 로그인 서버 개발용", notes = "자동으로 해당 sns 로그인창으로 redirect 후 로그인 완료되면 access, refresh token 반환합니다. \n swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
@@ -77,7 +75,7 @@ public class UserController {
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
     public ResponseEntity signIn(
             @RequestBody @Validated({ValidationGroups.SingIn.class}) NormalUser user){
-        return new ResponseEntity(CustomBody.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
+        return new ResponseEntity(BaseResponse.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
@@ -86,21 +84,21 @@ public class UserController {
             @RequestBody @Validated({ValidationGroups.Login.class}) NormalUser user,
             @RequestParam(name = "device_token") String deviceToken){
 
-        return new ResponseEntity(CustomBody.of(userService.login(user, deviceToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.login(user, deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/nickname-check")
     @ApiOperation(value="닉네임 중복체크", notes="닉네임 중복체크하는 api")
     public ResponseEntity checkNickname(@RequestParam @NotNull String nickname) {
         userService.checkNickname(nickname);
-        return new ResponseEntity(CustomBody.of("사용 가능한 닉네임입니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("사용 가능한 닉네임입니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/email-check")
     @ApiOperation(value="찾기용 이메일 중복체크", notes="비밀번호나 계정을 찾기 위해 등록하는 이메일의 중복체크")
     public ResponseEntity checkFindEmail(@RequestParam @Email(message="이메일 형식이 아닙니다") String email) {
         userService.checkFindEmail(email);
-        return new ResponseEntity(CustomBody.of("사용 가능한 이메일입니다", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("사용 가능한 이메일입니다", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -108,20 +106,20 @@ public class UserController {
     @ApiOperation(value="닉네임 변경 요청", notes="", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity changeNickname(@RequestParam @NotNull String nickname){
         userService.updateNickname(nickname);
-        return new ResponseEntity(CustomBody.of(HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(HttpStatus.OK), HttpStatus.OK);
     }
 
     @PostMapping(value="/refresh")
     @ApiOperation(value="access, refresh token 재발급", notes="refresh token 이 유효하다면 access token 과 refresh token 을 재발급한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity refresh(){
-        return new ResponseEntity(CustomBody.of(userService.refresh(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.refresh(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @PostMapping(value="/email-send/{emailType}")
     @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 헤더에 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity sendEmail(@RequestBody @Validated AuthEmail authEmail, @PathVariable EmailType emailType){
         userService.sendEmail(authEmail, emailType);
-        return new ResponseEntity(CustomBody.of("전송 성공", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("전송 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @PostMapping(value="/email/certification/{emailType}")
@@ -131,27 +129,27 @@ public class UserController {
             @PathVariable(value = "emailType") EmailType emailType){
 
         userService.certificateEmail(authEmail, emailType);
-        return new ResponseEntity(CustomBody.of("인증 성공", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("인증 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/account-check")
     @ApiOperation(value="계정 존재 확인 API", notes="계정이 존재하는지 확인하는 API 입니다 \n 존재하지 않는다면 예외가 발생합니다")
     public ResponseEntity checkAccount(@RequestParam @NotNull String account){
         userService.checkAccount(account);
-        return new ResponseEntity(CustomBody.of("존재하는 계정입니다", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("존재하는 계정입니다", HttpStatus.OK), HttpStatus.OK);
     }
 
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경 API", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n password 와 account 을 body 로 입력받습니다.")
     public ResponseEntity changePassword(@RequestBody NormalUser user){
         userService.changePassword(user);
-        return new ResponseEntity(CustomBody.of("비밀번호 변경 성공", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("비밀번호 변경 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/account-find")
     @ApiOperation(value="계정 찾기 API", notes="이메일을 통하여 계정을 찾아 반환해주는 API 입니다, 이메일 인증이 선행되어야 합니다. \n query 로 이메일을 받습니다")
     public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
-        return new ResponseEntity(CustomBody.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -159,7 +157,7 @@ public class UserController {
     @ApiOperation(value="학교 인증 여부 확인", notes="해당 계정의 학교 인증 여부를 확인하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity checkAuth(){
         userService.isUniversityCertification();
-        return new ResponseEntity(CustomBody.of("인증 완료", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("인증 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -167,20 +165,20 @@ public class UserController {
     @ApiOperation(value="유저 탈퇴", notes="유저 탈퇴", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity deleteUser(){
         userService.softDeleteUser();
-        return new ResponseEntity(CustomBody.of("탈퇴 완료", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("탈퇴 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
     @PatchMapping(value="/profile")
     @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다 \n 사진의 크기는 최대 50MB 입니다 \n 프로파일 수정에 성공하면 profile_url 을 반환합니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
-        return new ResponseEntity(CustomBody.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
     @GetMapping(value = "/socket-token")
     @ApiOperation(value = "웹소켓 인증용 토큰 API", notes = "웹소켓 인증용 토큰을 얻어오는 API입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getSocketToken(){
-        return new ResponseEntity(CustomBody.of(userService.getSocketToken(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.getSocketToken(), HttpStatus.OK), HttpStatus.OK);
     }
 }

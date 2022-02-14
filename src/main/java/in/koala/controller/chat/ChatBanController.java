@@ -1,9 +1,8 @@
 package in.koala.controller.chat;
 
-import com.google.api.Http;
 import in.koala.annotation.Auth;
 import in.koala.domain.BanWord;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.ChatBanService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -25,14 +24,14 @@ public class ChatBanController {
     @PostMapping(value="/word")
     public ResponseEntity addBanWord(@Valid @RequestBody BanWord banWord) throws Exception{
         chatBanService.addBanWord(banWord);
-        return new ResponseEntity(CustomBody.of("금칙어를 추가했습니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("금칙어를 추가했습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
     @ApiOperation(value = "금칙어 조회", notes = "로그인된 유저의 모든 금칙어를 조회합니다. 없을 경우 빈 리스트가 반환됩니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value="/word")
     public ResponseEntity getBanWord() throws Exception {
-        return new ResponseEntity (CustomBody.of(chatBanService.getBanWordList(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity (BaseResponse.of(chatBanService.getBanWordList(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
@@ -40,7 +39,7 @@ public class ChatBanController {
     @PutMapping(value="/word")
     public ResponseEntity updateBanWord(@Valid @RequestBody BanWord banWord) throws Exception {
         chatBanService.updateBanWord(banWord);
-        return new ResponseEntity(CustomBody.of("금칙어를 수정했습니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("금칙어를 수정했습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
@@ -48,7 +47,7 @@ public class ChatBanController {
     @DeleteMapping(value="/word")
     public ResponseEntity deleteBanWord(@RequestParam("id") Long id) throws Exception {
         chatBanService.deleteBanWord(id);
-        return new ResponseEntity(CustomBody.of("금칙어를 삭제했습니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("금칙어를 삭제했습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
 }

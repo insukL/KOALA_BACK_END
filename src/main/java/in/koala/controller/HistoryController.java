@@ -3,11 +3,10 @@ package in.koala.controller;
 import in.koala.annotation.Auth;
 import in.koala.annotation.Xss;
 import in.koala.domain.Notice;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.HistoryService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,7 @@ public class HistoryController {
     public ResponseEntity<List<Notice>> getEveryNotice(
             @RequestParam(value = "page-num", required = false, defaultValue = "1") int pageNum,
             @RequestParam(value = "is-read", required = false) String sortType){
-        return new ResponseEntity(CustomBody.of(historyService.getEveryNotice(pageNum, sortType), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(historyService.getEveryNotice(pageNum, sortType), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -39,9 +38,9 @@ public class HistoryController {
     @PatchMapping(value = "/history")
     public ResponseEntity deleteNotice(@RequestParam("notice-id") List<Long> noticeList){
         if(historyService.deleteNotice(noticeList))
-            return new ResponseEntity(CustomBody.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
 
     }
 
@@ -51,9 +50,9 @@ public class HistoryController {
     @PatchMapping(value = "/history/undo")
     public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Long> noticeList){
         if(historyService.deleteNoticeUndo(noticeList))
-            return new ResponseEntity(CustomBody.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -62,8 +61,8 @@ public class HistoryController {
     @PutMapping(value = "/history")
     public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
         if(historyService.noticeRead(noticeId))
-            return new ResponseEntity(CustomBody.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 }

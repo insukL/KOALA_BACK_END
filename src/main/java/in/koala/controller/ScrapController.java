@@ -2,7 +2,7 @@ package in.koala.controller;
 
 import in.koala.annotation.Auth;
 import in.koala.domain.Scrap;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.ScrapService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -25,14 +25,14 @@ public class ScrapController {
     @PostMapping(value = "/scrap")
     public ResponseEntity Scrap(@RequestBody Scrap scrap) throws Exception {
         scrapService.Scrap(scrap);
-        return new ResponseEntity(CustomBody.of("보관함으로 이동되었습니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("보관함으로 이동되었습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
     @ApiOperation(value = "보관함 조회", notes = "보관함 조회입니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/scrap")
     public ResponseEntity getScrap() throws Exception {
-        return new ResponseEntity(CustomBody.of(scrapService.getScrap(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(scrapService.getScrap(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth
@@ -40,7 +40,7 @@ public class ScrapController {
     @DeleteMapping(value = "/scrap")
     public ResponseEntity deleteScrap(@RequestBody List<Long> crawlingId) throws Exception {
         scrapService.deleteScrap(crawlingId);
-        return new ResponseEntity(CustomBody.of("보관함에서 삭제되었습니다.", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("보관함에서 삭제되었습니다.", HttpStatus.OK), HttpStatus.OK);
     }
 
 }
