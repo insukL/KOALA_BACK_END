@@ -14,11 +14,11 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class DeviceTokenServiceImpl implements DeviceTokenService {
 
     private final DeviceTokenMapper deviceTokenMapper;
 
+    @Transactional
     @Override
     public DeviceToken updateToken(String expiredToken, String newToken) {
         DeviceToken deviceToken = this.getDeviceTokenInfoByDeviceToken(expiredToken);
@@ -34,6 +34,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
         return deviceToken;
     }
 
+    @Transactional
     @Override
     public void updateTokenTableUserId(DeviceToken deviceToken) {
         DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
@@ -54,6 +55,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
         return deviceTokenMapper.checkTokenExist(deviceToken) > 0;
     }
 
+    @Transactional
     @Override
     public void insertDeviceToken(DeviceToken deviceToken) {
 
@@ -64,6 +66,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
         deviceTokenMapper.insertDeviceToken(deviceToken);
     }
 
+    @Transactional
     @Override
     public void updateTokenTableNonUserId(DeviceToken deviceToken) {
         DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
