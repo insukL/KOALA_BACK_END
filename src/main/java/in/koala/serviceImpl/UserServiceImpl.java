@@ -518,7 +518,7 @@ public class UserServiceImpl implements UserService {
 
         String profileUrl = selectedUser.getProfile();
 
-        if(profileUrl != defaultUrl){
+        if(!profileUrl.equals(defaultUrl)){
             s3Util.deleteFile(profileUrl);
         }
 
