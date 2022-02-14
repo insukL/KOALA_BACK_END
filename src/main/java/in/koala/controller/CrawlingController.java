@@ -3,6 +3,7 @@ package in.koala.controller;
 import in.koala.annotation.ValidationGroups;
 import in.koala.domain.CrawlingToken;
 import in.koala.domain.response.CustomBody;
+import in.koala.enums.CrawlingSite;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -77,8 +78,8 @@ public class CrawlingController {
     }
 
     @GetMapping(value="/crawling/token")
-    public ResponseEntity getToken(@RequestParam("site") Long site) throws Exception {
-        return new ResponseEntity (CustomBody.of(crawlingService.getCrawlingToken(site), HttpStatus.OK), HttpStatus.OK);
+    public ResponseEntity getToken() throws Exception {
+        return new ResponseEntity (CustomBody.of(crawlingService.getCrawlingToken(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @PutMapping(value="/crawling/token")

@@ -364,8 +364,8 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public List<CrawlingToken> getCrawlingToken(Long site) throws Exception {
-        return crawlingMapper.getToken(site);
+    public List<CrawlingToken> getCrawlingToken() throws Exception {
+        return crawlingMapper.getToken();
     }
 
     @Override
