@@ -19,6 +19,8 @@ public class ChatBanServiceImpl implements ChatBanService {
     @Resource
     private UserService userService;
 
+    private static final Integer MAX_BAN_WORD_NUM = 50;
+
     @Override
     public List<BanWord> getBanWordList() throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
@@ -28,6 +30,9 @@ public class ChatBanServiceImpl implements ChatBanService {
     @Override
     public void addBanWord(BanWord banWord) throws Exception {
         Long userId = userService.getLoginUserInfo().getId();
+        if(chatBanMapper.countBanWord(userId) >= MAX_BAN_WORD_NUM) {
+            throw new NonCriticalException(ErrorMessage.EXCEED_MAXIMUM_BAN_WORD_NUMBER);
+        }
         chatBanMapper.addBanWord(userId, banWord.getWord());
     }
 
