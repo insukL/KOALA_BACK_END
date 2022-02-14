@@ -526,7 +526,7 @@ public class UserServiceImpl implements UserService {
         userMapper.updateUserProfile(profileUrl, selectedUser.getId());
 
         Map<String, String> map = new HashMap<>();
-        map.put("profileUrl", profileUrl);
+        map.put("profile_url", profileUrl);
         return map;
     }
 
