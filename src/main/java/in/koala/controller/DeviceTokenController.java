@@ -1,7 +1,6 @@
 package in.koala.controller;
 
-import in.koala.annotation.Auth;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.DeviceTokenService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -24,6 +23,6 @@ public class DeviceTokenController {
             @RequestParam(name = "expired_token") String expiredToken,
             @RequestParam(name="new_token") String newToken){
 
-        return new ResponseEntity(CustomBody.of(deviceTokenService.updateToken(expiredToken, newToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(deviceTokenService.updateToken(expiredToken, newToken), HttpStatus.OK), HttpStatus.OK);
     }
 }

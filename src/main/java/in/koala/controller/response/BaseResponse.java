@@ -1,4 +1,4 @@
-package in.koala.domain.response;
+package in.koala.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -8,17 +8,17 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-public class CustomBody {
+public class BaseResponse<T> {
 
-    private Object body;
+    private T body;
     private Integer code;
 
-    public static CustomBody of(HttpStatus  code){
+    public static BaseResponse of(HttpStatus  code){
         return of(null, code);
     }
 
-    public static CustomBody of(@Nullable Object body, HttpStatus code){
-        CustomBody responseBody = new CustomBody();
+    public static <T> BaseResponse of(@Nullable T body, HttpStatus code){
+        BaseResponse responseBody = new BaseResponse();
 
         responseBody.body = body;
         responseBody.code = code.value();

@@ -1,12 +1,9 @@
 package in.koala.controller;
 
 import in.koala.annotation.Auth;
-import in.koala.domain.Crawling;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
-import in.koala.domain.response.CustomBody;
-import in.koala.enums.CrawlingSite;
-import in.koala.mapper.KeywordMapper;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.UserService;
 import in.koala.serviceImpl.DeviceTokenTestServiceImpl;
 import in.koala.serviceImpl.KeywordPushServiceImpl;
@@ -17,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/fcm-test")
@@ -96,6 +90,6 @@ public class FcmTestController {
     @ApiOperation(value ="키워드 푸시 테스트2", notes = "키워드 알람 발송 실사용X", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity pushKeywordAtOnce() throws Exception{
         keywordPushService.pushKeywordAtOnce();
-        return new ResponseEntity(CustomBody.of("success", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("success", HttpStatus.OK), HttpStatus.OK);
     }
 }

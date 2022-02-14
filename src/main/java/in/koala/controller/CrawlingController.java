@@ -2,8 +2,7 @@ package in.koala.controller;
 
 import in.koala.annotation.ValidationGroups;
 import in.koala.domain.CrawlingToken;
-import in.koala.domain.response.CustomBody;
-import in.koala.enums.CrawlingSite;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.CrawlingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,45 +27,45 @@ public class CrawlingController {
     public ResponseEntity portalCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.portalCrawling(crawlingAt))
-            return new ResponseEntity(CustomBody.of("아우누리 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("아우누리 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("아우누리 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("아우누리 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "/crawling/dorm")
     public ResponseEntity dormCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.dormCrawling(crawlingAt))
-            return new ResponseEntity(CustomBody.of("아우미르 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("아우미르 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("아우미르 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("아우미르 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/youtube")
     public ResponseEntity youtubeCrawling() throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.youtubeCrawling(crawlingAt))
-            return new ResponseEntity(CustomBody.of("유튜브 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("유튜브 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/facebook")
     public ResponseEntity facebookCrawling(@RequestParam Long tokenId) throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.facebookCrawling(tokenId, crawlingAt))
-            return new ResponseEntity(CustomBody.of("페이스북 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("페이스북 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("페이스북 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("페이스북 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value="/crawling/instagram")
     public ResponseEntity instagramCrawling(@RequestParam Long tokenId) throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.instagramCrawling(tokenId, crawlingAt))
-            return new ResponseEntity(CustomBody.of("인스타그램 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("인스타그램 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("인스타그램 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("인스타그램 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     // 토큰 관련 API
@@ -74,24 +73,24 @@ public class CrawlingController {
     public ResponseEntity addToken(@Validated(ValidationGroups.createCrawlingToken.class)
                                        @RequestBody CrawlingToken token) throws Exception{
         crawlingService.addCrawlingToken(token);
-        return new ResponseEntity(CustomBody.of("토큰 추가 완료", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("토큰 추가 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/crawling/token")
     public ResponseEntity getToken() throws Exception {
-        return new ResponseEntity (CustomBody.of(crawlingService.getCrawlingToken(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity (BaseResponse.of(crawlingService.getCrawlingToken(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @PutMapping(value="/crawling/token")
     public ResponseEntity updateToken(@Validated(ValidationGroups.updateCrawlingToken.class)
                                 @RequestBody CrawlingToken token) throws Exception {
         crawlingService.updateCrawlingToken(token);
-        return new ResponseEntity(CustomBody.of("토큰 수정 완료", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("토큰 수정 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
     @DeleteMapping(value="/crawling/token")
     public ResponseEntity deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
         crawlingService.deleteCrawlingToken(tokenId);
-        return new ResponseEntity(CustomBody.of("토큰 삭제 완료", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("토큰 삭제 완료", HttpStatus.OK), HttpStatus.OK);
     }
 }

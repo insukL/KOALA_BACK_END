@@ -4,7 +4,7 @@ import in.koala.annotation.Auth;
 import in.koala.annotation.Xss;
 import in.koala.domain.Keyword;
 import in.koala.domain.Notice;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.KeywordService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -26,7 +26,7 @@ public class KeywordController {
     @ApiOperation(value ="키워드 조회" , notes = "사용자가 지정한 키워드를 조회한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword")
     public ResponseEntity<List<Keyword>> myKeywordList(){
-        return new ResponseEntity(CustomBody.of(keywordService.myKeywordList(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.myKeywordList(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -35,9 +35,9 @@ public class KeywordController {
     @PostMapping(value = "/keyword")
     public ResponseEntity registerKeyword(@RequestBody Keyword keyword) throws Exception {
         if(keywordService.registerKeyword(keyword))
-            return new ResponseEntity(CustomBody.of("키워드 추가에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("키워드 추가에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("키워드 추가에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("키워드 추가에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -46,9 +46,9 @@ public class KeywordController {
     @PatchMapping(value = "/keyword")
     public ResponseEntity deleteKeyword(@RequestParam(name = "keyword-name") String keywordName) throws Exception {
         if(keywordService.deleteKeyword(keywordName))
-            return new ResponseEntity(CustomBody.of("키워드 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("키워드 삭제에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("키워드 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("키워드 삭제에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -58,16 +58,16 @@ public class KeywordController {
     public ResponseEntity modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
                               @RequestBody Keyword keyword) throws Exception{
         if(keywordService.modifyKeyword(keywordName, keyword))
-            return new ResponseEntity(CustomBody.of("키워드 수정에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("키워드 수정에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("키워드 수정에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("키워드 수정에 실패하였습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
     @ApiOperation(value = "키워드 입력시 검색", notes = "키워드 등록 및 수정 시 자동완성된 키워드를 보여준다.")
     @GetMapping(value = "/keyword/search")
     public ResponseEntity<List<String>> searchKeyword(@RequestParam(name = "keyword") String keyword){
-        return new ResponseEntity(CustomBody.of(keywordService.searchKeyword(keyword), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.searchKeyword(keyword), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -76,7 +76,7 @@ public class KeywordController {
     @GetMapping(value = "/keyword/list")
     public ResponseEntity<List<Notice>> getKeywordNotice(@RequestParam(name = "keyword-name") String keywordName,
                                                          @RequestParam(name = "site", required = false) String site){
-        return new ResponseEntity(CustomBody.of(keywordService.getKeywordNotice(keywordName, site), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.getKeywordNotice(keywordName, site), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -86,7 +86,7 @@ public class KeywordController {
     public ResponseEntity<List<Notice>> getSearchNotice(@RequestParam(name = "keyword-name") String keywordName,
                                                         @RequestParam(name = "site", required = false) String site,
                                                         @RequestParam(name = "word") String word){
-        return new ResponseEntity(CustomBody.of(keywordService.getSearchNotice(keywordName, site, word), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.getSearchNotice(keywordName, site, word), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -95,9 +95,9 @@ public class KeywordController {
     @PatchMapping(value = "/keyword/list/notice")
     public ResponseEntity deleteNotice(@RequestParam(name = "notice-id") List<Long> noticeList){
         if(keywordService.deleteNotice(noticeList))
-            return new ResponseEntity(CustomBody.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제하지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -106,9 +106,9 @@ public class KeywordController {
     @PatchMapping(value = "/keyword/list/notice/undo")
     public ResponseEntity deleteNoticeUndo(@RequestParam("notice-id")List<Long> noticeList){
         if(keywordService.deleteNoticeUndo(noticeList))
-            return new ResponseEntity(CustomBody.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제를 취소했습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 삭제 취소를 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
@@ -117,16 +117,16 @@ public class KeywordController {
     @PatchMapping(value = "/keyword/list/notice/reading-check")
     public ResponseEntity noticeRead(@RequestParam(name = "notice-id") String noticeId){
         if(keywordService.noticeRead(noticeId))
-            return new ResponseEntity(CustomBody.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
+            return new ResponseEntity(BaseResponse.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
-            return new ResponseEntity(CustomBody.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(BaseResponse.of("알림을 읽지 못했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
     @Xss
     @ApiOperation(value = "키워드 추가하기_추천 키워드", notes = "키워드를 추가 및 수정하는 과정에서 키워드를 추천해준다.")
     @GetMapping(value = "/keyword/recommendation")
     public ResponseEntity recommendKeyword(){
-        return new ResponseEntity(CustomBody.of(keywordService.recommendKeyword(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.recommendKeyword(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
@@ -135,21 +135,21 @@ public class KeywordController {
             authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword/site")
     public ResponseEntity getSiteList(@RequestParam(name="keyword-name") String keywordName){
-        return new ResponseEntity(CustomBody.of(keywordService.getSiteList(keywordName), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.getSiteList(keywordName), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
     @ApiOperation(value = "키워드 추가하기_추천 대상", notes = "키워드를 추가 및 수정하는 과정에서 알림받을 대상을 추천해준다.")
     @GetMapping(value = "/keyword/site/recommendation")
     public ResponseEntity recommendSite(){
-        return new ResponseEntity(CustomBody.of(keywordService.recommendSite(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.recommendSite(), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
     @ApiOperation(value = "키워드 추가하기_대상 입력중", notes = "키워드를 추가 및 수정하는 과정에서 알림받을 대상을 검색했을 시, 대상을 알려준다.")
     @GetMapping(value = "/keyword/site/search")
     public ResponseEntity<List<String>> searchSite(@RequestParam(name = "site") String site){
-        return new ResponseEntity(CustomBody.of(keywordService.searchSite(site), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(keywordService.searchSite(site), HttpStatus.OK), HttpStatus.OK);
     }
 
 }

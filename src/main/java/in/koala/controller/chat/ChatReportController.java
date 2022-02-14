@@ -2,7 +2,7 @@ package in.koala.controller.chat;
 
 import in.koala.annotation.Auth;
 import in.koala.domain.ChatReport;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.service.ChatReportService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -24,6 +24,6 @@ public class ChatReportController {
     @ApiOperation(value="채팅 신고", notes="특정 채팅 신고 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity report(@RequestBody ChatReport chatReport){
         chatReportService.reportChat(chatReport);
-        return new ResponseEntity(CustomBody.of("success", HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of("success", HttpStatus.OK), HttpStatus.OK);
     }
 }

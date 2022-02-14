@@ -3,7 +3,7 @@ package in.koala.controller.chat;
 import in.koala.annotation.Auth;
 import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
-import in.koala.domain.response.CustomBody;
+import in.koala.controller.response.BaseResponse;
 import in.koala.enums.UserType;
 import in.koala.service.ChatService;
 import io.swagger.annotations.ApiOperation;
@@ -45,7 +45,7 @@ public class ChatController {
     @GetMapping(value = "/chat")
     @ApiOperation(value="채팅 리스트", notes="채팅 리스트를 얻는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getChattingList(@ModelAttribute Criteria criteria) throws Exception{
-        return new ResponseEntity(CustomBody.of(chatService.getMessageList(criteria), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(chatService.getMessageList(criteria), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -53,6 +53,6 @@ public class ChatController {
     @GetMapping(value = "/chat/search")
     @ApiOperation(value="채팅 검색", notes="채팅 메세지를 검색하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity findChatting(@ModelAttribute Criteria criteria, @RequestParam String word) throws Exception{
-        return new ResponseEntity(CustomBody.of(chatService.searchMessageList(criteria, word), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(chatService.searchMessageList(criteria, word), HttpStatus.OK), HttpStatus.OK);
     }
 }
