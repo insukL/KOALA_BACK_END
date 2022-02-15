@@ -13,6 +13,7 @@ import in.koala.mapper.UserMapper;
 import in.koala.service.DeviceTokenService;
 import in.koala.service.sns.SnsLogin;
 import in.koala.service.UserService;
+import in.koala.util.ImageUtil;
 import in.koala.util.JwtUtil;
 import in.koala.util.S3Util;
 import in.koala.util.SesSender;
@@ -49,6 +50,7 @@ public class UserServiceImpl implements UserService {
     private final SesSender sesSender;
     private final SpringTemplateEngine springTemplateEngine;
     private final S3Util s3Util;
+    private final ImageUtil imageUtil;
 
     @Value("${s3.default_image.url}")
     private String defaultUrl;
@@ -514,6 +516,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map editProfile(MultipartFile multipartFile){
+
+        multipartFile = imageUtil.resizing(multipartFile, 500);
         NormalUser selectedUser = this.getLoginNormalUserInfo();
 
         String profileUrl = selectedUser.getProfile();

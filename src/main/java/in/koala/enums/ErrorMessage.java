@@ -64,6 +64,7 @@ public enum ErrorMessage {
 	EMAIL_NOT_UNIVERSITY(152, "학교인증은 이메일형식이 학교 이메일이여야 합니다"),
 	FILE_UPLOAD_FAIL(153, "amazon s3 file upload failed"),
 	FORBIDDEN_EXCEPTION(154, "USER AUTHORIZATION EXCEPTION"),
+	IMAGE_RESIZING_EXCEPTION(155, "image resizing exception"),
 
 	/**
 	 * Scrap, Memo
