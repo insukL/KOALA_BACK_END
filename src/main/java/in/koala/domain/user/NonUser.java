@@ -11,7 +11,7 @@ import lombok.Setter;
 public class NonUser extends User{
 
     @Builder
-    public NonUser(UserType user_type){
-        this.user_type = user_type;
+    public NonUser(UserType userType){
+        this.userType = userType;
     }
 }
