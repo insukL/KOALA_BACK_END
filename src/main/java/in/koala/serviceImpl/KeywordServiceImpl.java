@@ -41,7 +41,7 @@ public class KeywordServiceImpl implements KeywordService {
 
         User user = getLoginUserInfo();
         Long userId = user.getId();
-        UserType userType = user.getUser_type();
+        UserType userType = user.getUserType();
 
         checkKeywordMaxNumberByUserType(userType, userId);
 

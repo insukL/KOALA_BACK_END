@@ -1,6 +1,8 @@
 package in.koala.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import in.koala.annotation.ValidationGroups;
 import in.koala.enums.SnsType;
 import in.koala.enums.UserType;
@@ -17,13 +19,10 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public abstract class User {
     protected Long id;
-
-    @ApiModelProperty(hidden = true)
-    protected UserType user_type;
-    @ApiModelProperty(hidden = true)
-    protected Timestamp created_at;
-    @ApiModelProperty(hidden = true)
-    protected Timestamp updated_at;
+    protected UserType userType;
+    protected Timestamp createdAt;
+    protected Timestamp updatedAt;
 }

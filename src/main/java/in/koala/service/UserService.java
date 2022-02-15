@@ -15,7 +15,7 @@ public interface UserService {
     JWToken snsLogin(String code, SnsType snsType) throws Exception;
     JWToken snsSingIn(SnsType snsType, String deviceToken);
     JWToken login(NormalUser user, String deviceToken);
-    User signUp(NormalUser user);
+    NormalUser signUp(NormalUser user);
     void requestSnsLogin(SnsType snsType) throws Exception;
     User getLoginUserInfo();
     NormalUser getLoginNormalUserInfo();

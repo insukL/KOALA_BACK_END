@@ -70,11 +70,11 @@ public class UserServiceImpl implements UserService {
         // 받은 정보를 이용하여 User domain 생성
         NormalUser snsUser = NormalUser.builder()
                 .account(userProfile.get("account"))
-                .sns_email(userProfile.get("sns_email"))
+                .snsEmail(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .sns_type(snsType)
-                .user_type(UserType.NORMAL)
+                .snsType(snsType)
+                .userType(UserType.NORMAL)
                 .build();
 
         if(snsUser.getProfile() == null) snsUser.setProfile(defaultUrl);
@@ -108,11 +108,11 @@ public class UserServiceImpl implements UserService {
         // 받은 정보를 이용하여 User domain 생성
         NormalUser user = NormalUser.builder()
                 .account(userProfile.get("account"))
-                .sns_email(userProfile.get("sns_email"))
+                .snsEmail(userProfile.get("sns_email"))
                 .profile(userProfile.get("profile"))
                 .nickname(userProfile.get("nickname"))
-                .sns_type(snsType)
-                .user_type(UserType.NORMAL)
+                .snsType(snsType)
+                .userType(UserType.NORMAL)
                 .build();
 
         if(user.getProfile() == null) user.setProfile(defaultUrl);
@@ -155,7 +155,7 @@ public class UserServiceImpl implements UserService {
             // device token 또한 존재하지 않는 경우
 
             NonUser user = NonUser.builder()
-                    .user_type(UserType.NON).build();
+                    .userType(UserType.NON).build();
 
             this.nonUserSingUp(user);
 
@@ -166,7 +166,7 @@ public class UserServiceImpl implements UserService {
             // 토큰은 있지만 연결된 비회원 유저가 존재하지 않는다
 
             NonUser user = NonUser.builder()
-                    .user_type(UserType.NON).build();
+                    .userType(UserType.NON).build();
 
             this.nonUserSingUp(user);
 
@@ -207,17 +207,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signUp(NormalUser user) {
-        userMapper.getUserByAccount(user.getAccount())
-                .orElseThrow(()->new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION));
+    public NormalUser signUp(NormalUser user) {
+        if(userMapper.getUserByAccount(user.getAccount()).isPresent()){
+            throw new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION);
+        }
 
         checkNickname(user.getNickname());
-        checkFindEmail(user.getFind_email());
+        checkFindEmail(user.getFindEmail());
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         user.setProfile(defaultUrl);
-        user.setUser_type(UserType.NORMAL);
-        user.setSns_type(SnsType.NORMAL);
+        user.setUserType(UserType.NORMAL);
+        user.setSnsType(SnsType.NORMAL);
 
         normalUserSingUp(user);
         return userMapper.getNormalUserById(user.getId()).get();
@@ -277,7 +278,7 @@ public class UserServiceImpl implements UserService {
     public JWToken refresh() {
         User user = getUserInfo(getLoginUserIdFromJwt(TokenType.REFRESH));
 
-        return generateAccessAndRefreshToken(user.getId(), user.getUser_type());
+        return generateAccessAndRefreshToken(user.getId(), user.getUserType());
     }
 
     // 별개의 서비스로 분리 요망
@@ -294,12 +295,12 @@ public class UserServiceImpl implements UserService {
         NormalUser user = initNormalUserByEmailType(authEmail, emailType);
         System.out.println(user);
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
-        if(user.getSns_type() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || emailType.equals(EmailType.PASSWORD))){
+        if(user.getSnsType() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || emailType.equals(EmailType.PASSWORD))){
             throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
         // 비밀번호 찾기의 경우 가입할 때 설정한 이메일과 일치하는 지 확인
-        if(emailType.equals(EmailType.PASSWORD) && !user.getFind_email().equals(authEmail.getEmail())){
+        if(emailType.equals(EmailType.PASSWORD) && !user.getFindEmail().equals(authEmail.getEmail())){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_MATCH);
         }
 
@@ -408,7 +409,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean checkUserUniversityCertification(NormalUser user) {
-        return user.getIs_auth() == 1;
+        return user.getIsAuth() == 1;
     }
 
     @Override
@@ -481,8 +482,8 @@ public class UserServiceImpl implements UserService {
 
         user.setNickname(deleted);
         user.setAccount(deleted);
-        user.setFind_email(deleted + "@deletedUser.deleted");
-        user.setSns_email(deleted + "@deletedUser.deleted");
+        user.setFindEmail(deleted + "@deletedUser.deleted");
+        user.setSnsEmail(deleted + "@deletedUser.deleted");
 
         userMapper.softDeleteNormalUser(user);
         userMapper.softDeleteUser(user);
