@@ -14,8 +14,9 @@
         FROM chat_message AS m,
              normal_user AS u
         WHERE
-            id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
-            AND
+            <if test="criteria.cursor != null">
+                id <![CDATA[ < ]]> #{criteria.cursor} AND
+            </if>
             m.sender = u.user_id
         ORDER BY id DESC LIMIT #{criteria.limit}
     </select>
@@ -35,9 +36,10 @@
         ( SELECT id
         FROM chat_message
         WHERE
-              id <![CDATA[ <= ]]> <include refid="getLastKey"/> - #{criteria.cursor}
-          AND
-              message LIKE CONCAT('%', #{word}, '%')
+            <if test="criteria.cursor != null">
+                id <![CDATA[ < ]]> #{criteria.cursor} AND
+            </if>
+            message LIKE CONCAT('%', #{word}, '%')
         ORDER BY id DESC LIMIT 1 )
     </sql>
 
