@@ -2,6 +2,7 @@ package in.koala.serviceImpl;
 
 import in.koala.domain.AuthEmail;
 import in.koala.domain.DeviceToken;
+import in.koala.domain.JWToken;
 import in.koala.domain.user.NonUser;
 import in.koala.domain.user.NormalUser;
 import in.koala.domain.user.User;
@@ -19,7 +20,6 @@ import in.koala.util.S3Util;
 import in.koala.util.SesSender;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,11 +62,9 @@ public class UserServiceImpl implements UserService {
 
     // 클라이언트 필요없는 서버 개발용
     @Override
-    public Map<String, String> snsLogin(String code, SnsType snsType) throws Exception {
-        // sns 별 인터페이스 구현체 변경
+    public JWToken snsLogin(String code, SnsType snsType) throws Exception {
         SnsLogin snsLogin = this.initSnsService(snsType);
 
-        // snsLogin 에 유저 정보요청
         Map<String, String> userProfile = snsLogin.requestUserProfile(code);
 
         // 받은 정보를 이용하여 User domain 생성
@@ -93,16 +91,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> snsSingIn(SnsType snsType, String deviceToken) {
+    public JWToken snsSingIn(SnsType snsType, String deviceToken) {
         // sns 별 인터페이스 구현체 변경
         SnsLogin snsLogin = this.initSnsService(snsType);
 
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String snsToken = request.getHeader("Authorization");
 
         if(snsToken == null){
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
         }
+
         // snsLogin 에 유저 정보요청
         Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
 
@@ -139,7 +138,7 @@ public class UserServiceImpl implements UserService {
      * 디바이스 토큰을 이용하여 이전에 비회원 로그인 여부를 파악한다
      */
     @Override
-    public Map nonMemberLogin(String deviceToken) {
+    public JWToken nonMemberLogin(String deviceToken) {
 
         if(checkIsWebUser(deviceToken)){
             throw new NonCriticalException(ErrorMessage.WEB_NOT_SUPPORT);
@@ -147,7 +146,6 @@ public class UserServiceImpl implements UserService {
 
         DeviceToken token = null;
 
-        // DB에 있는 해당 device token 의 토큰 정보 가져오기
         if (deviceTokenService.checkTokenExist(deviceToken)) {
             token = deviceTokenService.getDeviceTokenInfoByDeviceToken(deviceToken);
         }
@@ -185,14 +183,13 @@ public class UserServiceImpl implements UserService {
         // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 갱신
         this.setUserIdInDeviceToken(token);
 
-        return this.generateAccessAndRefreshToken(token.getUser_id(), UserType.NON);
+        return generateAccessAndRefreshToken(token.getUser_id(), UserType.NON);
     }
 
     // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
     // swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
     @Override
     public void requestSnsLogin(SnsType snsType) throws Exception {
-        // snsType 에 맞게 구현체를 결정하는 메소드
         SnsLogin snsLogin = initSnsService(snsType);
 
         //System.out.println(uri);
@@ -201,7 +198,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean checkFindEmail(String email) {
-        if(userMapper.getUserByFindEmail(email) == null) {
+        if(!userMapper.getUserByFindEmail(email).isPresent()) {
             return true;
 
         } else{
@@ -211,38 +208,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User signUp(NormalUser user) {
-        User selectUser = userMapper.getUserByAccount(user.getAccount());
+        userMapper.getUserByAccount(user.getAccount())
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION));
 
-        // 해당 계정명이 이미 존재한다면 예외처리
-        if(selectUser != null) throw new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION);
-
-        // 해당 닉네임이 이미 존재한다면 예외처리
-        if(userMapper.checkNickname(user.getNickname()) >= 1) throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
-
-        if(userMapper.getUserByFindEmail(user.getFind_email()) != null) throw new NonCriticalException(ErrorMessage.DUPLICATED_EMAIL_EXCEPTION);
+        checkNickname(user.getNickname());
+        checkFindEmail(user.getFind_email());
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         user.setProfile(defaultUrl);
         user.setUser_type(UserType.NORMAL);
         user.setSns_type(SnsType.NORMAL);
 
-        this.normalUserSingUp(user);
-
-        return userMapper.getNormalUserById(user.getId());
+        normalUserSingUp(user);
+        return userMapper.getNormalUserById(user.getId()).get();
     }
 
     @Override
-    public Map<String, String> login(NormalUser user, String deviceToken) {
-        NormalUser loginUser = userMapper.getUserPassword(user.getAccount());
+    public JWToken login(NormalUser user, String deviceToken) {
+        NormalUser loginUser = userMapper.getUserPassword(user.getAccount())
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST));
 
-        // 해당 계정이 존재하지 않는다면 예외처리
-        if(loginUser == null) throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
-
-        // 계정은 존재하나 비밀번호가 존재하지 않는다면 예외처리
-        if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword())) throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
+        if(!BCrypt.checkpw(user.getPassword(), loginUser.getPassword()))
+            throw new NonCriticalException(ErrorMessage.WRONG_PASSWORD_EXCEPTION);
 
         if(!checkIsWebUser(deviceToken)) {
-            this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
+            setUserIdInDeviceToken(DeviceToken.ofNormalUser(loginUser.getId(), deviceToken));
         }
 
         return generateAccessAndRefreshToken(loginUser.getId(), UserType.NORMAL);
@@ -250,20 +240,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getLoginUserInfo() {
-        User loginUser = getUserInfo(TokenType.ACCESS);
-
-        return loginUser;
+        return getUserInfo(getLoginUserIdFromJwt(TokenType.ACCESS));
     }
 
     @Override
     public NormalUser getLoginNormalUserInfo(){
         Long id = this.getLoginUserIdFromJwt(TokenType.ACCESS);
 
-        NormalUser user = userMapper.getNormalUserById(id);
-
-        if (user == null) throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-
-        return user;
+        return userMapper.getNormalUserById(id)
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
     }
 
     @Override
@@ -276,8 +261,6 @@ public class UserServiceImpl implements UserService {
         user.setNickname(nickname);
 
         userMapper.updateNickname(user);
-
-        return;
     }
 
     @Override
@@ -291,12 +274,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, String> refresh() {
-        User user = getUserInfo(TokenType.REFRESH);
+    public JWToken refresh() {
+        User user = getUserInfo(getLoginUserIdFromJwt(TokenType.REFRESH));
 
-        return this.generateAccessAndRefreshToken(user.getId(), user.getUser_type());
+        return generateAccessAndRefreshToken(user.getId(), user.getUser_type());
     }
 
+    // 별개의 서비스로 분리 요망
     @Override
     public void sendEmail(AuthEmail authEmail, EmailType emailType) {
 
@@ -306,11 +290,11 @@ public class UserServiceImpl implements UserService {
                 throw new NonCriticalException(ErrorMessage.EMAIL_NOT_UNIVERSITY);
             }
         }
-        // email 전송 종류에 따른 유저 초기화
+
         NormalUser user = initNormalUserByEmailType(authEmail, emailType);
         System.out.println(user);
         // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
-        if(user.getSns_type() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || authEmail.equals(EmailType.PASSWORD))){
+        if(user.getSns_type() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || emailType.equals(EmailType.PASSWORD))){
             throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
 
@@ -320,7 +304,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 이미 이메일 인증을 끝낸 계정이 학교 인증 이메일 전송을 요청하면 예외 발생
-        if(emailType.equals(EmailType.UNIVERSITY) && user.getIs_auth() == 1){
+        if(emailType.equals(EmailType.UNIVERSITY) && checkUserUniversityCertification(user)){
             throw new NonCriticalException(ErrorMessage.USER_ALREADY_CERTIFICATE);
         }
 
@@ -331,16 +315,16 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.EMAIL_SEND_EXCEED_EXCEPTION);
         }
 
-        String secret = "";
+        StringBuilder secret = new StringBuilder();
         Random random = new Random();
 
         // 난수 생성
         for(int i = 0; i < 5; i++){
-            secret += random.nextInt(10);
+            secret.append(random.nextInt(10));
         }
 
         Context context = new Context();
-        context.setVariable("secret", secret);
+        context.setVariable("secret", secret.toString());
 
         String body = springTemplateEngine.process("authenticationEmail", context);
 
@@ -358,7 +342,7 @@ public class UserServiceImpl implements UserService {
         calendar.add(Calendar.SECOND, 5 * 60);
         authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
 
-        authEmail.setSecret(secret);
+        authEmail.setSecret(secret.toString());
         authEmail.setType(emailType);
 
         // 이전에 보냈던 이메일들은 전부 무효화
@@ -366,13 +350,10 @@ public class UserServiceImpl implements UserService {
 
         // 이번에 보낸 이메일 삽입
         authEmailMapper.insertAuthEmail(authEmail);
-
-        return;
     }
     
     @Override
     public void certificateEmail(AuthEmail authEmail, EmailType emailType) {
-
         // email 전송 종류에 따른 유저 초기화
         User user = initNormalUserByEmailType(authEmail, emailType);
 
@@ -412,15 +393,13 @@ public class UserServiceImpl implements UserService {
 
         // 인증 완료하였으니, 해당 메일 인증 성공했다고 auth_email 테이블에 체크
         authEmailMapper.setIsAuth(selectedAuthEmail.getId());
-
-        return;
     }
 
     @Override
     public boolean isUniversityCertification() {
         NormalUser user = getLoginNormalUserInfo();
 
-        if(user.getIs_auth() == 1){
+        if(checkUserUniversityCertification(user)){
             return true;
 
         } else {
@@ -428,32 +407,29 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private boolean checkUserUniversityCertification(NormalUser user) {
+        return user.getIs_auth() == 1;
+    }
+
     @Override
     public Boolean checkAccount(String account) {
-        User user = userMapper.getUserByAccount(account);
+        if(userMapper.getUserByAccount(account).isPresent()){
+            return true;
 
-        if(user == null){
+        } else{
             throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
         }
-
-        return true;
     }
 
     @Override
     public void changePassword(NormalUser user) {
+        NormalUser selectedUser = userMapper.getUserPassword(user.getAccount())
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST));
 
-        NormalUser selectedUser = userMapper.getUserPassword(user.getAccount());
-
-        if(selectedUser == null){
-            throw new NonCriticalException(ErrorMessage.ACCOUNT_NOT_EXIST);
-        }
-
-        // 이메일 인증이 선행되지 않은 경우
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(selectedUser.getId(), EmailType.PASSWORD) <= 0){
+        if(checkEmailAuthPrecede(selectedUser.getId(), EmailType.PASSWORD)){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
         
-        // 변경하고자 하는 비밀번호와 기존 비밀번호가 같으변 발생하는 예외
         if(BCrypt.checkpw(user.getPassword(), selectedUser.getPassword())){
             throw new NonCriticalException(ErrorMessage.SAME_PASSWORD_EXCEPTION);
         }
@@ -462,41 +438,39 @@ public class UserServiceImpl implements UserService {
 
         userMapper.updatePassword(selectedUser);
 
-        AuthEmail authEmail = new AuthEmail();
-        authEmail.setUser_id(selectedUser.getId());
-        authEmail.setType(EmailType.PASSWORD);
+        AuthEmail authEmail = AuthEmail.builder()
+                .user_id(selectedUser.getId())
+                .type(EmailType.PASSWORD)
+                .build();
 
-        // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
     }
 
+    private boolean checkEmailAuthPrecede(Long userId, EmailType password) {
+        return authEmailMapper.getUndeletedIsAuthNumByUserId(userId, password) <= 0;
+    }
+
     @Override
-    public Map findAccount(String email) {
-        NormalUser user = userMapper.getUserByFindEmail(email);
+    public String findAccount(String email) {
+        NormalUser user = userMapper.getUserByFindEmail(email)
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
 
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
-
-        if(authEmailMapper.getUndeletedIsAuthNumByUserId(user.getId(), EmailType.ACCOUNT) <= 0){
+        if(checkEmailAuthPrecede(user.getId(), EmailType.ACCOUNT)){
             throw new NonCriticalException(ErrorMessage.EMAIL_NOT_AUTHORIZE_EXCEPTION);
         }
 
-        AuthEmail authEmail = new AuthEmail();
-        authEmail.setUser_id(user.getId());
-        authEmail.setType(EmailType.ACCOUNT);
+         AuthEmail authEmail = AuthEmail.builder()
+                .user_id(user.getId())
+                .type(EmailType.ACCOUNT)
+                .build();
 
-        // 해당 이메일 인증 만료
         authEmailMapper.expirePastAuthEmail(authEmail);
 
         String account = user.getAccount();
         account = account.substring(0, account.length() - 2);
         account += "**";
 
-        Map<String, String> map = new HashMap<>();
-        map.put("email", account);
-
-        return map;
+        return account;
     }
 
     @Override
@@ -515,7 +489,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map editProfile(MultipartFile multipartFile){
+    public String editProfile(MultipartFile multipartFile){
 
         multipartFile = imageUtil.resizing(multipartFile, 500);
         NormalUser selectedUser = this.getLoginNormalUserInfo();
@@ -529,9 +503,7 @@ public class UserServiceImpl implements UserService {
         profileUrl = s3Util.uploader(multipartFile);
         userMapper.updateUserProfile(profileUrl, selectedUser.getId());
 
-        Map<String, String> map = new HashMap<>();
-        map.put("profile_url", profileUrl);
-        return map;
+        return profileUrl;
     }
 
 
@@ -543,11 +515,7 @@ public class UserServiceImpl implements UserService {
         Timestamp start = new Timestamp(calendar.getTimeInMillis());
 
         // 최근 10분안에 전송한 이메일 개수확인
-        if(authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start) >= 5){
-            return true;
-        }
-
-        return false;
+        return authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start) >= 5;
     }
 
     private Long getLoginUserIdFromJwt(TokenType tokenType){
@@ -555,7 +523,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private Claims getClaimsFromJwt(TokenType tokenType){
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String token = request.getHeader("Authorization");
 
         if(token == null){
@@ -565,19 +533,15 @@ public class UserServiceImpl implements UserService {
         return jwt.getClaimsFromJwt(token, tokenType);
     }
 
-    private Map<String, String> generateAccessAndRefreshToken(Long id, UserType userType){
-        Map<String, String> token = new HashMap<>();
-
-        token.put("access_token", jwt.generateToken(id, TokenType.ACCESS, userType));
-        token.put("refresh_token", jwt.generateToken(id, TokenType.REFRESH, userType));
-
-        return token;
+    private JWToken generateAccessAndRefreshToken(Long id, UserType userType){
+        return JWToken.ofLogin(jwt.generateToken(id, TokenType.ACCESS, userType)
+                , jwt.generateToken(id, TokenType.REFRESH, userType));
     }
 
     // 로그인 요청이 들어온 sns 에 맞춰 SnsLogin 인터페이스 구현체 결정
     private SnsLogin initSnsService(SnsType snsType){
 
-        for(val snsLogin : snsLoginList){
+        for(SnsLogin snsLogin : snsLoginList){
             if(snsLogin.getSnsType().equals(snsType)) return snsLogin;
         }
 
@@ -586,22 +550,18 @@ public class UserServiceImpl implements UserService {
 
 
     private NormalUser initNormalUserByEmailType(AuthEmail authEmail, EmailType emailType) {
-        NormalUser user = null;
 
         if(emailType.equals(EmailType.ACCOUNT)){
-            user = userMapper.getUserByFindEmail(authEmail.getEmail());
+            return userMapper.getUserByFindEmail(authEmail.getEmail())
+                    .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
 
         } else if(emailType.equals(EmailType.UNIVERSITY)){
-            user = this.getLoginNormalUserInfo();
+            return getLoginNormalUserInfo();
 
         } else {
-            user = userMapper.getUserByAccount(authEmail.getAccount());
+            return userMapper.getUserByAccount(authEmail.getAccount())
+                    .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
         }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
-        return user;
     }
 
     private void snsSingUp(NormalUser user){
@@ -618,17 +578,14 @@ public class UserServiceImpl implements UserService {
 
     // 소켓 연결시 사용할 JWT 토큰 발급
     @Override
-    public Map<String, String> getSocketToken(){
+    public JWToken getSocketToken(){
         NormalUser user = this.getLoginNormalUserInfo();
 
-        if(user.getIs_auth() == 0){
+        if(!checkUserUniversityCertification(user)){
             throw new NonCriticalException(ErrorMessage.USER_NOT_AUTH);
         }
 
-        Map<String, String> token = new HashMap<>();
-        token.put("socket_token", jwt.generateToken(user.getId(), TokenType.SOCKET, UserType.NORMAL));
-
-        return token;
+        return JWToken.ofChat(jwt.generateToken(user.getId(), TokenType.SOCKET, UserType.NORMAL));
     }
   
     private void nonUserSingUp(NonUser user){
@@ -646,24 +603,18 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User getUserInfo(TokenType tokenType){
-        Long id = getLoginUserIdFromJwt(tokenType);
-
+    // 다형성 구현
+    private User getUserInfo(Long id){
         UserType userType = userMapper.getUserType(id);
 
-        User user = null;
         if(userType.equals(UserType.NORMAL)) {
-            user = userMapper.getNormalUserById(id);
+            return userMapper.getNormalUserById(id)
+                    .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
 
         } else {
-            user = userMapper.getNonUserById(id);
+            return userMapper.getNonUserById(id)
+                    .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
         }
-
-        if(user == null){
-            throw new NonCriticalException(ErrorMessage.USER_NOT_EXIST);
-        }
-
-        return user;
     }
 
     private boolean checkIsWebUser(String deviceToken){

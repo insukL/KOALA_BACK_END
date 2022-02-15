@@ -5,7 +5,9 @@ import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
 import in.koala.domain.user.NormalUser;
 import in.koala.enums.ChatType;
+import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
+import in.koala.exception.NonCriticalException;
 import in.koala.mapper.ChatMessageMapper;
 import in.koala.mapper.UserMapper;
 import in.koala.service.ChatService;
@@ -48,7 +50,8 @@ public class ChatServiceImpl implements ChatService {
         ChatMessage chatMessage = message.getPayload();
         chatMessage.setSender(id);
         chatMessageMapper.insertMessage(chatMessage);
-        NormalUser user = userMapper.getNormalUserById(id);
+        NormalUser user = userMapper.getNormalUserById(id)
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
         chatMessage.setNickname(user.getNickname());
         chatMessage.setProfile(user.getProfile());
         template.convertAndSend("/sub/" + roomId, chatMessage);
@@ -70,7 +73,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public String getMemberName(Long id){
-        return userMapper.getNormalUserById(id).getNickname();
+        return userMapper.getNormalUserById(id)
+                .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST))
+                .getNickname();
     }
 
     @Override

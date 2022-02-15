@@ -6,19 +6,21 @@ import in.koala.domain.user.User;
 import in.koala.enums.UserType;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserMapper {
     String test();
     void signUp(NormalUser user);
     void snsSignUp(NormalUser user);
     Long getIdByAccount(String account);
-    NormalUser getUserByAccount(String account);
-    NormalUser getNormalUserById(Long id);
-    NonUser getNonUserById(Long id);
-    NormalUser getUserByFindEmail(String email);
+    Optional<NormalUser> getUserByAccount(String account);
+    Optional<NormalUser> getNormalUserById(Long id);
+    Optional<NonUser> getNonUserById(Long id);
+    Optional<NormalUser> getUserByFindEmail(String email);
     UserType getUserType(Long id);
     Integer checkNickname(String nickname);
-    NormalUser getUserPassword(String account);
+    Optional<NormalUser> getUserPassword(String account);
     void updateNickname(NormalUser user);
     void updateIsAuth(Long id);
     void updatePassword(NormalUser user);

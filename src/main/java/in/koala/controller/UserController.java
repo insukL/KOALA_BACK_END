@@ -2,6 +2,8 @@ package in.koala.controller;
 
 import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
+import in.koala.controller.dto.EditProfileResponse;
+import in.koala.controller.dto.FindAccountResponse;
 import in.koala.domain.AuthEmail;
 import in.koala.domain.user.NormalUser;
 import in.koala.controller.response.BaseResponse;
@@ -149,7 +151,7 @@ public class UserController {
     @GetMapping(value="/account-find")
     @ApiOperation(value="계정 찾기 API", notes="이메일을 통하여 계정을 찾아 반환해주는 API 입니다, 이메일 인증이 선행되어야 합니다. \n query 로 이메일을 받습니다")
     public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
-        return new ResponseEntity(BaseResponse.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(new FindAccountResponse(userService.findAccount(email)), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -172,7 +174,7 @@ public class UserController {
     @PatchMapping(value="/profile")
     @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다 \n 사진의 크기는 최대 50MB 입니다 \n 프로파일 수정에 성공하면 profile_url 을 반환합니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
-        return new ResponseEntity(BaseResponse.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(new EditProfileResponse(userService.editProfile(image)), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
