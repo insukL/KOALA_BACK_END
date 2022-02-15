@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,7 +34,7 @@ public class KeywordController {
     @Auth
     @ApiOperation(value ="키워드 추가" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/keyword")
-    public ResponseEntity registerKeyword(@RequestBody Keyword keyword) throws Exception {
+    public ResponseEntity registerKeyword(@RequestBody @Valid Keyword keyword) throws Exception {
         if(keywordService.registerKeyword(keyword))
             return new ResponseEntity(BaseResponse.of("키워드 추가에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else
@@ -56,7 +57,7 @@ public class KeywordController {
     @ApiOperation(value = "키워드 수정", notes = "사용자가 지정한 키워드를 수정한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @PutMapping(value = "/keyword")
     public ResponseEntity modifyKeyword(@RequestParam(name = "keyword-name") String keywordName,
-                              @RequestBody Keyword keyword) throws Exception{
+                              @RequestBody @Valid Keyword keyword) throws Exception{
         if(keywordService.modifyKeyword(keywordName, keyword))
             return new ResponseEntity(BaseResponse.of("키워드 수정에 성공하였습니다.",  HttpStatus.OK), HttpStatus.OK);
         else

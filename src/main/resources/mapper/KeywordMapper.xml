@@ -167,9 +167,11 @@
     </update>
 
     <select id="searchKeyword" parameterType="java.lang.String" resultType="java.lang.String">
-        SELECT name
+        SELECT DISTINCT name
         FROM keyword
-        WHERE name LIKE concat("%", #{keyword}, "%");
+        WHERE name LIKE concat("%", #{keyword}, "%")
+            AND is_deleted = 0
+        LIMIT 10;
     </select>
 
     <select id="getSiteList" resultType="in.koala.enums.CrawlingSite">
