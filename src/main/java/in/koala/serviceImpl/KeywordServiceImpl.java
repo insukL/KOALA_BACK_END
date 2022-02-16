@@ -128,9 +128,9 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public List<Notice> getKeywordNotice(String keywordName, String site) {
+    public List<Notice> getKeywordNotice(String keywordName, String site, Integer pageNumber) {
         Long userId = getLoginUserInfo().getId();
-        return keywordMapper.getKeywordNotice(keywordName, site, userId);
+        return keywordMapper.getKeywordNotice(keywordName, site, userId, convertPageNumber(pageNumber));
     }
 
     @Override
@@ -275,5 +275,13 @@ public class KeywordServiceImpl implements KeywordService {
         Set<CrawlingSite> copyList = new HashSet<>();
         copyList.addAll(list);
         return copyList;
+    }
+
+    private Integer convertPageNumber(Integer pageNumber) {
+        if(pageNumber <= 1) pageNumber = 0;
+        else {
+            pageNumber = (pageNumber-1) * 20;
+        }
+        return pageNumber;
     }
 }

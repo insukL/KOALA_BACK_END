@@ -120,6 +120,7 @@
         <if test="site != null">
             AND site = #{site}
         </if>
+        LIMIT 20 OFFSET #{pageNumber};
     </select>
 
     <select id="getSearchNotice" resultType="in.koala.domain.Notice">
