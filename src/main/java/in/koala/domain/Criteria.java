@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiParam;
 public class Criteria {
     @ApiParam(required = false, defaultValue = "10")
     private Integer limit = 10;
-    @ApiParam(required = false, defaultValue = "0")
+    @ApiParam(required = false)
     private Integer cursor;
 
     public Integer getLimit() { return limit; }
