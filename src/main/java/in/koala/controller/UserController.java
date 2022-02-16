@@ -2,9 +2,12 @@ package in.koala.controller;
 
 import in.koala.annotation.Auth;
 import in.koala.annotation.ValidationGroups;
+import in.koala.controller.dto.*;
 import in.koala.domain.AuthEmail;
+import in.koala.domain.user.NonUser;
 import in.koala.domain.user.NormalUser;
 import in.koala.controller.response.BaseResponse;
+import in.koala.domain.user.User;
 import in.koala.enums.EmailType;
 import in.koala.enums.SnsType;
 import in.koala.enums.UserType;
@@ -62,7 +65,7 @@ public class UserController {
     @GetMapping(value="/my")
     @ApiOperation(value ="유저의 현재정보" , notes = "로그인된 유저의 정보를 반환한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity getMyInfo(){
-        return new ResponseEntity(BaseResponse.of(userService.getLoginUserInfo(), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(new UserDTO(userService.getLoginUserInfo()), HttpStatus.OK), HttpStatus.OK);
     }
 
     @ApiOperation(value = "sns 로그인 서버 개발용", notes = "자동으로 해당 sns 로그인창으로 redirect 후 로그인 완료되면 access, refresh token 반환합니다. \n swagger 에서는 동작하지 않으니 주소창에 직접 입력 바랍니다.")
@@ -73,18 +76,17 @@ public class UserController {
 
     @PostMapping(value="/sing-in")
     @ApiOperation(value="회원가입", notes = "회원가입에 성공하면 가입된 유저의 정보를 반환한다")
-    public ResponseEntity signIn(
-            @RequestBody @Validated({ValidationGroups.SingIn.class}) NormalUser user){
-        return new ResponseEntity(BaseResponse.of(userService.signUp(user), HttpStatus.CREATED), HttpStatus.CREATED);
+    public ResponseEntity signIn(@RequestBody @Validated SingInRequest request){
+        return new ResponseEntity(BaseResponse.of(new UserDTO(userService.signUp(request.toEntity())), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
     @PostMapping(value="/login")
     @ApiOperation(value="로그인", notes="로그인이 성공적이면 accessToken 과 refreshToken 을 반환한다")
     public ResponseEntity login(
-            @RequestBody @Validated({ValidationGroups.Login.class}) NormalUser user,
+            @RequestBody LogInRequest request,
             @RequestParam(name = "device_token") String deviceToken){
 
-        return new ResponseEntity(BaseResponse.of(userService.login(user, deviceToken), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(userService.login(request.toEntity(), deviceToken), HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/nickname-check")
@@ -117,18 +119,18 @@ public class UserController {
 
     @PostMapping(value="/email-send/{emailType}")
     @ApiOperation(value="이메일 전송 요청", notes="이메일 전송 요청 api 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 헤더에 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
-    public ResponseEntity sendEmail(@RequestBody @Validated AuthEmail authEmail, @PathVariable EmailType emailType){
-        userService.sendEmail(authEmail, emailType);
+    public ResponseEntity sendEmail(@RequestBody @Validated SendEmailRequest request, @PathVariable EmailType emailType){
+        userService.sendEmail(request.toEntity(), emailType);
         return new ResponseEntity(BaseResponse.of("전송 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @PostMapping(value="/email/certification/{emailType}")
     @ApiOperation(value="이메일 전송 인증", notes="전송 이메일 인증 API 입니다. \n 공통적으로 email 을 받습니다. \n account 의 경우에는 email 을 제외하고 받지 않습니다. \n password 의 경우에는 account 와 email 을 받습니다. \n university 의 경우에는 email 과 헤더에 accessToken 을 받습니다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity certificateEmail(
-            @RequestBody @Validated AuthEmail authEmail,
+            @RequestBody @Validated SendEmailRequest request,
             @PathVariable(value = "emailType") EmailType emailType){
 
-        userService.certificateEmail(authEmail, emailType);
+        userService.certificateEmail(request.toEntity(), emailType);
         return new ResponseEntity(BaseResponse.of("인증 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
@@ -141,15 +143,15 @@ public class UserController {
 
     @PostMapping(value="/password-change")
     @ApiOperation(value="비밀변호 변경 API", notes="비밀번호를 변경하는 API, 이메일 인증이 선행되어야 합니다, \n password 와 account 을 body 로 입력받습니다.")
-    public ResponseEntity changePassword(@RequestBody NormalUser user){
-        userService.changePassword(user);
+    public ResponseEntity changePassword(@RequestBody ChangePasswordRequest request){
+        userService.changePassword(request.toEntity());
         return new ResponseEntity(BaseResponse.of("비밀번호 변경 성공", HttpStatus.OK), HttpStatus.OK);
     }
 
     @GetMapping(value="/account-find")
     @ApiOperation(value="계정 찾기 API", notes="이메일을 통하여 계정을 찾아 반환해주는 API 입니다, 이메일 인증이 선행되어야 합니다. \n query 로 이메일을 받습니다")
     public ResponseEntity findAccount(@RequestParam @Email(message="이메일 형식이 아닙니다") String email){
-        return new ResponseEntity(BaseResponse.of(userService.findAccount(email), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(new FindAccountResponse(userService.findAccount(email)), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)
@@ -172,7 +174,7 @@ public class UserController {
     @PatchMapping(value="/profile")
     @ApiOperation(value="프로필 사진 수정 API", notes="프로필 사진을 수정하는 API 입니다. \n 사진을 전송하시면 됩니다 \n 사진의 크기는 최대 50MB 입니다 \n 프로파일 수정에 성공하면 profile_url 을 반환합니다", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity editProfile(@RequestParam("file") MultipartFile image){
-        return new ResponseEntity(BaseResponse.of(userService.editProfile(image), HttpStatus.OK), HttpStatus.OK);
+        return new ResponseEntity(BaseResponse.of(new EditProfileResponse(userService.editProfile(image)), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Auth(role = UserType.NORMAL)

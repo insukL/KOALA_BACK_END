@@ -4,7 +4,7 @@
 
 
     <insert id="insertUser">
-        INSERT INTO user(created_at, updated_at, user_type) VALUES(DEFAULT, DEFAULT, #{user_type});
+        INSERT INTO user(created_at, updated_at, user_type) VALUES(DEFAULT, DEFAULT, #{userType});
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID();
         </selectKey>
@@ -12,12 +12,12 @@
 
     <insert id="signUp" parameterType="in.koala.domain.user.NormalUser">
         INSERT INTO normal_user(user_id, nickname, account, password, find_email, profile, sns_type, is_auth)
-        VALUES(#{id}, #{nickname}, #{account}, #{password}, #{find_email}, #{profile}, #{sns_type}, DEFAULT);
+        VALUES(#{id}, #{nickname}, #{account}, #{password}, #{findEmail}, #{profile}, #{snsType}, DEFAULT);
     </insert>
 
     <insert id="snsSignUp" parameterType="in.koala.domain.user.NormalUser">
         INSERT INTO normal_user(id, nickname, account, sns_email, profile, sns_type, is_auth)
-        VALUES(#{id}, #{nickname}, #{account}, #{sns_email}, #{profile}, #{sns_type}, DEFAULT);
+        VALUES(#{id}, #{nickname}, #{account}, #{snsEmail}, #{profile}, #{snsType}, DEFAULT);
     </insert>
 
     <select id="getIdByAccount" parameterType="String" resultType="Long">
@@ -142,8 +142,8 @@
         UPDATE normal_user
         SET
             account=#{account},
-            find_email=#{find_email},
-            sns_email=#{sns_email},
+            find_email=#{findEmail},
+            sns_email=#{snsEmail},
             nickname=#{nickname}
         WHERE user_id=#{id};
     </update>
