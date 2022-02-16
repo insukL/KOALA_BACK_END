@@ -60,8 +60,8 @@ public class Keyword {
 
     //알림 주기
     @NotNull(message = "알림 주기는 비워둘 수 없습니다.")
-    @Min(value = 15, message = "최소 알림 주기는 15분 입니다.")
-    @Max(value = 240, message = "최대 알림 주기는 4시간 입니다.")
+    @Min(value = 5, message = "최소 알림 주기는 15분 입니다.")
+    @Max(value = 360, message = "최대 알림 주기는 4시간 입니다.")
     private Integer alarmCycle;
 
     //읽지 않은 알림 숫자
