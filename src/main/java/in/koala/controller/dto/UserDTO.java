@@ -32,6 +32,7 @@ public class UserDTO {
             this.profile = normalUser.getProfile();
             this.snsType = normalUser.getSnsType();
             this.nickname = normalUser.getNickname();
+            this.isAuth = normalUser.getIsAuth();
         }
         this.id = user.getId();
         this.userType = user.getUserType();
@@ -45,5 +46,6 @@ public class UserDTO {
         this.nickname = normalUser.getNickname();
         this.id = normalUser.getId();
         this.userType = normalUser.getUserType();
+        this.isAuth = normalUser.getIsAuth();
     }
 }
