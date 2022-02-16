@@ -76,8 +76,9 @@ public class KeywordController {
     @ApiOperation(value = "키워드 목록 페이지 - 전체 및 구독하는 사이트별로 조회", notes = "키워드 목록에서 하나의 키워드를 선택한 후 받은 알람을 본다.", authorizations = @Authorization(value = "Bearer +accessToken"))
     @GetMapping(value = "/keyword/list")
     public ResponseEntity<List<Notice>> getKeywordNotice(@RequestParam(name = "keyword-name") String keywordName,
-                                                         @RequestParam(name = "site", required = false) String site){
-        return new ResponseEntity(BaseResponse.of(keywordService.getKeywordNotice(keywordName, site), HttpStatus.OK), HttpStatus.OK);
+                                                         @RequestParam(name = "site", required = false) String site,
+                                                         @RequestParam(value = "page-num", required = false, defaultValue = "1") Integer pageNumber){
+        return new ResponseEntity(BaseResponse.of(keywordService.getKeywordNotice(keywordName, site, pageNumber), HttpStatus.OK), HttpStatus.OK);
     }
 
     @Xss
