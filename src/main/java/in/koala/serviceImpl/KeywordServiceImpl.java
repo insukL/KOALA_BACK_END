@@ -37,6 +37,19 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public Keyword getInformationAboutKeyword(String keywordName) {
+        Long userId = getLoginUserInfo().getId();
+        Keyword keyword = keywordMapper.getInformationAboutKeyword(keywordName, userId);
+
+        if(keyword == null)
+            throw new KeywordException(ErrorMessage.KEYWORD_YOU_ARE_LOOKING_FOR_DOES_NOT_EXIST);
+
+        keyword.setSiteList(keywordMapper.getSiteList(userId, keywordName));
+
+        return keyword;
+    }
+
+    @Override
     public Boolean registerKeyword(Keyword keyword) throws Exception{
 
         User user = getLoginUserInfo();

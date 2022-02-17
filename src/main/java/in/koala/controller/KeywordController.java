@@ -32,6 +32,14 @@ public class KeywordController {
 
     @Xss
     @Auth
+    @ApiOperation(value = "키워드에 대한 상세 조회", notes = "선택한 키워드에 대한 상세 정보를 조회한다.", authorizations = @Authorization(value = "Bearer +accessToken"))
+    @GetMapping(value = "/keyword/detail")
+    public ResponseEntity<Keyword> getInformationAboutKeyword(@RequestParam(name = "keyword-name") String keywordName){
+        return new ResponseEntity(BaseResponse.of(keywordService.getInformationAboutKeyword(keywordName), HttpStatus.OK), HttpStatus.OK);
+    }
+
+    @Xss
+    @Auth
     @ApiOperation(value ="키워드 추가" , notes = "사용자가 지정한 키워드를 등록한다." , authorizations = @Authorization(value = "Bearer +accessToken"))
     @PostMapping(value = "/keyword")
     public ResponseEntity registerKeyword(@RequestBody @Valid Keyword keyword) throws Exception {
