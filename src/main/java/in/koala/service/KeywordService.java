@@ -9,6 +9,7 @@ import java.util.List;
 public interface KeywordService {
 
     List<Keyword> myKeywordList();
+    Keyword getInformationAboutKeyword(String keywordName);
     Boolean registerKeyword(Keyword keyword) throws Exception;
     Boolean deleteKeyword(String keywordId) throws Exception;
     Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception;
