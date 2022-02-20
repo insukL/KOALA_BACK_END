@@ -1,5 +1,7 @@
 package in.koala.serviceImpl;
 
+import com.nhncorp.lucy.security.xss.LucyXssFilter;
+import com.nhncorp.lucy.security.xss.XssSaxFilter;
 import in.koala.annotation.Auth;
 import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
@@ -45,11 +47,14 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void send(Message<ChatMessage> message){
         String token = StompHeaderAccessor.wrap(message).getFirstNativeHeader("Authorization");
+        LucyXssFilter xssFilter = XssSaxFilter.getInstance();
         Long id = Long.valueOf(String.valueOf(jwtUtil.getClaimsFromJwt(token, TokenType.ACCESS).get("id")));
 
         ChatMessage chatMessage = message.getPayload();
         chatMessage.setSender(id);
+        chatMessage.setMessage(xssFilter.doFilter(chatMessage.getMessage()));
         chatMessageMapper.insertMessage(chatMessage);
+
         NormalUser user = userMapper.getNormalUserById(id)
                 .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
         chatMessage.setNickname(user.getNickname());

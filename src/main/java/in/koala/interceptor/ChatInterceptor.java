@@ -1,6 +1,5 @@
 package in.koala.interceptor;
 
-import in.koala.domain.ChatMessage;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
@@ -38,12 +37,15 @@ public class ChatInterceptor implements ChannelInterceptor {
             String id = this.getId(accessor);
             Long memCnt = listOps.rightPush(id, accessor.getSessionId());
             if(memCnt == 1){ setOps.add("member", id); }
+            return;
         }
+
         //TODO : DISCONNECT 2번 전송 발생 (2번쨰 NULL 전송) 클라이언트와 함께 확인하기
-        else if(accessor.getCommand().equals(StompCommand.DISCONNECT)){
+        if(accessor.getCommand().equals(StompCommand.DISCONNECT)){
             String id = this.getId(accessor);
             listOps.remove(id, 0, accessor.getSessionId());
             if(listOps.size(id) <= 0) setOps.remove("member", id);
+            return;
         }
     }
 
