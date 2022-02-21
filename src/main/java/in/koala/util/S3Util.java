@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.FileType;
 import in.koala.exception.NonCriticalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,7 @@ public class S3Util {
     private String bucket;
 
 
-    public String uploader(MultipartFile multipartFile) {
+    public String uploader(MultipartFile multipartFile, FileType fileType) {
 
         String fileName = multipartFile.getOriginalFilename();
 
@@ -44,7 +45,7 @@ public class S3Util {
         omd.setContentLength(multipartFile.getSize());
 
         try {
-            amazonS3.putObject(new PutObjectRequest(bucket + "/" + date,
+            amazonS3.putObject(new PutObjectRequest(bucket + "/" + fileType.getUri() + date,
                     savedName, multipartFile.getInputStream(), omd)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
 

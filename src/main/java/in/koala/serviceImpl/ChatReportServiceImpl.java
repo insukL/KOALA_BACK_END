@@ -20,9 +20,10 @@ public class ChatReportServiceImpl implements ChatReportService {
     @Auth
     @Override
     public void reportChat(ChatReport chatReport){
-        //TODO : 컨벤션 바꾸기(Mybatis 이용 필요)
         //TODO : 예외 처리
-        chatReport.setUser_id(userService.getLoginUserInfo().getId());
+
+
+        chatReport.setUserId(userService.getLoginUserInfo().getId());
         reportMapper.insertReport(chatReport);
     }
 }
