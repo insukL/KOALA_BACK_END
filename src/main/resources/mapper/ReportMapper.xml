@@ -4,7 +4,7 @@
 
     <insert id="insertReport" parameterType="in.koala.domain.ChatReport">
         INSERT INTO report(user_id, message_id, reason)
-        VALUES(#{user_id}, #{message_id}, #{reason});
+        VALUES(#{userId}, #{messageId}, #{reason});
         <selectKey keyProperty="id" resultType="Long">
             SELECT LAST_INSERT_ID();
         </selectKey>
