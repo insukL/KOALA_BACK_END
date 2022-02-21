@@ -85,7 +85,8 @@
         SELECT id
         FROM keyword
         WHERE user_id = #{userId}
-            AND name = #{keywordName};
+            AND name = #{keywordName}
+            AND is_deleted = 0;
     </select>
 
     <update id="modifyKeywordSite">
@@ -111,6 +112,7 @@
                 FROM keyword
                 WHERE user_id = #{userId}
                 AND name = #{keywordName}
+                AND is_deleted = 0
             ) AS sub_table
         );
     </update>
