@@ -4,6 +4,7 @@ import in.koala.annotation.Auth;
 import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
 import in.koala.controller.response.BaseResponse;
+import in.koala.domain.user.NormalUser;
 import in.koala.enums.UserType;
 import in.koala.service.ChatService;
 import io.swagger.annotations.ApiOperation;
@@ -13,10 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
@@ -54,5 +53,13 @@ public class ChatController {
     @ApiOperation(value="채팅 검색", notes="채팅 메세지를 검색하는 API", authorizations = @Authorization(value = "Bearer +accessToken"))
     public ResponseEntity findChatting(@ModelAttribute Criteria criteria, @RequestParam String word) throws Exception{
         return new ResponseEntity(BaseResponse.of(chatService.searchMessageList(criteria, word), HttpStatus.OK), HttpStatus.OK);
+    }
+
+    @Auth(role = UserType.NORMAL)
+    @ResponseBody
+    @PostMapping(value = "/chat/image")
+    @ApiOperation(value="이미지 업로드", notes="채팅 이미지 업로드", authorizations = @Authorization(value = "Bearer +accessToken"))
+    public ResponseEntity uploadImage(@RequestBody MultipartFile file) throws Exception{
+        return new ResponseEntity(BaseResponse.of(chatService.imageSend(file), HttpStatus.OK), HttpStatus.OK);
     }
 }

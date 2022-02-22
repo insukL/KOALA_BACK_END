@@ -3,9 +3,9 @@
 <mapper namespace="in.koala.mapper.ChatMessageMapper">
 
     <insert id="insertMessage" parameterType="in.koala.domain.ChatMessage">
-        INSERT INTO chat_message(sender, message, type) VALUES(#{sender}, #{message}, #{type})
+        INSERT INTO chat_message(sender, message, type, sent_at) VALUES(#{sender}, #{message}, #{type}, #{sentAt})
         <selectKey keyProperty="id" resultType="Long" order="AFTER">
-            SELECT LAST_INSERT_ID()
+            SELECT LAST_INSERT_ID();
         </selectKey>
     </insert>
     
