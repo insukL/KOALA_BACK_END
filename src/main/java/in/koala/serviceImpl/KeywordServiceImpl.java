@@ -89,7 +89,7 @@ public class KeywordServiceImpl implements KeywordService {
     public Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception {
 
         Long userId = getLoginUserInfo().getId();
-
+        keyword.setUserId(userId);
         checkDuplicateUsersKeyword(keyword);
 
         Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
