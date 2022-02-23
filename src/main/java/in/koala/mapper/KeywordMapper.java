@@ -20,6 +20,7 @@ public interface KeywordMapper {
     int insertUsersKeywordSite(Long keywordId, List<CrawlingSite> siteList);
 
     List<Keyword> myKeywordList(Long userId);
+    Keyword getInformationAboutKeyword(String keywordName, Long userId);
     List<Notice> getKeywordNotice(String keywordName, String site, Long userId, Integer pageNumber);
     List<Notice> getSearchNotice(String keywordName, String site, String word, Long userId);
     List<String> searchKeyword(String keyword);

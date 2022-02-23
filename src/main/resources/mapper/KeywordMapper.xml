@@ -15,11 +15,19 @@
           AND k.user_id = #{userId};
     </select>
 
+    <select id="getInformationAboutKeyword" resultType="in.koala.domain.Keyword">
+        SELECT id, name, is_important AS isImportant, silent_mode AS silentMode
+             , vibration_mode AS vibrationMode, until_press_ok_button AS untilPressOkButton, alarm_cycle AS alarmCycle
+             , created_at AS createdAt, updated_at AS updatedAt
+        FROM keyword
+        WHERE user_id = #{userId} AND name = #{keywordName} AND is_deleted = 0;
+    </select>
+
     <!--키워드 등록 (1. 유저별로 기존에 등록한 키워드와 지금 등록하려는 키워드가 중복되는지 확인)-->
     <select id="checkDuplicateUsersKeyword" parameterType="in.koala.domain.Keyword" resultType="java.lang.Long">
         SELECT id
         FROM keyword
-        WHERE user_id = #{userId} AND name = #{name} AND is_deleted = 0
+        WHERE user_id = #{userId} AND name = #{name} AND is_deleted = 0;
     </select>
 
     <!--키워드 등록 (2. 키워드 등록)-->
@@ -77,7 +85,8 @@
         SELECT id
         FROM keyword
         WHERE user_id = #{userId}
-            AND name = #{keywordName};
+            AND name = #{keywordName}
+            AND is_deleted = 0;
     </select>
 
     <update id="modifyKeywordSite">
@@ -103,6 +112,7 @@
                 FROM keyword
                 WHERE user_id = #{userId}
                 AND name = #{keywordName}
+                AND is_deleted = 0
             ) AS sub_table
         );
     </update>

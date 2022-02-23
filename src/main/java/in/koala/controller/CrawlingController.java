@@ -50,8 +50,8 @@ public class CrawlingController {
             return new ResponseEntity(BaseResponse.of("유튜브 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(value="/crawling/facebook")
-    public ResponseEntity facebookCrawling(@RequestParam Long tokenId) throws Exception{
+    @GetMapping(value="/crawling/facebook/{token-id}")
+    public ResponseEntity facebookCrawling(@PathVariable(name = "token-id") Long tokenId) throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.facebookCrawling(tokenId, crawlingAt))
             return new ResponseEntity(BaseResponse.of("페이스북 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
@@ -59,8 +59,8 @@ public class CrawlingController {
             return new ResponseEntity(BaseResponse.of("페이스북 크롤링에 실패했습니다.", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(value="/crawling/instagram")
-    public ResponseEntity instagramCrawling(@RequestParam Long tokenId) throws Exception{
+    @GetMapping(value="/crawling/instagram/{token-id}")
+    public ResponseEntity instagramCrawling(@PathVariable(name = "token-id") Long tokenId) throws Exception{
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
         if (crawlingService.instagramCrawling(tokenId, crawlingAt))
             return new ResponseEntity(BaseResponse.of("인스타그램 크롤링에 성공하였습니다.", HttpStatus.OK), HttpStatus.OK);
@@ -88,8 +88,8 @@ public class CrawlingController {
         return new ResponseEntity(BaseResponse.of("토큰 수정 완료", HttpStatus.OK), HttpStatus.OK);
     }
 
-    @DeleteMapping(value="/crawling/token")
-    public ResponseEntity deleteToken(@RequestParam("token-id") Long tokenId) throws Exception {
+    @DeleteMapping(value="/crawling/token/{token-id}")
+    public ResponseEntity deleteToken(@PathVariable(name = "token-id") Long tokenId) throws Exception {
         crawlingService.deleteCrawlingToken(tokenId);
         return new ResponseEntity(BaseResponse.of("토큰 삭제 완료", HttpStatus.OK), HttpStatus.OK);
     }

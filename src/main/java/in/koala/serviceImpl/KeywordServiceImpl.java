@@ -37,6 +37,19 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public Keyword getInformationAboutKeyword(String keywordName) {
+        Long userId = getLoginUserInfo().getId();
+        Keyword keyword = keywordMapper.getInformationAboutKeyword(keywordName, userId);
+
+        if(keyword == null)
+            throw new KeywordException(ErrorMessage.KEYWORD_YOU_ARE_LOOKING_FOR_DOES_NOT_EXIST);
+
+        keyword.setSiteList(keywordMapper.getSiteList(userId, keywordName));
+
+        return keyword;
+    }
+
+    @Override
     public Boolean registerKeyword(Keyword keyword) throws Exception{
 
         User user = getLoginUserInfo();
@@ -77,7 +90,10 @@ public class KeywordServiceImpl implements KeywordService {
 
         Long userId = getLoginUserInfo().getId();
 
-        checkDuplicateUsersKeyword(keyword);
+        if(!checkSameKeywordName(keywordName, keyword.getName())){
+            keyword.setUserId(userId);
+            checkDuplicateUsersKeyword(keyword);
+        }
 
         Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
         Set<CrawlingSite> addingListCopy = copySiteList(addingList);
@@ -283,5 +299,9 @@ public class KeywordServiceImpl implements KeywordService {
             pageNumber = (pageNumber-1) * 20;
         }
         return pageNumber;
+    }
+
+    private Boolean checkSameKeywordName(String existingKeywordName, String newKeywordName){
+        return existingKeywordName.equals(newKeywordName);
     }
 }

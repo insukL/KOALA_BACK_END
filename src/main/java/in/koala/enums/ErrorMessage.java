@@ -101,7 +101,7 @@ public enum ErrorMessage {
 	DATA_INSERT_ERROR(502, "키워드 등록 에러"),
 	FAIL_TO_INSERT_NEW_KEYWORD_SITE(503, "새로운 구독 사이트 등록에 문제가 발생했습니다."),
 	FAIL_TO_MODIFY_EXISTING_KEYWORD_SITE(503, "구독 사이트 수정에 문제가 발생했습니다."),
-
+	KEYWORD_YOU_ARE_LOOKING_FOR_DOES_NOT_EXIST(504, "찾으시는 키워드가 존재하지 않습니다."),
 	/**
 	 * History
 	 */

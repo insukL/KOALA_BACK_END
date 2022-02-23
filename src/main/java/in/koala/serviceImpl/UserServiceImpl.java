@@ -479,7 +479,7 @@ public class UserServiceImpl implements UserService {
             s3Util.deleteFile(profileUrl);
         }
 
-        profileUrl = s3Util.uploader(multipartFile);
+        profileUrl = s3Util.uploader(multipartFile, FileType.PROFILE);
         userMapper.updateUserProfile(profileUrl, selectedUser.getId());
 
         return profileUrl;

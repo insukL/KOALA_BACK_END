@@ -42,7 +42,11 @@ function connect() {
         setConnected(true);
         subscription = stompClient.subscribe('/sub/' + currentRoom, function (chat) {
             if(JSON.parse(chat.body).type == 'CHAT') {
-                showChat(JSON.parse(chat.body).sender + " : " + JSON.parse(chat.body).message);
+                showChat(JSON.parse(chat.body).nickname + " : " + JSON.parse(chat.body).message);
+            }
+            else if(JSON.parse(chat.body).type == 'IMAGE'){
+                showChat(JSON.parse(chat.body).nickname + " : " +
+                    "<tr><td colspan='2'><image src=\"" + JSON.parse(chat.body).message + "\"></image></td></tr>")
             }
         });
     });
@@ -93,7 +97,7 @@ function login(){
 }
 
 function upgrade(){
-    fetch("https://localhost/user/socket-token", {
+    fetch("http://localhost:8080/user/socket-token", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
