@@ -58,7 +58,7 @@ public class HistoryController {
     @Xss
     @Auth
     @ApiOperation(value = "히스토리 알림 읽음", notes = "사용자가 받은 알림에 대한 전체 내역에서 알림 읽음", authorizations = @Authorization(value = "Bearer +accessToken"))
-    @PutMapping(value = "/history{notice-id}")
+    @PutMapping(value = "/history/{notice-id}")
     public ResponseEntity noticeRead(@PathVariable(name = "notice-id") String noticeId){
         if(historyService.noticeRead(noticeId))
             return new ResponseEntity(BaseResponse.of("알림을 읽었습니다.",  HttpStatus.OK), HttpStatus.OK);
