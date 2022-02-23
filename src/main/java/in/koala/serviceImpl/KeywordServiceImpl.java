@@ -89,8 +89,11 @@ public class KeywordServiceImpl implements KeywordService {
     public Boolean modifyKeyword(String keywordName, Keyword keyword) throws Exception {
 
         Long userId = getLoginUserInfo().getId();
-        keyword.setUserId(userId);
-        checkDuplicateUsersKeyword(keyword);
+
+        if(!checkSameKeywordName(keywordName, keyword.getName())){
+            keyword.setUserId(userId);
+            checkDuplicateUsersKeyword(keyword);
+        }
 
         Set<CrawlingSite> addingList = new HashSet<>(keyword.getSiteList());
         Set<CrawlingSite> addingListCopy = copySiteList(addingList);
@@ -296,5 +299,9 @@ public class KeywordServiceImpl implements KeywordService {
             pageNumber = (pageNumber-1) * 20;
         }
         return pageNumber;
+    }
+
+    private Boolean checkSameKeywordName(String existingKeywordName, String newKeywordName){
+        return existingKeywordName.equals(newKeywordName);
     }
 }
