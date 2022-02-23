@@ -16,7 +16,7 @@
     </insert>
 
     <insert id="snsSignUp" parameterType="in.koala.domain.user.NormalUser">
-        INSERT INTO normal_user(id, nickname, account, sns_email, profile, sns_type, is_auth)
+        INSERT INTO normal_user(user_id, nickname, account, sns_email, profile, sns_type, is_auth)
         VALUES(#{id}, #{nickname}, #{account}, #{snsEmail}, #{profile}, #{snsType}, DEFAULT);
     </insert>
 
