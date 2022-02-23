@@ -1,6 +1,5 @@
 package in.koala.serviceImpl;
 
-import in.koala.annotation.Auth;
 import in.koala.domain.ChatMessage;
 import in.koala.domain.Criteria;
 import in.koala.domain.user.NormalUser;
@@ -45,7 +44,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void send(Message<ChatMessage> message){
         String token = StompHeaderAccessor.wrap(message).getFirstNativeHeader("Authorization");
-        Long id = Long.valueOf(String.valueOf(jwtUtil.getClaimsFromJwt(token, TokenType.ACCESS).get("id")));
+        jwtUtil.validateToken(token, TokenType.SOCKET);
+        Long id = Long.valueOf(String.valueOf(jwtUtil.getClaimFromJwt(token).get("id")));
 
         ChatMessage chatMessage = message.getPayload();
         chatMessage.setSender(id);

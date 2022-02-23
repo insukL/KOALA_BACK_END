@@ -1,8 +1,10 @@
 package in.koala.service.sns;
 
+import in.koala.domain.sns.SnsUser;
+
 import java.util.Map;
 
-public interface SnsLoginTest extends SnsLogin{
+public interface SnsLoginTest {
     String getRedirectUri();
-    Map requestUserProfile(String code) throws Exception;
+    SnsUser requestUserProfile(String code) throws Exception;
 }

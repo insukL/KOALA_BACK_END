@@ -1,5 +1,7 @@
 package in.koala.serviceImpl.sns;
 
+import in.koala.domain.sns.SnsUser;
+import in.koala.domain.user.NormalUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.service.sns.SnsLogin;
@@ -18,12 +20,12 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 // 인터페이스 구현의 중복을 제거하기 위해 생성한 SnsLogin 인터페이스를 상속받는 abstract 클래스
-public abstract class AbstractSnsLogin implements SnsLogin {
+public abstract class AccessTokenSnsLogin implements SnsLogin {
 
-    protected Map requestUserProfileByAccessToken(String accessToken, String profileUri) throws Exception {
+    protected SnsUser requestUserProfileByAccessToken(String accessToken, String profileUri) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-
+        System.out.println(accessToken);
 
         if(accessToken.charAt(0) == '"'){
             accessToken = accessToken.substring(1, accessToken.length() - 1);
@@ -38,20 +40,20 @@ public abstract class AbstractSnsLogin implements SnsLogin {
                 request,
                 String.class
         );
+        SnsUser snsUser = this.profileParsing(response);
 
-        Map parsedProfile = this.profileParsing(response);
-
-        if(parsedProfile.get("account") == null || parsedProfile.get("sns_email") == null || parsedProfile.get("profile") == null || parsedProfile.get("nickname") == null){
+        if(snsUser.getAccount() == null || snsUser.getEmail() == null || snsUser.getProfile() == null || snsUser.getNickname() == null){
             throw new NonCriticalException(ErrorMessage.PROFILE_SCOPE_ERROR);
         }
 
-        return parsedProfile;
+        return snsUser;
+
     }
 
-    protected Map requestUserProfile(String code, String profileUri) throws Exception {
+    protected SnsUser requestUserProfile(String code, String profileUri) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-
+        System.out.println(code);
         headers.add("Authorization", "Bearer " + this.requestAccessToken(code));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
@@ -62,13 +64,13 @@ public abstract class AbstractSnsLogin implements SnsLogin {
                 String.class
         );
 
-        Map parsedProfile = this.profileParsing(response);
+        SnsUser snsUser = this.profileParsing(response);
 
-        if(parsedProfile.get("account") == null || parsedProfile.get("sns_email") == null || parsedProfile.get("profile") == null || parsedProfile.get("nickname") == null){
+        if(snsUser.getAccount() == null || snsUser.getEmail() == null || snsUser.getProfile() == null || snsUser.getNickname() == null){
             throw new NonCriticalException(ErrorMessage.PROFILE_SCOPE_ERROR);
         }
 
-        return parsedProfile;
+        return snsUser;
     }
 
     protected String requestAccessToken(String code, String accessTokenUri) {
@@ -98,7 +100,7 @@ public abstract class AbstractSnsLogin implements SnsLogin {
         return accessToken;
     }
 
-    abstract Map profileParsing(ResponseEntity<String> response) throws Exception;
+    abstract SnsUser profileParsing(ResponseEntity<String> response) throws Exception;
     abstract HttpEntity getRequestAccessTokenHttpEntity(String code);
     abstract String requestAccessToken(String code);
 }

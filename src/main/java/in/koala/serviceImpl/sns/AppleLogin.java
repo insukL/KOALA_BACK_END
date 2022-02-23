@@ -1,22 +1,19 @@
 package in.koala.serviceImpl.sns;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import in.koala.domain.sns.AppleLogin.Key;
-import in.koala.domain.sns.AppleLogin.ApplePublicKeys;
+import in.koala.domain.sns.SnsUser;
+import in.koala.serviceImpl.sns.dto.Key;
+import in.koala.serviceImpl.sns.dto.PublicKeys;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.exception.CriticalException;
 import in.koala.exception.NonCriticalException;
 import in.koala.service.sns.SnsLogin;
 import in.koala.util.JwtUtil;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigInteger;
@@ -37,34 +34,20 @@ public class AppleLogin implements SnsLogin {
     private final JwtUtil jwtUtil;
 
     @Override
-    public Map requestUserProfile(String code) throws Exception {
+    public SnsUser requestUserProfile(String code) throws Exception {
         return null;
     }
 
     @Override
-    public Map requestUserProfileBySnsToken(String identityToken) {
-
-        Map<String, String> profile = new HashMap<>();
+    public SnsUser requestUserProfileByToken(String token) {
+        Map claims = null;
 
         try {
-            Key key = this.selectAppropriateKey(this.requestApplePublicKey(), identityToken);
+            if(!verifyToken(token)){
+                throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
+            }
 
-            byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
-            byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
-
-            BigInteger n = new BigInteger(1, nBytes);
-            BigInteger e = new BigInteger(1, eBytes);
-
-            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(n, e);
-            KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
-            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-
-            Claims claims = jwtUtil.getClaimsFromAppleJwt(identityToken, publicKey);
-
-            profile.put("account", "APPLE" + "_" + claims.get("sub").toString());
-            profile.put("sns_email", claims.get("email").toString());
-            profile.put("nickname", claims.get("sub").toString());
-            profile.put("profile", null);
+            claims = jwtUtil.getClaimFromJwt(token);
 
         } catch(NoSuchAlgorithmException e){
             e.printStackTrace();
@@ -74,7 +57,13 @@ public class AppleLogin implements SnsLogin {
             e.printStackTrace();
         }
 
-        return profile;
+        return SnsUser.builder()
+                .account(getSnsType() + "_" + claims.get("sub").toString())
+                .email(claims.get("email").toString())
+                .nickname(getSnsType() + "_" + claims.get("sub").toString())
+                .profile(null)
+                .snsType(SnsType.APPLE)
+                .build();
     }
 
     @Override
@@ -87,34 +76,35 @@ public class AppleLogin implements SnsLogin {
         return null;
     }
 
-    private boolean verifyToken(){
-        return false;
+    private boolean verifyToken(String identityToken) throws InvalidKeySpecException, JsonProcessingException, NoSuchAlgorithmException {
+        PublicKeys applePublicKeys = requestApplePublicKeys();
+        Key key = selectAppropriateKey(applePublicKeys, identityToken);
+
+        byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
+        byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
+
+        BigInteger n = new BigInteger(1, nBytes);
+        BigInteger e = new BigInteger(1, eBytes);
+
+        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(n, e);
+        KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
+        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+        return jwtUtil.validateIdToken(identityToken, publicKey);
     }
 
-    private ApplePublicKeys requestApplePublicKey(){
-        HttpHeaders headers = new HttpHeaders();
+    private PublicKeys requestApplePublicKeys() throws JsonProcessingException {
         RestTemplate rt = new RestTemplate();
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = null;
-
-        response = rt.getForEntity(
+        ResponseEntity<String> response = rt.getForEntity(
                 "https://appleid.apple.com/auth/keys",
                 String.class
         );
 
-        ApplePublicKeys keys = null;
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            keys = objectMapper.readValue(response.getBody(), ApplePublicKeys.class);
-        } catch (Exception e){
-        }
-
-        return keys;
+        return new ObjectMapper().readValue(response.getBody(), PublicKeys.class);
     }
 
-    private Key selectAppropriateKey(ApplePublicKeys keys, String token){
+    private Key selectAppropriateKey(PublicKeys keys, String token){
         List<Key> keyList = keys.getKeys();
 
         Map header = jwtUtil.getHeaderFromJwt(token);
@@ -125,7 +115,7 @@ public class AppleLogin implements SnsLogin {
 
         String kid = header.get("kid").toString();
 
-        for(var key : keyList){
+        for(Key key : keyList){
             if(key.getKid().equals(kid)){
                 return key;
             }

@@ -7,7 +7,7 @@ import java.util.Calendar;
 @Getter
 public enum TokenType {
     ACCESS(Calendar.HOUR_OF_DAY, 12), REFRESH(Calendar.HOUR_OF_DAY, 24*14),
-    SOCKET(Calendar.SECOND, 60);
+    SOCKET(Calendar.SECOND, 60), IDENTITY(0, 0);
 
     private int calendar;
     private int tokenRemainTime;

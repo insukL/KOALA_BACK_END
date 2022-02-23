@@ -1,8 +1,21 @@
 package in.koala.serviceImpl.sns;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+import in.koala.domain.sns.SnsUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.exception.NonCriticalException;
+import in.koala.service.sns.SnsLogin;
+import in.koala.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -14,69 +27,59 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class GoogleLogin extends AbstractSnsLogin {
+@RequiredArgsConstructor
+public class GoogleLogin implements SnsLogin {
+
     @Value("${google.client-id}")
-    private String clientId;
+    private String GOOGLE_CLIENT_ID;
 
-    @Value("${google.client-secret}")
-    private String clientSecret;
-
-    @Value("${google.access-token-uri}")
-    private String accessTokenUri;
-
-    @Value("${google.profile-uri}")
-    private String profileUri;
-
-    @Value("${google.redirect-uri}")
-    private String redirectUri;
-
-    @Value("${google.login-request-uri}")
-    private String loginRequestUri;
+    private final JwtUtil jwtUtil;
 
     @Override
-    public Map requestUserProfile(String code) throws Exception {
-        try {
-            return this.requestUserProfile(code, profileUri);
+    public SnsUser requestUserProfileByToken(String token) {
+        if(verifyToken(token)){
+            Map claims = jwtUtil.getClaimFromJwt(token);
 
-        } catch(Exception e){
-            e.printStackTrace();
-            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
+            return SnsUser.builder()
+                    .account(getSnsType() + "_" + claims.get("sub"))
+                    .email((String) claims.get("email"))
+                    .nickname(getSnsType() + "_" + claims.get("sub"))
+                    .profile((String) claims.get("picture"))
+                    .snsType(SnsType.GOOGLE)
+                    .build();
+
+        } else{
+            throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
         }
     }
 
-    @Override
-    public Map requestUserProfileBySnsToken(String accessToken) {
+    private boolean verifyToken(String idToken) {
+
         try {
-            return this.requestUserProfileByAccessToken(accessToken, profileUri);
+            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
-        } catch(Exception e){
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(httpTransport, jsonFactory)
+                    .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+                    .build();
+
+            System.out.println(verifier.verify(idToken).getPayload());
+            return verifier.verify(idToken) != null;
+
+        } catch (GeneralSecurityException e){
             e.printStackTrace();
-            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
-        }
-    }
-
-    @Override
-    public String getRedirectUri() {
-        Map<String, String> map = new HashMap<>();
-
-        map.put("client_id", clientId);
-        map.put("redirect_uri", redirectUri);
-        map.put("scope", "https://www.googleapis.com/auth/userinfo.email");
-        map.put("response_type", "code");
-        map.put("include_granted_scopes", "true");
-        map.put("state", "state_parameter_passthrough_value");
-
-        String uri = loginRequestUri;
-
-        for(String key : map.keySet()){
-            uri += "&" + key + "=" + map.get(key);
+        } catch (Exception e){
+            e.printStackTrace();
         }
 
-        return uri;
+        return false;
     }
 
     @Override
@@ -85,47 +88,12 @@ public class GoogleLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public String requestAccessToken(String code) {
-        try {
-            return this.requestAccessToken(code, accessTokenUri);
-
-        } catch (Exception e) {
-            throw new NonCriticalException(ErrorMessage.GOOGLE_LOGIN_ERROR);
-        }
+    public SnsUser requestUserProfile(String code) throws Exception {
+        return null;
     }
 
     @Override
-    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception{
-        Map<String, String> parsedProfile = new HashMap<>();
-
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
-
-            parsedProfile.put("account", this.getSnsType() + "_" + (String) jsonObject.get("id"));
-            parsedProfile.put("sns_email", (String) jsonObject.get("email"));
-            parsedProfile.put("profile", (String) jsonObject.get("picture"));
-            parsedProfile.put("nickname", this.getSnsType() + "_" + (String) jsonObject.get("id"));
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new Exception();
-        }
-
-        return parsedProfile;
-    }
-
-    @Override
-    public HttpEntity getRequestAccessTokenHttpEntity(String code) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        HttpHeaders headers = new HttpHeaders();
-
-        params.add("code", code);
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("redirect_uri", redirectUri);
-        params.add("grant_type", "authorization_code");
-
-        return new HttpEntity<>(params, headers);
+    public String getRedirectUri() {
+        return null;
     }
 }

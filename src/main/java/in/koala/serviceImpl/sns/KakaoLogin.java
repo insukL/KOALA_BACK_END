@@ -1,5 +1,7 @@
 package in.koala.serviceImpl.sns;
 
+import in.koala.domain.sns.SnsUser;
+import in.koala.domain.user.NormalUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.exception.NonCriticalException;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class KakaoLogin extends AbstractSnsLogin {
+public class KakaoLogin extends AccessTokenSnsLogin {
     @Value("${kakao.client-id}")
     private String clientId;
 
@@ -35,9 +37,9 @@ public class KakaoLogin extends AbstractSnsLogin {
     private String loginRequestUri;
 
     @Override
-    public Map requestUserProfileBySnsToken(String accessToken) {
+    public SnsUser requestUserProfileByToken(String token) {
         try {
-            return this.requestUserProfileByAccessToken(accessToken, profileUri);
+            return this.requestUserProfileByAccessToken(token, profileUri);
 
         } catch(Exception e){
             throw new NonCriticalException(ErrorMessage.KAKAO_LOGIN_ERROR);
@@ -45,7 +47,7 @@ public class KakaoLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map requestUserProfile(String code) throws Exception {
+    public SnsUser requestUserProfile(String code) throws Exception {
         try {
             return this.requestUserProfile(code, profileUri);
 
@@ -77,9 +79,8 @@ public class KakaoLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
-
-        Map<String, String> parsedProfile = new HashMap<>();
+    public SnsUser profileParsing(ResponseEntity<String> response) {
+        SnsUser snsUser = null;
 
         try{
             JSONParser jsonParser = new JSONParser();
@@ -87,17 +88,19 @@ public class KakaoLogin extends AbstractSnsLogin {
             JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
             JSONObject profile = (JSONObject) kakaoAccount.get("profile");
 
-            parsedProfile.put("account", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
-            parsedProfile.put("sns_email", (String) kakaoAccount.get("email"));
-            parsedProfile.put("profile", (String) profile.get("profile_image_url"));
-            parsedProfile.put("nickname", this.getSnsType() + "_" + ((Long) jsonObject.get("id")).toString());
+            snsUser = SnsUser.builder()
+                    .account(this.getSnsType() + "_" + jsonObject.get("id"))
+                    .email(kakaoAccount.get("email").toString())
+                    .nickname(this.getSnsType() + "_" + jsonObject.get("id"))
+                    .profile((String) profile.get("profile_image_url"))
+                    .snsType(SnsType.KAKAO)
+                    .build();
 
         } catch (ParseException e) {
             e.printStackTrace();
-            throw new Exception();
         }
 
-        return parsedProfile;
+        return snsUser;
     }
 
     @Override

@@ -1,13 +1,11 @@
 package in.koala.interceptor;
 
 import in.koala.annotation.Auth;
-import in.koala.domain.user.User;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.TokenType;
 import in.koala.enums.UserType;
 import in.koala.exception.NonCriticalException;
 import in.koala.util.JwtUtil;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -38,11 +36,11 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
             String accessToken = request.getHeader("Authorization");
 
             // access token 이 valid 하지 않다면 false
-            if (!jwt.isValid(accessToken, TokenType.ACCESS)) {
+            if (!jwt.validateToken(accessToken, TokenType.ACCESS)) {
                 return false;
             }
 
-            UserType userType = UserType.getUserType((String) jwt.getClaimsFromJwt(accessToken, TokenType.ACCESS).get("aud"));
+            UserType userType = UserType.getUserType((String) jwt.getClaimFromJwt(accessToken).get("aud"));
 
             if (auth.role() == UserType.NON || auth.role() == null) {
                 return true;
