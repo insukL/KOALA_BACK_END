@@ -1,6 +1,7 @@
 package in.koala.interceptor;
 
 import in.koala.enums.ErrorMessage;
+import in.koala.enums.TokenType;
 import in.koala.exception.NonCriticalException;
 import in.koala.util.JwtUtil;
 import org.springframework.data.redis.core.ListOperations;
@@ -51,6 +52,6 @@ public class ChatInterceptor implements ChannelInterceptor {
     private String getId(StompHeaderAccessor accessor){
         if(accessor.getFirstNativeHeader("Authorization") == null)
             throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_NOT_FOUNDED);
-        return String.valueOf(jwtUtil.getClaimFromJwt(accessor.getFirstNativeHeader("Authorization")).get("id"));
+        return String.valueOf(jwtUtil.validateToken(accessor.getFirstNativeHeader("Authorization"), TokenType.ACCESS).get("id"));
     }
 }
