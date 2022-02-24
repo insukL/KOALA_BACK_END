@@ -3,6 +3,7 @@ package in.koala.serviceImpl.sns;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import in.koala.domain.sns.SnsUser;
 import in.koala.domain.sns.naverLogin.NaverUser;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class NaverLogin extends AbstractSnsLogin {
+public class NaverLogin extends AccessTokenSnsLogin {
     @Value("${naver.client-id}")
     private String clientId;
 
@@ -60,7 +61,7 @@ public class NaverLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map requestUserProfile(String code) throws Exception {
+    public SnsUser requestUserProfile(String code) throws Exception {
         try {
             return this.requestUserProfile(code, profileUri);
 
@@ -70,11 +71,12 @@ public class NaverLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map requestUserProfileBySnsToken(String accessToken) {
+    public SnsUser requestUserProfileByToken(String token) {
         try {
-            return this.requestUserProfileByAccessToken(accessToken, profileUri);
+            return this.requestUserProfileByAccessToken(token, profileUri);
 
         } catch(Exception e){
+            e.printStackTrace();
             throw new NonCriticalException(ErrorMessage.NAVER_LOGIN_ERROR);
         }
     }
@@ -100,7 +102,7 @@ public class NaverLogin extends AbstractSnsLogin {
     }
 
     @Override
-    public Map<String, String> profileParsing(ResponseEntity<String> response) throws Exception {
+    public SnsUser profileParsing(ResponseEntity<String> response) throws Exception {
         NaverUser naverUser;
 
         try {
@@ -119,14 +121,13 @@ public class NaverLogin extends AbstractSnsLogin {
             throw new Exception();
         }
 
-        Map<String, String> parsedProfile = new HashMap<>();
-
-        parsedProfile.put("account", this.getSnsType() + "_" + naverUser.getId());
-        parsedProfile.put("sns_email", naverUser.getEmail());
-        parsedProfile.put("profile", naverUser.getProfile_image());
-        parsedProfile.put("nickname", this.getSnsType() + "_" + naverUser.getId());
-
-        return parsedProfile;
+        return SnsUser.builder()
+                .account(this.getSnsType() + "_" + naverUser.getId())
+                .email(naverUser.getEmail())
+                .profile(naverUser.getProfile_image())
+                .nickname(this.getSnsType() + "_" + naverUser.getId())
+                .snsType(SnsType.NAVER)
+                .build();
     }
 
     @Override

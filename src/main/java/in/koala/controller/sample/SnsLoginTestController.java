@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -35,6 +36,11 @@ public class SnsLoginTestController {
     @GetMapping(value = "/callback")
     public String naverCallBack(){
         return "test/callback";
+    }
+
+    @GetMapping(value="/google-login")
+    public void googleCallBack(@RequestParam("id_token") String idToken){
+        System.out.println(idToken);
     }
 
     @PostMapping(value = "/applecallback")

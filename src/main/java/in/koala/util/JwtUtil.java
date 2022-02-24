@@ -55,68 +55,28 @@ public class JwtUtil {
         return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(calendar.getTime()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
 
-    public boolean isValid(String token, TokenType tokenType){
-
-        if(token == null) throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
-        if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
-
-        Claims claims = this.parseClaimsFromJwt(token, tokenType);
-
-        if(claims.get("id") == null || claims.get("sub") == null || claims.get("exp") == null || claims.get("aud") == null){
-            if(tokenType.equals(TokenType.ACCESS)){
-                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
-
-            } else if(tokenType.equals(TokenType.REFRESH)){
-                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
-            }
-        }
-
-        String sub = String.valueOf(claims.get("sub"));
-
-        if(!sub.equals(tokenType.name())) {
-            if (tokenType.equals(TokenType.ACCESS)) {
-                // access token 에 다른 토큰이 들어간 경우
-               throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
-
-            } else if(tokenType.equals(TokenType.REFRESH)){
-                // refresh token 에 다른 토큰이 들어간 경우
-                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
-            } else if(tokenType.equals(TokenType.SOCKET)){
-                // socket token 에 다른 토큰이 들어간 경우
-                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
-            }
-        }
-
-        return true;
-    }
-
-    public Claims getClaimsFromJwt(String token, TokenType tokenType){
-        isValid(token, tokenType);
-        return parseClaimsFromJwt(token, tokenType);
-    }
-
-    public Claims getClaimsFromAppleJwt(String token, PublicKey key) {
-        //System.out.println(token);
-        Claims claims = null;
-
+    public Claims validateIdToken(String idToken, PublicKey key, String aud) {
         try {
-            claims = Jwts.parser()
+            Claims claims = Jwts.parser()
                     .setSigningKey(key)
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(idToken)
                     .getBody();
 
+            return claims.get("aud").toString().equals(aud) ? claims : null;
         } catch (ExpiredJwtException e) {
             throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_EXPIRED_EXCEPTION);
 
         } catch (Exception e) {
             throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
         }
-
-        return claims;
     }
 
-    private Claims parseClaimsFromJwt(String token, TokenType tokenType){
-        //System.out.println(token);
+
+    public Claims validateToken(String token, TokenType tokenType){
+
+        if(token == null) throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
+        if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
+
         Claims claims = null;
         token = token.substring(7);
 
@@ -148,6 +108,48 @@ public class JwtUtil {
                 throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
             }
         }
+
+        if(claims.get("id") == null || claims.get("sub") == null || claims.get("exp") == null || claims.get("aud") == null){
+            if(tokenType.equals(TokenType.ACCESS)){
+                throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else if(tokenType.equals(TokenType.REFRESH)){
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            }
+        }
+
+        String sub = String.valueOf(claims.get("sub"));
+
+        if(!sub.equals(tokenType.name())) {
+            if (tokenType.equals(TokenType.ACCESS)) {
+                // access token 에 다른 토큰이 들어간 경우
+               throw new NonCriticalException(ErrorMessage.ACCESSTOKEN_INVALID_EXCEPTION);
+
+            } else if(tokenType.equals(TokenType.REFRESH)){
+                // refresh token 에 다른 토큰이 들어간 경우
+                throw new NonCriticalException(ErrorMessage.REFRESHTOKEN_INVALID_EXCEPTION);
+            } else if(tokenType.equals(TokenType.SOCKET)){
+                // socket token 에 다른 토큰이 들어간 경우
+                throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_INVALID_EXCEPTION);
+            }
+        }
+
+        return claims;
+    }
+
+    public Map getClaimFromJwt(String token){
+        Base64.Decoder decoder = Base64.getDecoder();
+        String[] chunks = token.split("\\.");
+        String header = new String(decoder.decode(chunks[1]));
+
+        HashMap<String,String> claims = null;
+
+        try{
+            claims = new ObjectMapper().readValue(header, HashMap.class);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         return claims;
     }
 }

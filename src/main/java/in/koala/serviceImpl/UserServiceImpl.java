@@ -65,17 +65,7 @@ public class UserServiceImpl implements UserService {
     public JWToken snsLogin(String code, SnsType snsType) throws Exception {
         SnsLogin snsLogin = this.initSnsService(snsType);
 
-        Map<String, String> userProfile = snsLogin.requestUserProfile(code);
-
-        // 받은 정보를 이용하여 User domain 생성
-        NormalUser snsUser = NormalUser.builder()
-                .account(userProfile.get("account"))
-                .snsEmail(userProfile.get("sns_email"))
-                .profile(userProfile.get("profile"))
-                .nickname(userProfile.get("nickname"))
-                .snsType(snsType)
-                .userType(UserType.NORMAL)
-                .build();
+        NormalUser snsUser = snsLogin.requestUserProfile(code).toNormalUser();
 
         if(snsUser.getProfile() == null) snsUser.setProfile(defaultUrl);
 
@@ -102,18 +92,7 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.SNS_TOKEN_NOT_EXIST);
         }
 
-        // snsLogin 에 유저 정보요청
-        Map<String, String> userProfile = snsLogin.requestUserProfileBySnsToken(snsToken);
-
-        // 받은 정보를 이용하여 User domain 생성
-        NormalUser user = NormalUser.builder()
-                .account(userProfile.get("account"))
-                .snsEmail(userProfile.get("sns_email"))
-                .profile(userProfile.get("profile"))
-                .nickname(userProfile.get("nickname"))
-                .snsType(snsType)
-                .userType(UserType.NORMAL)
-                .build();
+        NormalUser user = snsLogin.requestUserProfileByToken(snsToken).toNormalUser();
 
         if(user.getProfile() == null) user.setProfile(defaultUrl);
 
@@ -125,7 +104,7 @@ public class UserServiceImpl implements UserService {
             id = user.getId();
         }
 
-        // 디바이스 토큰의 user id 갱신
+        // 웹 로그인이 아니라면 디바이스 토큰의 user id 갱신
         if(!checkIsWebUser(deviceToken)) {
             this.setUserIdInDeviceToken(DeviceToken.ofNormalUser(id, deviceToken));
         }
@@ -527,11 +506,7 @@ public class UserServiceImpl implements UserService {
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String token = request.getHeader("Authorization");
 
-        if(token == null){
-            throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
-        }
-
-        return jwt.getClaimsFromJwt(token, tokenType);
+        return jwt.validateToken(token, tokenType);
     }
 
     private JWToken generateAccessAndRefreshToken(Long id, UserType userType){

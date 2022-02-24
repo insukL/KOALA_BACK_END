@@ -1,8 +1,10 @@
 package in.koala.serviceImpl.sns;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import in.koala.domain.sns.AppleLogin.Key;
-import in.koala.domain.sns.AppleLogin.ApplePublicKeys;
+import in.koala.domain.sns.SnsUser;
+import in.koala.serviceImpl.sns.dto.Key;
+import in.koala.serviceImpl.sns.dto.PublicKeys;
 import in.koala.enums.ErrorMessage;
 import in.koala.enums.SnsType;
 import in.koala.exception.CriticalException;
@@ -11,12 +13,9 @@ import in.koala.service.sns.SnsLogin;
 import in.koala.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigInteger;
@@ -25,56 +24,34 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
 public class AppleLogin implements SnsLogin {
 
+    @Value("${APPLE.AUD}")
+    private String AUD;
+
     private final JwtUtil jwtUtil;
 
     @Override
-    public Map requestUserProfile(String code) throws Exception {
+    public SnsUser requestUserProfile(String code) throws Exception {
         return null;
     }
 
     @Override
-    public Map requestUserProfileBySnsToken(String identityToken) {
+    public SnsUser requestUserProfileByToken(String token) {
+        Claims claims = this.verifyToken(token)
+                .orElseThrow(() -> new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION));
 
-        Map<String, String> profile = new HashMap<>();
-
-        try {
-            Key key = this.selectAppropriateKey(this.requestApplePublicKey(), identityToken);
-
-            byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
-            byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
-
-            BigInteger n = new BigInteger(1, nBytes);
-            BigInteger e = new BigInteger(1, eBytes);
-
-            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(n, e);
-            KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
-            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-
-            Claims claims = jwtUtil.getClaimsFromAppleJwt(identityToken, publicKey);
-
-            profile.put("account", "APPLE" + "_" + claims.get("sub").toString());
-            profile.put("sns_email", claims.get("email").toString());
-            profile.put("nickname", claims.get("sub").toString());
-            profile.put("profile", null);
-
-        } catch(NoSuchAlgorithmException e){
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e){
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return profile;
+        return SnsUser.builder()
+                .account(getSnsType() + "_" + claims.get("sub").toString())
+                .email(claims.get("email").toString())
+                .nickname(getSnsType() + "_" + claims.get("sub").toString())
+                .profile(null)
+                .snsType(SnsType.APPLE)
+                .build();
     }
 
     @Override
@@ -87,34 +64,40 @@ public class AppleLogin implements SnsLogin {
         return null;
     }
 
-    private boolean verifyToken(){
-        return false;
+    private Optional<Claims> verifyToken(String identityToken) {
+        try {
+            PublicKeys applePublicKeys = requestApplePublicKeys();
+            Key key = selectAppropriateKey(applePublicKeys, identityToken);
+
+            byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
+            byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
+
+            BigInteger n = new BigInteger(1, nBytes);
+            BigInteger e = new BigInteger(1, eBytes);
+
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(n, e);
+            KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
+            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+            return Optional.of(jwtUtil.validateIdToken(identityToken, publicKey, AUD));
+
+        } catch (JsonProcessingException | NoSuchAlgorithmException | InvalidKeySpecException e){
+            throw new CriticalException(ErrorMessage.APPLE_PUBLIC_KEY_EXCEPTION);
+        }
     }
 
-    private ApplePublicKeys requestApplePublicKey(){
-        HttpHeaders headers = new HttpHeaders();
+    private PublicKeys requestApplePublicKeys() throws JsonProcessingException {
         RestTemplate rt = new RestTemplate();
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = null;
-
-        response = rt.getForEntity(
+        ResponseEntity<String> response = rt.getForEntity(
                 "https://appleid.apple.com/auth/keys",
                 String.class
         );
 
-        ApplePublicKeys keys = null;
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            keys = objectMapper.readValue(response.getBody(), ApplePublicKeys.class);
-        } catch (Exception e){
-        }
-
-        return keys;
+        return new ObjectMapper().readValue(response.getBody(), PublicKeys.class);
     }
 
-    private Key selectAppropriateKey(ApplePublicKeys keys, String token){
+    private Key selectAppropriateKey(PublicKeys keys, String token){
         List<Key> keyList = keys.getKeys();
 
         Map header = jwtUtil.getHeaderFromJwt(token);
@@ -125,7 +108,7 @@ public class AppleLogin implements SnsLogin {
 
         String kid = header.get("kid").toString();
 
-        for(var key : keyList){
+        for(Key key : keyList){
             if(key.getKid().equals(kid)){
                 return key;
             }

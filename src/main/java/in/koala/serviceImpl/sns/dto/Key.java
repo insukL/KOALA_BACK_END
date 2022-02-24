@@ -1,4 +1,4 @@
-package in.koala.domain.sns.AppleLogin;
+package in.koala.serviceImpl.sns.dto;
 
 import lombok.Getter;
 import lombok.Setter;

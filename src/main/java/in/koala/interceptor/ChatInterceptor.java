@@ -52,6 +52,6 @@ public class ChatInterceptor implements ChannelInterceptor {
     private String getId(StompHeaderAccessor accessor){
         if(accessor.getFirstNativeHeader("Authorization") == null)
             throw new NonCriticalException(ErrorMessage.SOCKETTOKEN_NOT_FOUNDED);
-        return String.valueOf(jwtUtil.getClaimsFromJwt(accessor.getFirstNativeHeader("Authorization"), TokenType.ACCESS).get("id"));
+        return String.valueOf(jwtUtil.validateToken(accessor.getFirstNativeHeader("Authorization"), TokenType.ACCESS).get("id"));
     }
 }

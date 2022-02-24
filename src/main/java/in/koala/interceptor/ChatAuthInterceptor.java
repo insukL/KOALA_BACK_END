@@ -23,7 +23,7 @@ public class ChatAuthInterceptor implements HandshakeInterceptor {
         int idx = request.getURI().toString().indexOf('=')+1;
         String token = request.getURI().toString().substring(idx);
 
-        return jwtUtil.isValid("Bearer "+token, TokenType.SOCKET);
+        return jwtUtil.validateToken("Bearer "+token, TokenType.SOCKET) != null;
     }
 
     @Override
