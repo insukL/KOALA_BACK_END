@@ -31,21 +31,16 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         if (auth == null) {
             return true;
 
-        } else if (auth != null) {
+        } else {
 
             String accessToken = request.getHeader("Authorization");
 
-            // access token 이 valid 하지 않다면 false
-            if (!jwt.validateToken(accessToken, TokenType.ACCESS)) {
-                return false;
-            }
+            UserType userType = UserType.getUserType((String) jwt.validateToken(accessToken, TokenType.ACCESS).get("aud"));
 
-            UserType userType = UserType.getUserType((String) jwt.getClaimFromJwt(accessToken).get("aud"));
-
-            if (auth.role() == UserType.NON || auth.role() == null) {
+            if (auth.role().equals(UserType.NON)) {
                 return true;
 
-            } else if (auth.role() == UserType.NORMAL) {
+            } else if (auth.role().equals(UserType.NORMAL)) {
                 if (userType == UserType.NORMAL) {
                     return true;
                 }

@@ -60,8 +60,7 @@ public class ChatServiceImpl implements ChatService {
     public void send(Message<ChatMessage> message){
         String token = StompHeaderAccessor.wrap(message).getFirstNativeHeader("Authorization");
         LucyXssFilter xssFilter = XssSaxFilter.getInstance();
-        jwtUtil.validateToken(token, TokenType.ACCESS);
-        Long id = Long.valueOf(String.valueOf(jwtUtil.getClaimFromJwt(token).get("id")));
+        Long id = Long.valueOf(String.valueOf(jwtUtil.validateToken(token, TokenType.ACCESS).get("id")));
         NormalUser user = userMapper.getNormalUserById(id)
                 .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
 

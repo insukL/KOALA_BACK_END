@@ -18,6 +18,7 @@ import in.koala.util.ImageUtil;
 import in.koala.util.JwtUtil;
 import in.koala.util.S3Util;
 import in.koala.util.SesSender;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
@@ -501,13 +502,11 @@ public class UserServiceImpl implements UserService {
         return Long.valueOf(String.valueOf(getClaimsFromJwt(tokenType).get("id")));
     }
 
-    private Map getClaimsFromJwt(TokenType tokenType){
+    private Claims getClaimsFromJwt(TokenType tokenType){
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String token = request.getHeader("Authorization");
 
-        jwt.validateToken(token, tokenType);
-
-        return jwt.getClaimFromJwt(token);
+        return jwt.validateToken(token, tokenType);
     }
 
     private JWToken generateAccessAndRefreshToken(Long id, UserType userType){

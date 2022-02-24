@@ -55,25 +55,24 @@ public class JwtUtil {
         return Jwts.builder().setHeader(headers).setClaims(payloads).setExpiration(calendar.getTime()).signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
     }
 
-    public boolean validateIdToken(String idToken, PublicKey key) {
+    public Claims validateIdToken(String idToken, PublicKey key, String aud) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .setSigningKey(key)
                     .parseClaimsJws(idToken)
                     .getBody();
 
+            return claims.get("aud").toString().equals(aud) ? claims : null;
         } catch (ExpiredJwtException e) {
             throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_EXPIRED_EXCEPTION);
 
         } catch (Exception e) {
             throw new NonCriticalException(ErrorMessage.IDENTITY_TOKEN_INVALID_EXCEPTION);
         }
-
-        return true;
     }
 
 
-    public boolean validateToken(String token, TokenType tokenType){
+    public Claims validateToken(String token, TokenType tokenType){
 
         if(token == null) throw new NonCriticalException(ErrorMessage.ACCESS_TOKEN_NOT_EXIST);
         if(!token.startsWith("Bearer ")) throw new NonCriticalException(ErrorMessage.JWT_NOT_START_BEARER);
@@ -135,7 +134,7 @@ public class JwtUtil {
             }
         }
 
-        return true;
+        return claims;
     }
 
     public Map getClaimFromJwt(String token){
