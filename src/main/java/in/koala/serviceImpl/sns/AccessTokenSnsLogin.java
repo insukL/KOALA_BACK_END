@@ -25,7 +25,6 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
     protected SnsUser requestUserProfileByAccessToken(String accessToken, String profileUri) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-        System.out.println(accessToken);
 
         if(accessToken.charAt(0) == '"'){
             accessToken = accessToken.substring(1, accessToken.length() - 1);
@@ -33,7 +32,6 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
 
         headers.add("Authorization", "Bearer " + accessToken);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
         ResponseEntity<String> response = rt.exchange(
                 profileUri,
                 HttpMethod.GET,
@@ -41,8 +39,7 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
                 String.class
         );
         SnsUser snsUser = this.profileParsing(response);
-
-        if(snsUser.getAccount() == null || snsUser.getEmail() == null || snsUser.getProfile() == null || snsUser.getNickname() == null){
+        if(snsUser.getAccount() == null || snsUser.getEmail() == null || snsUser.getNickname() == null){
             throw new NonCriticalException(ErrorMessage.PROFILE_SCOPE_ERROR);
         }
 
