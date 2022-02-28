@@ -39,7 +39,7 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
                 String.class
         );
         SnsUser snsUser = this.profileParsing(response);
-        if(snsUser.getAccount() == null || snsUser.getEmail() == null){
+        if(snsUser.getAccount() == null || snsUser.getEmail() == null || snsUser.getNickname() == null){
             throw new NonCriticalException(ErrorMessage.PROFILE_SCOPE_ERROR);
         }
 
