@@ -7,7 +7,7 @@
     </select>
 
     <select id="getUndeletedAuthEmailByUserIdAndType" resultType="in.koala.domain.AuthEmail">
-        SELECT * FROM auth_email WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0 AND is_auth=0;
+        SELECT * FROM auth_email WHERE user_id=#{userId} AND type=#{type} AND is_deleted=0 AND is_auth=0;
     </select>
 
     <select id="getUndeletedIsAuthNumByUserId" resultType="Integer">
@@ -16,7 +16,7 @@
 
     <update id="expirePastAuthEmail">
         UPDATE auth_email SET is_deleted=1
-        WHERE user_id=#{user_id} AND type=#{type} AND is_deleted=0;
+        WHERE user_id=#{userId} AND type=#{type} AND is_deleted=0;
     </update>
 
     <update id="setIsAuth">
@@ -26,10 +26,10 @@
 
     <insert id="insertAuthEmail">
         INSERT INTO auth_email(user_id, type, is_deleted, created_at, expired_at, secret)
-        VALUES(#{user_id}, #{type}, default, default, #{expired_at}, #{secret})
+        VALUES(#{userId}, #{type}, default, default, #{expiredAt}, #{secret})
     </insert>
 
     <select id="getLatestAuth">
-        SELECT * FROM auth_email WHERE user_id=#{user_id} ORDER BY id DESC LIMIT 1;
+        SELECT * FROM auth_email WHERE user_id=#{userId} ORDER BY id DESC LIMIT 1;
     </select>
 </mapper>

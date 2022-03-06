@@ -15,19 +15,19 @@ import java.sql.Timestamp;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DeviceToken {
     private Long id;
-    private Long user_id;
+    private Long userId;
     @ApiModelProperty(hidden = true)
-    private Long non_user_id;
+    private Long nonUserId;
     private String token;
     @ApiModelProperty(hidden = true)
-    private Timestamp created_at;
+    private Timestamp createdAt;
     @ApiModelProperty(hidden = true)
-    private Timestamp updated_at;
+    private Timestamp updatedAt;
 
     public static DeviceToken ofNormalUser(Long userId, String token){
         DeviceToken deviceToken = new DeviceToken();
 
-        deviceToken.user_id = userId;
+        deviceToken.userId = userId;
         deviceToken.token = token;
 
         return deviceToken;
@@ -36,8 +36,8 @@ public class DeviceToken {
     public static DeviceToken ofNonUser(Long userId, @Nullable Long nonUserId, String token){
         DeviceToken deviceToken = new DeviceToken();
 
-        deviceToken.user_id = userId;
-        deviceToken.non_user_id = nonUserId;
+        deviceToken.userId = userId;
+        deviceToken.nonUserId = nonUserId;
         deviceToken.token = token;
 
         return deviceToken;

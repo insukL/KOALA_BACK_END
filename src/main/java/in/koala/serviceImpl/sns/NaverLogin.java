@@ -24,6 +24,7 @@ import java.util.Map;
 
 @Service
 public class NaverLogin extends AccessTokenSnsLogin {
+
     @Value("${naver.client-id}")
     private String clientId;
 

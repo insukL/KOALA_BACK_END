@@ -5,7 +5,6 @@ import in.koala.enums.ErrorMessage;
 import in.koala.exception.NonCriticalException;
 import in.koala.mapper.DeviceTokenMapper;
 import in.koala.service.DeviceTokenService;
-import in.koala.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +38,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
     public void updateTokenTableUserId(DeviceToken deviceToken) {
         DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
 
-        deviceTokenInfo.setUser_id(deviceToken.getUser_id());
+        deviceTokenInfo.setUserId(deviceToken.getUserId());
 
         deviceTokenMapper.updateUserId(deviceTokenInfo);
     }
@@ -71,7 +70,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
     public void updateTokenTableNonUserId(DeviceToken deviceToken) {
         DeviceToken deviceTokenInfo = this.getDeviceTokenInfoByDeviceToken(deviceToken.getToken());
 
-        deviceTokenInfo.setNon_user_id(deviceToken.getNon_user_id());
+        deviceTokenInfo.setNonUserId(deviceToken.getNonUserId());
 
         deviceTokenMapper.updateNonUserId(deviceTokenInfo);
     }

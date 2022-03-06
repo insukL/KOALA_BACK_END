@@ -55,10 +55,6 @@ public class UserServiceImpl implements UserService {
     @Value("${s3.default_image.url}")
     private String defaultUrl;
 
-    @Override
-    public String test() {
-        return userMapper.test();
-    }
 
     // 클라이언트 필요없는 서버 개발용
     @Override
@@ -140,7 +136,7 @@ public class UserServiceImpl implements UserService {
 
             token = DeviceToken.ofNonUser(user.getId(), user.getId(), deviceToken);
 
-        } else if(token.getNon_user_id() == null) {
+        } else if(token.getNonUserId() == null) {
             // DB 의 토큰 테이블의 non user 가 null 인 경우
             // 토큰은 있지만 연결된 비회원 유저가 존재하지 않는다
 
@@ -149,24 +145,23 @@ public class UserServiceImpl implements UserService {
 
             this.nonUserSingUp(user);
 
-            token.setNon_user_id(user.getId());
-            token.setUser_id(user.getId());
+            token.setNonUserId(user.getId());
+            token.setUserId(user.getId());
             deviceTokenService.updateTokenTableNonUserId(token);
 
-        } else if(token.getNon_user_id() != null) {
+        } else if(token.getNonUserId() != null) {
             // 토큰이 존재하고 비회원 유저도 존재하는 경우
 
-            token.setUser_id(token.getNon_user_id());
+            token.setUserId(token.getNonUserId());
         }
 
         // 토큰이 없다면 토큰 생성, 있다면 토큰의 user_id 갱신
         this.setUserIdInDeviceToken(token);
 
-        return generateAccessAndRefreshToken(token.getUser_id(), UserType.NON);
+        return generateAccessAndRefreshToken(token.getUserId(), UserType.NON);
     }
 
-    // sns 별 oauth2 로그인 요청을 하는 메서드, 해당 api 요청한 페이지를 redirect 시킨다.
-    // swagger 에서는 작동하지 않는다. 앱에서 작동여부도 확인해봐야 함
+
     @Override
     public void requestSnsLogin(SnsType snsType) throws Exception {
         SnsLogin snsLogin = initSnsService(snsType);
@@ -272,8 +267,8 @@ public class UserServiceImpl implements UserService {
         }
 
         NormalUser user = initNormalUserByEmailType(authEmail, emailType);
-        System.out.println(user);
-        // sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외
+
+        /* sns 로그인으로 가입한 계정이 비밀번호 찾기 혹은 계정 찾기를 요청할 경우 발생하는 예외 */
         if(user.getSnsType() != SnsType.NORMAL && (emailType.equals(EmailType.ACCOUNT) || emailType.equals(EmailType.PASSWORD))){
             throw new CriticalException(ErrorMessage.USER_TYPE_NOT_VALID_EXCEPTION);
         }
@@ -288,7 +283,7 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.USER_ALREADY_CERTIFICATE);
         }
 
-        authEmail.setUser_id(user.getId());
+        authEmail.setUserId(user.getId());
 
         // 10분에 최대 5개 전송가능
         if(isEmailSentNumExceed(authEmail)){
@@ -320,14 +315,12 @@ public class UserServiceImpl implements UserService {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Timestamp(System.currentTimeMillis()));
         calendar.add(Calendar.SECOND, 5 * 60);
-        authEmail.setExpired_at(new Timestamp(calendar.getTimeInMillis()));
-
+        authEmail.setExpiredAt(new Timestamp(calendar.getTimeInMillis()));
         authEmail.setSecret(secret.toString());
         authEmail.setType(emailType);
 
         // 이전에 보냈던 이메일들은 전부 무효화
         authEmailMapper.expirePastAuthEmail(authEmail);
-
         // 이번에 보낸 이메일 삽입
         authEmailMapper.insertAuthEmail(authEmail);
     }
@@ -337,7 +330,7 @@ public class UserServiceImpl implements UserService {
         // email 전송 종류에 따른 유저 초기화
         User user = initNormalUserByEmailType(authEmail, emailType);
 
-        authEmail.setUser_id(user.getId());
+        authEmail.setUserId(user.getId());
         authEmail.setType(emailType);
 
         List<AuthEmail> authEmailList = authEmailMapper.getUndeletedAuthEmailByUserIdAndType(authEmail);
@@ -353,9 +346,10 @@ public class UserServiceImpl implements UserService {
         }
 
         AuthEmail selectedAuthEmail = authEmailList.get(0);
-
+        System.out.println(selectedAuthEmail);
+        System.out.println(authEmail);
         // 메일 인증 유효기간 지났을때 발생
-        if(selectedAuthEmail.getExpired_at().before(new Timestamp(System.currentTimeMillis()))){
+        if(selectedAuthEmail.getExpiredAt().before(new Timestamp(System.currentTimeMillis()))){
             throw new NonCriticalException(ErrorMessage.EMAIL_EXPIRED_AUTH_EXCEPTION);
         }
 
@@ -366,7 +360,7 @@ public class UserServiceImpl implements UserService {
 
         // 만약 학교 인증이라면 인증했다는 사실을 User 에 기록
         if(emailType.equals(EmailType.UNIVERSITY)){
-            userMapper.updateIsAuth(selectedAuthEmail.getUser_id());
+            userMapper.updateIsAuth(selectedAuthEmail.getUserId());
             // 학교 인증 메일 만료
             authEmailMapper.expirePastAuthEmail(authEmail);
         }
@@ -419,7 +413,7 @@ public class UserServiceImpl implements UserService {
         userMapper.updatePassword(selectedUser);
 
         AuthEmail authEmail = AuthEmail.builder()
-                .user_id(selectedUser.getId())
+                .userId(selectedUser.getId())
                 .type(EmailType.PASSWORD)
                 .build();
 
@@ -440,7 +434,7 @@ public class UserServiceImpl implements UserService {
         }
 
          AuthEmail authEmail = AuthEmail.builder()
-                .user_id(user.getId())
+                .userId(user.getId())
                 .type(EmailType.ACCOUNT)
                 .build();
 
@@ -495,7 +489,7 @@ public class UserServiceImpl implements UserService {
         Timestamp start = new Timestamp(calendar.getTimeInMillis());
 
         // 최근 10분안에 전송한 이메일 개수확인
-        return authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUser_id(), authEmail.getType(), start) >= 5;
+        return authEmailMapper.getAuthEmailNumByUserIdAndType(authEmail.getUserId(), authEmail.getType(), start) >= 5;
     }
 
     private Long getLoginUserIdFromJwt(TokenType tokenType){
