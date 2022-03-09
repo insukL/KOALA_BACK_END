@@ -65,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
 
         ChatMessage chatMessage = message.getPayload();
 
-        if(chatMessage.getMessage().isEmpty() || chatMessage.getMessage() != null)
+        if(chatMessage.getMessage().isEmpty() || chatMessage.getMessage() == null)
             throw new NonCriticalException(ErrorMessage.MESSAGE_EMPTY);
 
         chatMessage.setSender(id);
