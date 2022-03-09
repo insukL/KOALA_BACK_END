@@ -16,7 +16,6 @@ import in.koala.service.ChatService;
 import in.koala.service.UserService;
 import in.koala.util.JwtUtil;
 import in.koala.util.S3Util;
-import in.koala.util.image.MultipartImage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.messaging.Message;
@@ -65,6 +64,10 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(()->new NonCriticalException(ErrorMessage.USER_NOT_EXIST));
 
         ChatMessage chatMessage = message.getPayload();
+
+        if(chatMessage.getMessage().isEmpty() || chatMessage.getMessage() != null)
+            throw new NonCriticalException(ErrorMessage.MESSAGE_EMPTY);
+
         chatMessage.setSender(id);
         chatMessage.setMessage(xssFilter.doFilter(chatMessage.getMessage()));
         chatMessage.setSentAt(new Timestamp(new Date().getTime()));

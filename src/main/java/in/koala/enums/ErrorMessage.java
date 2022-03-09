@@ -115,6 +115,7 @@ public enum ErrorMessage {
 	SOCKETTOKEN_INVALID_EXCEPTION(701, "유효하지 않은 socket token"),
 	SOCKETTOKEN_NOT_FOUNDED(702, "socket token을 찾을 수 없습니다"),
 	USER_NOT_AUTH(703, "포털 인증이 되지 않은 유저입니다."),
+	MESSAGE_EMPTY(704, "채팅 메시지는 비워둘 수 없습니다."),
 
 	/**
 	 * Chat Ban
