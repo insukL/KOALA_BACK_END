@@ -48,11 +48,7 @@ public class KeywordPushServiceImpl implements KeywordPushService {
 
         Timestamp latelyCrawlingTime = crawlingService.getLatelyCrawlingTime();
 
-        System.out.println(latelyCrawlingTime);
-
         List<Map<String, String>> tmp = keywordPushMapper.pushKeywordByLatelyCrawlingTime(latelyCrawlingTime);
-
-        System.out.println(tmp);
 
         for(Map value : tmp){
             StringBuilder sb = new StringBuilder();
@@ -63,7 +59,6 @@ public class KeywordPushServiceImpl implements KeywordPushService {
 
             sb.append("\'" + enConverter.ktoe(value.get("name").toString()) + "1" + "\' in topics");
             message.setCondition(sb.toString());
-            System.out.println("최종 : "+ sb);
             fcmSender.sendMessage(message);
             noticeMapper.insertNotice(value);
         }
