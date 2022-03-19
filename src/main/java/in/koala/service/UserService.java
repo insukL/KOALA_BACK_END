@@ -19,7 +19,7 @@ public interface UserService {
     User getLoginUserInfo();
     NormalUser getLoginNormalUserInfo();
     void updateNickname(String nickname);
-    Boolean checkNickname(String nickname);
+    Boolean isFindEmailDuplicated(String nickname);
     Boolean checkAccount(String account);
     JWToken refresh();
     void sendEmail(AuthEmail authEmail, EmailType emailType);

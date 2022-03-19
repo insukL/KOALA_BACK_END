@@ -50,7 +50,7 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
     protected SnsUser requestUserProfile(String code, String profileUri) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
-        System.out.println(code);
+
         headers.add("Authorization", "Bearer " + this.requestAccessToken(code));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
@@ -89,11 +89,11 @@ public abstract class AccessTokenSnsLogin implements SnsLogin {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(token.getBody());
 
             accessToken = jsonObject.get("access_token").toString();
-            System.out.println(accessToken);
+
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        System.out.println(accessToken);
+
         return accessToken;
     }
 
