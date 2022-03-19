@@ -1,36 +1,33 @@
 package in.koala.serviceImpl;
 
+import com.google.common.collect.Lists;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
 import in.koala.domain.Crawling;
-import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
 import in.koala.domain.fcm.ConditionMessage;
-import in.koala.domain.fcm.TokenMessage;
-import in.koala.domain.fcm.TopicMessage;
 import in.koala.enums.CrawlingSite;
-import in.koala.enums.ErrorMessage;
-import in.koala.exception.KeywordPushException;
 import in.koala.mapper.DeviceTokenTestMapper;
 import in.koala.mapper.KeywordPushMapper;
 import in.koala.mapper.NoticeMapper;
-import in.koala.mapper.UserMapper;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordPushService;
-import in.koala.service.KeywordService;
 import in.koala.service.UserService;
 import in.koala.util.EnConverter;
 import in.koala.util.FcmSender;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.util.*;
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
+import java.util.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class KeywordPushServiceImpl implements KeywordPushService {
-
     private final UserService userService;
     private final FcmSender fcmSender;
     private final KeywordPushMapper keywordPushMapper;
@@ -38,6 +35,41 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private final NoticeMapper noticeMapper;
     private final EnConverter enConverter;
     private final DeviceTokenTestMapper tokenMapper;
+
+
+    @Value("${alarm.image.url}")
+    private String iconUrl;
+
+    @NotNull
+    @Override
+    public void pushNotification(List<String> tokens, String keyword, Crawling crawling) throws Exception{
+        String title = new StringBuilder()
+                .append(crawling.getSite().getName())
+                .append("에서 '")
+                .append(keyword)
+                .append("'관련 게시글이 업로드 되었습니다.")
+                .toString();
+
+        for (List<String> t : Lists.partition(tokens, 500)) {
+            pushNotification(t, title, crawling.getUrl());
+        }
+    }
+
+    private void pushNotification(List<String> tokens, String title, String url) throws Exception{
+        MulticastMessage message = MulticastMessage.builder()
+                .addAllTokens(tokens)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setImage(iconUrl)
+                        .build())
+                .putData("url", url)
+                .build();
+        try {
+            FirebaseMessaging.getInstance().sendMulticast(message);
+        } catch (FirebaseMessagingException e) {
+            throw new Exception();
+        }
+    }
 
 
     //TODO : 아래 메소드 2개 정리

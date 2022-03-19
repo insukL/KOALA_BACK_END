@@ -1,6 +1,7 @@
 package in.koala.controller;
 
 import in.koala.annotation.Auth;
+import in.koala.domain.Crawling;
 import in.koala.domain.DeviceToken;
 import in.koala.domain.Keyword;
 import in.koala.controller.response.BaseResponse;
@@ -54,11 +55,10 @@ public class FcmTestController {
 
     @PostMapping("/keyword")
     @ApiOperation(value ="키워드 푸시 테스트", notes = "키워드 알람 발송 실사용X")
-    public ResponseEntity pushKeyword(@RequestBody List<String> keywordList,
-                                      @RequestParam String title,
-                                      @RequestParam String url,
-                                      @RequestParam Short site) throws Exception{
-        keywordPushService.pushKeyword(keywordList, title, url, site);
+    public ResponseEntity pushKeyword(@RequestBody Crawling crawling,
+                                      @RequestParam List<String> tokens,
+                                      @RequestParam String keyword)throws Exception{
+        keywordPushService.pushNotification(tokens, keyword, crawling);
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
