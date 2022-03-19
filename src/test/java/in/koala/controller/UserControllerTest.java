@@ -44,7 +44,6 @@ public class UserControllerTest {
         //given
         final SingInRequest singInRequest = singInRequest();
         doReturn(false).when(userService).isFindEmailDuplicated(singInRequest.getFindEmail());
-        doReturn(new )
 
         //when
         final ResultActions resultActions = mockMvc.perform(
@@ -56,7 +55,7 @@ public class UserControllerTest {
         //then
         final MvcResult mvcResult = resultActions.andExpect(status().isCreated()).andReturn();
         final String token = mvcResult.getResponse().getContentAsString();
-        assertThat();
+
     }
     private SingInRequest singInRequest(){
         final SingInRequest singInRequest = new SingInRequest();
