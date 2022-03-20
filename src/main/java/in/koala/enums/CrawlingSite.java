@@ -1,9 +1,13 @@
 package in.koala.enums;
 
 public enum CrawlingSite {
-    PORTAL(1), DORM(2), YOUTUBE(3), FACEBOOK(4), INSTAGRAM(5);
+    PORTAL("'아우누리'"),
+    DORM("'아우미르'"),
+    YOUTUBE("'YouTube'"),
+    FACEBOOK("'FaceBook'"),
+    INSTAGRAM("'Instagram'");
 
-    Integer code;
-    CrawlingSite(Integer code){ this.code = code; }
-    public Integer getCode(){ return code; }
+    String name;
+    CrawlingSite(String name){ this.name = name; }
+    public String getName(){ return name; }
 }
