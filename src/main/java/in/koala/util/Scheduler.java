@@ -1,22 +1,41 @@
 package in.koala.util;
 
+import in.koala.domain.PushNotice;
+import in.koala.mapper.KeywordPushMapper;
+import in.koala.service.CrawlingService;
 import in.koala.service.KeywordPushService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class Scheduler {
     /**
     1초에 한번씩 호출하는 fixedDelay
      */
 
     private final KeywordPushService keywordPushService;
+    private final CrawlingService crawlingService;
+    private final KeywordPushMapper keywordPushMapper;
 
     @Scheduled(fixedDelay = 600000)
     public void scheduleFixedRateTask() throws Exception {
-        keywordPushService.pushKeywordAtOnce();
+
+        crawlingService.executeAll();
+        Timestamp mostRecentCrawlingTime = crawlingService.getMostRecentCrawlingTime();
+        List<PushNotice> pushNoticeList = keywordPushMapper.pushKeywordByLatelyCrawlingTime(mostRecentCrawlingTime);
+
+        for(PushNotice notice : pushNoticeList){
+            keywordPushService.pushNotification(notice.getTokenList(), notice.getKeyword(),
+                    notice.getSite(), notice.getUrl());
+        }
+
     }
     /**
      1초에 한번씩 호출하는 cron expression
