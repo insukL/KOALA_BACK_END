@@ -8,6 +8,7 @@ import com.google.firebase.messaging.Notification;
 import in.koala.domain.Crawling;
 import in.koala.domain.Keyword;
 import in.koala.enums.CrawlingSite;
+import in.koala.enums.CrawlingSiteKorean;
 import in.koala.service.KeywordPushService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,8 +26,9 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     @Override
     public void pushNotification(List<String> tokens, String keyword, CrawlingSite site, String url) throws Exception{
         String title = new StringBuilder()
-                .append(site.getName())
-                .append("에서 '")
+                .append("'")
+                .append(CrawlingSiteKorean.values()[site.ordinal()].getSiteName())
+                .append("'에서 '")
                 .append(keyword)
                 .append("'관련 게시글이 업로드 되었습니다.")
                 .toString();
