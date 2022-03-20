@@ -22,7 +22,6 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     @Value("${alarm.image.url}")
     private String iconUrl;
 
-    @NotNull
     @Override
     public void pushNotification(List<String> tokens, String keyword, Crawling crawling) throws Exception{
         String title = new StringBuilder()

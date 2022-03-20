@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
             throw new NonCriticalException(ErrorMessage.DUPLICATED_ACCOUNT_EXCEPTION);
         }
 
-        checkNickname(user.getNickname());
+        isFindEmailDuplicated(user.getNickname());
         checkFindEmail(user.getFindEmail());
         // 비밀번호 단방향 암호화
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
@@ -239,7 +239,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean checkNickname(String nickname) {
+    public Boolean isFindEmailDuplicated(String nickname) {
         if (userMapper.checkNickname(nickname) > 0) {
             throw new NonCriticalException(ErrorMessage.DUPLICATED_NICKNAME_EXCEPTION);
 
@@ -346,8 +346,7 @@ public class UserServiceImpl implements UserService {
         }
 
         AuthEmail selectedAuthEmail = authEmailList.get(0);
-        System.out.println(selectedAuthEmail);
-        System.out.println(authEmail);
+
         // 메일 인증 유효기간 지났을때 발생
         if(selectedAuthEmail.getExpiredAt().before(new Timestamp(System.currentTimeMillis()))){
             throw new NonCriticalException(ErrorMessage.EMAIL_EXPIRED_AUTH_EXCEPTION);

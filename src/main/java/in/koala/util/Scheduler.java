@@ -1,15 +1,22 @@
 package in.koala.util;
 
+import in.koala.service.KeywordPushService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class Scheduler {
     /**
     1초에 한번씩 호출하는 fixedDelay
      */
-    //@Scheduled(fixedDelay = 1000)
-    public void scheduleFixedRateTask() {
-        System.out.println("Current Thread : "+ Thread.currentThread().getName());
+
+    private final KeywordPushService keywordPushService;
+
+    @Scheduled(fixedDelay = 600000)
+    public void scheduleFixedRateTask() throws Exception {
+        keywordPushService.pushKeywordAtOnce();
     }
     /**
      1초에 한번씩 호출하는 cron expression
