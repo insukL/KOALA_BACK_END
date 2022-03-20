@@ -17,7 +17,7 @@
         )
     </select>
 
-    <select id="getLatelyCrawlingTime" resultType="java.sql.Timestamp">
+    <select id="getMostRecentCrawlingTime" resultType="java.sql.Timestamp">
         SELECT crawling_at
         FROM crawling_log
         ORDER BY crawling_at DESC

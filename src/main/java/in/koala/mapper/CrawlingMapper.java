@@ -17,7 +17,7 @@ public interface CrawlingMapper {
     String test();
 
     Boolean checkDuplicatedData(Crawling crawling);
-    Timestamp getLatelyCrawlingTime();
+    Timestamp getMostRecentCrawlingTime();
 
     int updateLog(CrawlingSite site, Timestamp crawlingAt);
     void addCrawlingData(List<Crawling> crawlingInsertList);

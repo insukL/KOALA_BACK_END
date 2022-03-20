@@ -1,5 +1,6 @@
 package in.koala.mapper;
 
+import in.koala.domain.PushNotice;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +10,6 @@ import java.util.Map;
 
 @Repository
 public interface KeywordPushMapper {
-    List<Map<String, String>> pushKeywordByLatelyCrawlingTime(Timestamp latelyCrawlingTime);
+    List<PushNotice> pushKeywordByLatelyCrawlingTime(Timestamp mostRecentCrawlingTime);
     List<Map<String, String>> pushKeyword(Long userId);
 }

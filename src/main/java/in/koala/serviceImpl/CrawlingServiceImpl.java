@@ -133,7 +133,7 @@ public class CrawlingServiceImpl implements CrawlingService {
     public Boolean youtubeCrawling(Timestamp crawlingAt) throws Exception {
 
         List<Crawling> crawlingList = new ArrayList<>();
-        String time = makeYoutubeTimeFormat(crawlingMapper.getLatelyCrawlingTime());
+        String time = makeYoutubeTimeFormat(crawlingMapper.getMostRecentCrawlingTime());
         ResponseEntity<String> youtube;
 
         try{
@@ -383,15 +383,15 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public Timestamp getLatelyCrawlingTime() {
-        return crawlingMapper.getLatelyCrawlingTime();
+    public Timestamp getMostRecentCrawlingTime() {
+        return crawlingMapper.getMostRecentCrawlingTime();
     }
 
     @Override
     public Boolean executeAll() throws Exception {
         Timestamp crawlingAt = new Timestamp(System.currentTimeMillis());
 
-        if(this.portalCrawling(crawlingAt) && this.dormCrawling(crawlingAt) && this.youtubeCrawling(crawlingAt))
+        if(this.portalCrawling(crawlingAt) && this.dormCrawling(crawlingAt))
             return true;
         else
             return false;
