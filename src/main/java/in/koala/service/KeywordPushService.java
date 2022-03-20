@@ -11,5 +11,5 @@ public interface KeywordPushService {
     void unsubscribe(Keyword keyword, Long id) throws Exception;
     void modifySubscription(List<CrawlingSite> oldSite, List<CrawlingSite> newSite,
                             Long id, String keywordName) throws Exception;
-    void pushNotification(List<String> tokens, String keyword, Crawling crawling) throws Exception;
+    void pushNotification(List<String> tokens, String keyword, CrawlingSite site, String url) throws Exception;
 }

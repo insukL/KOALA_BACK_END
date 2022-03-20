@@ -23,16 +23,16 @@ public class KeywordPushServiceImpl implements KeywordPushService {
     private String iconUrl;
 
     @Override
-    public void pushNotification(List<String> tokens, String keyword, Crawling crawling) throws Exception{
+    public void pushNotification(List<String> tokens, String keyword, CrawlingSite site, String url) throws Exception{
         String title = new StringBuilder()
-                .append(crawling.getSite().getName())
+                .append(site.getName())
                 .append("에서 '")
                 .append(keyword)
                 .append("'관련 게시글이 업로드 되었습니다.")
                 .toString();
 
         for (List<String> t : Lists.partition(tokens, 500)) {
-            pushNotification(t, title, crawling.getUrl());
+            pushNotification(t, title, url);
         }
     }
 

@@ -1,10 +1,7 @@
 package in.koala.service;
 
-import in.koala.domain.Crawling;
 import in.koala.domain.CrawlingToken;
-import in.koala.enums.CrawlingSite;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -23,6 +20,6 @@ public interface CrawlingService {
     void updateCrawlingToken(CrawlingToken token) throws Exception;
     void deleteCrawlingToken(Long id) throws Exception;
 
-    Timestamp getLatelyCrawlingTime();
+    Timestamp getMostRecentCrawlingTime();
     Boolean executeAll() throws Exception;
 }
