@@ -29,15 +29,9 @@ public class Scheduler {
 
         crawlingService.executeAll();
         Timestamp mostRecentCrawlingTime = crawlingService.getMostRecentCrawlingTime();
-
-        log.info(mostRecentCrawlingTime.toString());
         List<PushNotice> pushNoticeList = keywordPushMapper.pushKeywordByLatelyCrawlingTime(mostRecentCrawlingTime);
 
         for(PushNotice notice : pushNoticeList){
-            System.out.println(notice.getTokenList());
-            System.out.println(notice.getKeyword());
-            System.out.println(notice.getSite());
-            System.out.println(notice.getUrl());
             keywordPushService.pushNotification(notice.getTokenList(), notice.getKeyword(),
                     notice.getSite(), notice.getUrl());
         }
