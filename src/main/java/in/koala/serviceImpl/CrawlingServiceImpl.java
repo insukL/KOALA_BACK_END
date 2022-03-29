@@ -406,7 +406,8 @@ public class CrawlingServiceImpl implements CrawlingService {
     private Crawling getPortalDataOnBulletin(Element bulletin, Timestamp crawlingAt){
         String title = bulletin.select("td > div > span").attr("title");
         StringBuffer buffer = new StringBuffer(bulletin.absUrl("data-url"));
-        String url = buffer.insert(4,"s").toString();
+
+        String url = buffer.toString();
         String createdAt = bulletin.select(".bc-s-cre_dt").text();
 
         Crawling crawling = Crawling.builder()
