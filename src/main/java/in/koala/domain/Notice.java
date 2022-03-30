@@ -14,6 +14,8 @@ public class Notice{
     private String createdAt;
     private Boolean isRead;
 
+    private Long crawlingId;
+
     public Notice(Long id, String site, String title, String url, String createdAt){
         this.id = id;
         this.site = site;

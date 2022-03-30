@@ -3,7 +3,7 @@
 <mapper namespace="in.koala.mapper.HistoryMapper">
 
     <select id="getEveryNotice" resultType = "in.koala.domain.Notice">
-        SELECT n.id, c.site, c.title, c.url, n.created_at AS createdAt, n.is_read AS isRead
+        SELECT n.id, c.site, c.title, c.url, n.created_at AS createdAt, n.is_read AS isRead, c.id as crawlingId
         FROM notice AS n
                  INNER JOIN keyword AS k
                             ON k.id = n.keyword_id
