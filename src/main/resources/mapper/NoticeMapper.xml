@@ -2,9 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="in.koala.mapper.NoticeMapper">
 
-    <insert id="insertNotice" parameterType="java.util.Map">
+    <insert id="insertNotice">
         INSERT INTO notice (keyword_id, crawling_id)
-        VALUES (#{keywordId}, #{crawlingId})
+        VALUES
+        <foreach collection="pushNoticeList" item="notice" separator=" , ">
+             (
+              #{notice.keywordId},
+              #{notice.crawlingId}
+              )
+        </foreach>
     </insert>
 
 </mapper>
