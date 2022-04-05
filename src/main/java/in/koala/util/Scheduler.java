@@ -4,6 +4,7 @@ import in.koala.domain.PushNotice;
 import in.koala.mapper.KeywordPushMapper;
 import in.koala.service.CrawlingService;
 import in.koala.service.KeywordPushService;
+import in.koala.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +24,7 @@ public class Scheduler {
     private final KeywordPushService keywordPushService;
     private final CrawlingService crawlingService;
     private final KeywordPushMapper keywordPushMapper;
+    private final NoticeService noticeService;
 
     @Scheduled(fixedDelay = 600000)
     public void scheduleFixedRateTask() throws Exception {
@@ -31,11 +33,11 @@ public class Scheduler {
         Timestamp mostRecentCrawlingTime = crawlingService.getMostRecentCrawlingTime();
         List<PushNotice> pushNoticeList = keywordPushMapper.pushKeywordByLatelyCrawlingTime(mostRecentCrawlingTime);
 
-        for(PushNotice notice : pushNoticeList){
+        for (PushNotice notice : pushNoticeList) {
             keywordPushService.pushNotification(notice.getTokenList(), notice.getKeyword(),
                     notice.getSite(), notice.getUrl());
         }
-
+        noticeService.insertNotice(pushNoticeList);
     }
     /**
      1초에 한번씩 호출하는 cron expression

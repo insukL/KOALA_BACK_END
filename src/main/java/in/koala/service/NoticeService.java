@@ -1,11 +1,10 @@
-package in.koala.mapper;
+package in.koala.service;
 
 import in.koala.domain.PushNotice;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-public interface NoticeMapper {
+public interface NoticeService {
+
     void insertNotice(List<PushNotice> pushNoticeList);
 }

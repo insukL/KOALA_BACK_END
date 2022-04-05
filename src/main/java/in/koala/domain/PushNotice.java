@@ -12,4 +12,6 @@ public class PushNotice {
     private String keyword;
     private CrawlingSite site;
     private String url;
+    private Long keywordId;
+    private Long crawlingId;
 }

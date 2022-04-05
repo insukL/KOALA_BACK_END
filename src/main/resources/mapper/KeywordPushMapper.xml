@@ -13,21 +13,12 @@
           AND k.is_deleted = 0;
     </select>
 
-<!--    <select id="pushKeywordByLatelyCrawlingTime" resultType="in.koala.domain.PushNotice">-->
-<!--        SELECT k.id as keywordId, k.name, c.id as crawlingId, c.title, c.url, c.site-->
-<!--        from crawling as c-->
-<!--                 inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')-->
-<!--                 inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site-->
-<!--        where c.crawling_at = #{mostRecentCrawlingTime}-->
-<!--          AND ks.is_deleted = 0-->
-<!--          AND c.is_deleted = 0-->
-<!--          AND k.is_deleted = 0;-->
-<!--    </select>-->
-
     <resultMap id="PushNoticeMap" type="in.koala.domain.PushNotice">
         <id property="keyword" column="keyword"/>
         <id property="site" column="site"/>
         <id property="url" column="url"/>
+        <id property="keywordId" column="keywordId"/>
+        <id property="crawlingId" column="crawlingId"/>
         <collection property="tokenList" column="user_id" select="selectTokenList"></collection>
     </resultMap>
 
@@ -38,7 +29,7 @@
     </select>
 
     <select id="pushKeywordByLatelyCrawlingTime" resultMap="PushNoticeMap">
-        SELECT u.id as user_id, k.name as keyword, c.site, c.url
+        SELECT u.id as user_id, k.name as keyword, c.site, c.url, k.id as keywordId, c.id as crawlingId
         from crawling as c
                  inner join keyword as k on c.title LIKE CONCAT('%',k.name,'%')
                  inner join keyword_site as ks ON k.id = ks.keyword_id and ks.site_name = c.site
