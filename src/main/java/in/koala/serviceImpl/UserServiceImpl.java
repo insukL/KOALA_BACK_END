@@ -468,10 +468,10 @@ public class UserServiceImpl implements UserService {
         NormalUser selectedUser = this.getLoginNormalUserInfo();
 
         String profileUrl = selectedUser.getProfile();
-
+/*
         if(!profileUrl.equals(defaultUrl)){
             s3Util.deleteFile(profileUrl);
-        }
+        }*/
 
         profileUrl = s3Util.uploader(multipartFile, FileType.PROFILE);
         userMapper.updateUserProfile(profileUrl, selectedUser.getId());
