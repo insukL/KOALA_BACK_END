@@ -37,7 +37,8 @@ public class Scheduler {
             keywordPushService.pushNotification(notice.getTokenList(), notice.getKeyword(),
                     notice.getSite(), notice.getUrl());
         }
-        noticeService.insertNotice(pushNoticeList);
+        if(!pushNoticeList.isEmpty())
+            noticeService.insertNotice(pushNoticeList);
     }
     /**
      1초에 한번씩 호출하는 cron expression
